@@ -44,12 +44,12 @@ The sensor value is the number of minutes to the next departure.  There are also
 
 
 > next_departure: 1 min
-next_line: 17
-next_destination: Åkeshov
-upcoming_departure: 4 min
-upcoming_line: 18
-upcoming_destination: Hässelby strand
-unit_of_measurement: min
-icon: fa-subway
-friendly_name: sl gullmarsplan
-attribution: Data from sl.se / trafiklab.se
+> next_line: 17
+> next_destination: Åkeshov
+> upcoming_departure: 4 min
+> upcoming_line: 18
+> upcoming_destination: Hässelby strand
+> unit_of_measurement: min
+> icon: fa-subway
+> friendly_name: sl gullmarsplan
+> attribution: Data from sl.se / trafiklab.se

@@ -42,14 +42,15 @@ When you have your API key, you're ready to add the component to your Home Assis
 
 The sensor value is the number of minutes to the next departure.  There are also a number of attributes:
 
-
-> next_departure: 1 min
-> next_line: 17
-> next_destination: Åkeshov
-> upcoming_departure: 4 min
-> upcoming_line: 18
-> upcoming_destination: Hässelby strand
-> unit_of_measurement: min
-> icon: fa-subway
-> friendly_name: sl gullmarsplan
-> attribution: Data from sl.se / trafiklab.se
+```
+next_departure: 1 min
+next_line: 17
+next_destination: Åkeshov
+upcoming_departure: 4 min
+upcoming_line: 18
+upcoming_destination: Hässelby strand
+unit_of_measurement: min
+icon: fa-subway
+friendly_name: sl gullmarsplan
+attribution: Data from sl.se / trafiklab.se
+```

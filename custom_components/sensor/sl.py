@@ -157,6 +157,8 @@ class SLDepartureBoardSensor(Entity):
         # @TODO Enable multiple sensors with same SiteID, to reduce number of API calls.
 
         board = []
+        if not self._data.data['StatusCode']:
+            _LOGGER.info("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
         for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
             for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
                 direction = value['JourneyDirection'] or 0

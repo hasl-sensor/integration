@@ -1,7 +1,7 @@
 {
     "sensor.sl": {
       "updated_at": "2018-09-29",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "local_location": "/custom_components/sensor/sl.py",
       "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_components/sensor/sl.py",
       "visit_repo": "https://github.com/fredrikbaberg/ha-sensor-sl",

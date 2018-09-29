@@ -1,6 +1,8 @@
 """
 Simple service for SL (Storstockholms Lokaltrafik)
 
+@TODO Byt till ResRobot - Stolptidtabeller 2 (?) - tappar realtid för tunnelbanan...
+
 
 """
 import datetime
@@ -150,6 +152,9 @@ class SLDepartureBoardSensor(Entity):
         """Get the departure board."""
 
         self._data.update()
+
+        # @TODO Check for error message from request. 1007 - Month limit, 1006 - Minute limit.
+        # @TODO Enable multiple sensors with same SiteID, to reduce number of API calls.
 
         board = []
         for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):

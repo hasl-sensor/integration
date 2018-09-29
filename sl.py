@@ -152,17 +152,20 @@ class SLDepartureBoardSensor(Entity):
         self._data.update()
 
         board = []
-        for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
-            for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
-                direction = value['JourneyDirection'] or 0
-                displaytime = value['DisplayTime'] or ''
-                destination = value['Destination'] or ''
-                linenumber = value['LineNumber'] or ''
-                
-                if (int(self._data._direction) == 0 or int(direction) == int(self._data._direction)):
-                    if(self._data._lines is None or (linenumber in self._data._lines)):
-                        diff = self.parseDepartureTime(displaytime)
-                        board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
+        if self._data.data['StatusCode'] != 0:
+            _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
+        else:
+            for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
+                for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
+                    direction = value['JourneyDirection'] or 0
+                    displaytime = value['DisplayTime'] or ''
+                    destination = value['Destination'] or ''
+                    linenumber = value['LineNumber'] or ''
+                    
+                    if (int(self._data._direction) == 0 or int(direction) == int(self._data._direction)):
+                        if(self._data._lines is None or (linenumber in self._data._lines)):
+                            diff = self.parseDepartureTime(displaytime)
+                            board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
        
         self._board = sorted(board, key=lambda k: k['time'])
 

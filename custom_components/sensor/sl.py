@@ -46,8 +46,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_LINES): cv.string,
     vol.Optional(CONF_NAME): cv.string,
     vol.Optional(CONF_DIRECTION): cv.string,
-    vol.Optional(CONF_ENABLED_SENSOR, default='binary_sensor.office_window_sensor'): cv.string
-
+    vol.Optional(CONF_ENABLED_SENSOR): cv.string
 })
 
 
@@ -159,10 +158,8 @@ class SLDepartureBoardSensor(Entity):
     def update(self):
         """Get the departure board."""
         sensor_state = self._hass.states.get(self._enabled_sensor)
-        _LOGGER.error("Check {}: {}".format(self._enabled_sensor, sensor_state.state))
-        if sensor_state.state is STATE_OFF:
-            _LOGGER.error("{} Disabled, don't do anything.".format(self._enabled_sensor))
-        else:
+        _LOGGER.error("Sensor is {}, state is {}".format(self._enabled_sensor, sensor_state))
+        if sensor_state is None or sensor_state.state is STATE_ON:
             _LOGGER.error("{} enabled, go ahead.".format(self._enabled_sensor))
             self._data.update()
             board = []

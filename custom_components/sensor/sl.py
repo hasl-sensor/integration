@@ -157,9 +157,15 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
+        _LOGGER.error("Check sensor {}".format(self._enabled_sensor))
         sensor_state = self._hass.states.get(self._enabled_sensor)
-        _LOGGER.error("Sensor is {}, state is {}".format(self._enabled_sensor, sensor_state.state))
-        if (sensor_state is None) or (sensor_state.state is STATE_ON):
+        if sensor_state is None:
+            _LOGGER.error("Sensor is None")
+            sensor_state = STATE_ON
+        else:
+            sensor_state = sensor_state.state
+        _LOGGER.error("Sensor state: {}".format(sensor_state))
+        if sensor_state.state is STATE_ON:
             _LOGGER.error("{} enabled, go ahead.".format(self._enabled_sensor))
             self._data.update()
             board = []

@@ -76,3 +76,25 @@ custom_updater:
   component_urls:
     - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/master/custom_updater.json
 ```
+
+**Lovelace card**
+
+To display data using Lovelace, you can try the included card.
+
+Present departure times from custom component SL-sensor in a card. Can use multiple sensors, will show next and upcoming departure for each sensor.
+
+![sl-example](https://user-images.githubusercontent.com/19709460/46255050-d4427b80-c498-11e8-9d30-2510e803e02b.png)
+
+Install it throgh copying the file `www/sl-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
+```
+resources:
+  - url: /local/sl-card.js
+    type: js
+```
+and use the card throgh
+```
+cards:
+  - type: "custom:sl-card"
+    entities:
+      - sensor.sl_name
+```

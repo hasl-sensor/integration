@@ -2,7 +2,7 @@
     "sl-card": {
       "updated_at": "2018-09-30",
       "version": "0.0.1",
-      "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/HomeAssistantConfig/master/www/sl-card.js",
+      "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/lovelace_card/www/sl-card.js",
       "visit_repo": "https://github.com/fredrikbaberg/ha-sensor-sl",
       "changelog": "https://github.com/fredrikbaberg/ha-sensor-sl/releases/latest"
     }

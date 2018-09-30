@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-No unreleased changes yet.
+- Lovelace card
 
 ## [v0.0.4] (2018-09-30)
 
@@ -27,5 +27,5 @@ No unreleased changes yet.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 <!-- [semantic-versioning]: http://semver.org/spec/v2.0.0.html -->
-<!-- [v0.0.1-v0.0.2]: https://github.com/hassio-addons/addon-example/compare/v0.0.1...v0.0.2 -->
 [v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4
+<!-- [v0.0.4-v0.0.5]: https://github.com/fredrikbaberg/ha-sensor-sl/compare/v0.0.4...v0.0.5 -->

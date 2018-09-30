@@ -89,7 +89,6 @@ class SLDepartureBoardSensor(Entity):
         self._board = []
         self._error_logged = False  # Keep track of if error has been logged.
         self._enabled_sensor = enabled_sensor
-        _LOGGER.error("{} enabled_sensor: {}".format(self._name, self._enabled_sensor))
 
     @property
     def name(self):
@@ -159,12 +158,12 @@ class SLDepartureBoardSensor(Entity):
     def update(self):
         """Get the departure board."""
         sensor_state = self._hass.states.get(self._enabled_sensor)
-        if sensor_state is None or sensor_state.state is STATE_ON:
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
             self._data.update()
             board = []
             if self._data.data['StatusCode'] != 0:
                 if not self._error_logged:
-                    _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
+                    _LOGGER.warn("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
                     self._error_logged = True  # Only report error once, until success.
             else:
                 self._error_logged = False  # Reset that error has been reported.
@@ -180,8 +179,6 @@ class SLDepartureBoardSensor(Entity):
                                 board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
             self._board = sorted(board, key=lambda k: k['time'])
             _LOGGER.info(self._board)
-        else:
-            _LOGGER.error("{} disabled.".format(self._name))
 
 
 class SlDepartureBoardData(object):

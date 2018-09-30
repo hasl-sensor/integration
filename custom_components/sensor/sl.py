@@ -74,7 +74,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     add_devices(sensors)
 
 class SlSwitch(ToggleEntity):
-     """Enable and disable SL sensor"""
+    """Enable and disable SL sensor"""
 
     def __init__(self, name):
         """Initialize the switch."""
@@ -180,6 +180,7 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
+        print("Check {}: {}".format("switch.{}_enabled".format(self._siteid), self._hass.states.get("switch.{}_enabled".format(self._siteid))))
         if self._hass.states.get("switch.{}_enabled".format(self._siteid)) == False:
             _LOGGER.error("{} Disabled, don't do anything.".format("switch.{}_enabled".format(self._siteid)))
         else:

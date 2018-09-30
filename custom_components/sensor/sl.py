@@ -13,8 +13,7 @@ import requests
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity import Entity
-from homeassistant.components.switch import SwitchDevice
+from homeassistant.helpers.entity import Entity, ToggleEntity
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time, async_track_utc_time_change)
 from homeassistant.util import dt as dt_util
@@ -74,29 +73,31 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     sensors.append(SlSwitch("switch.{}_enabled".format(config.get(CONF_SITEID))))
     add_devices(sensors)
 
-class SlSwitch(SwitchDevice):
+class SlSwitch(ToggleEntity):
+     """Enable and disable SL sensor"""
 
     def __init__(self, name):
-        self._is_on = False
+        """Initialize the switch."""
         self._name = name
+        self._state = True
 
     @property
-    def name(self, name):
-        """Name of the device."""
+    def name(self):
+        """Return the name of the switch."""
         return self._name
 
     @property
     def is_on(self):
-        """If the switch is currently on or off."""
-        return self._is_on
+        """Return true if device is on."""
+        return self._state
 
     def turn_on(self, **kwargs):
-        """Turn the switch on."""
-        self._is_on = True
+        """Turn the device on."""
+        self._state = True
 
     def turn_off(self, **kwargs):
-        """Turn the switch off."""
-        self._is_on = False
+        """Turn the device off."""
+        self._state = False
 
 class SLDepartureBoardSensor(Entity):
     """Department board for one SL site."""

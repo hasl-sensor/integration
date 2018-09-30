@@ -157,16 +157,9 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
-        _LOGGER.error("Check sensor {}".format(self._enabled_sensor))
         sensor_state = self._hass.states.get(self._enabled_sensor)
-        if sensor_state is None:
-            _LOGGER.error("Sensor is None")
-            sensor_state = STATE_ON
-        else:
-            sensor_state = sensor_state.state
-        _LOGGER.error("Sensor state: {}".format(sensor_state))
-        if sensor_state.state is STATE_ON:
-            _LOGGER.error("{} enabled, go ahead.".format(self._enabled_sensor))
+        if sensor_state is None or sensor_state.state is STATE_ON:
+            _LOGGER.error("{} enabled, go ahead.".format(self._name))
             self._data.update()
             board = []
             if self._data.data['StatusCode'] != 0:
@@ -187,6 +180,8 @@ class SLDepartureBoardSensor(Entity):
                                 board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
             self._board = sorted(board, key=lambda k: k['time'])
             _LOGGER.info(self._board)
+        else:
+            _LOGGER.error("{} disabled.".format(self._name))
 
 
 class SlDepartureBoardData(object):

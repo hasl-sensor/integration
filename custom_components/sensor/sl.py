@@ -14,6 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import Entity
+from homeassistant.components.switch import SwitchDevice
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time, async_track_utc_time_change)
 from homeassistant.util import dt as dt_util
@@ -64,18 +65,45 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     sensors = []
     sensors.append(
         SLDepartureBoardSensor(
+            hass,
             data, 
             config.get(CONF_SITEID),
             config.get(CONF_NAME)
         )
     )
+    sensors.append(SlSwitch(config.get(CONF_NAME) + '_enabled'))
     add_devices(sensors)
+
+class SlSwitch(SwitchDevice):
+
+    def __init__(self, name):
+        self._is_on = False
+        self._name = name
+
+    @property
+    def name(self, name):
+        """Name of the device."""
+        return self._name
+
+    @property
+    def is_on(self):
+        """If the switch is currently on or off."""
+        return self._is_on
+
+    def turn_on(self, **kwargs):
+        """Turn the switch on."""
+        self._is_on = True
+
+    def turn_off(self, **kwargs):
+        """Turn the switch off."""
+        self._is_on = False
 
 class SLDepartureBoardSensor(Entity):
     """Department board for one SL site."""
 
-    def __init__(self, data, siteid, name):
+    def __init__(self, hass, data, siteid, name):
         """Initialize"""
+        self._hass = hass
         self._sensor = 'sl'
         self._siteid = siteid
         self._name = name or siteid
@@ -151,33 +179,32 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
-
-        self._data.update()
-
-        board = []
-        if self._data.data['StatusCode'] != 0:
-            if not self.error_logged:
-                _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
-                self.error_logged = True  # Only report error once, until success.
+        if self._hass.states.get(self._name+'_enabled') == False:
+            _LOGGER.error("Disabled, don't do anything.")
         else:
-            self.error_logged = False  # Reset that error has been reported.
-            for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
-                for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
-                    direction = value['JourneyDirection'] or 0
-                    displaytime = value['DisplayTime'] or ''
-                    destination = value['Destination'] or ''
-                    linenumber = value['LineNumber'] or ''
-                    
-                    if (int(self._data._direction) == 0 or int(direction) == int(self._data._direction)):
-                        if(self._data._lines is None or (linenumber in self._data._lines)):
-                            diff = self.parseDepartureTime(displaytime)
-                            board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
-       
-        self._board = sorted(board, key=lambda k: k['time'])
+            _LOGGER.error("Enabled, go ahead.")
+            self._data.update()
+            board = []
+            if self._data.data['StatusCode'] != 0:
+                if not self.error_logged:
+                    _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
+                    self.error_logged = True  # Only report error once, until success.
+            else:
+                self.error_logged = False  # Reset that error has been reported.
+                for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
+                    for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
+                        direction = value['JourneyDirection'] or 0
+                        displaytime = value['DisplayTime'] or ''
+                        destination = value['Destination'] or ''
+                        linenumber = value['LineNumber'] or ''
+                        if (int(self._data._direction) == 0 or int(direction) == int(self._data._direction)):
+                            if(self._data._lines is None or (linenumber in self._data._lines)):
+                                diff = self.parseDepartureTime(displaytime)
+                                board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
+            self._board = sorted(board, key=lambda k: k['time'])
+            _LOGGER.info(self._board)
 
-        _LOGGER.info(self._board)
 
-            
 class SlDepartureBoardData(object):
     """ Class for retrieving API data """
     def __init__(self, apikey, siteid, lines, direction):

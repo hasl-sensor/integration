@@ -75,6 +75,8 @@ For update check of this sensor, add the following to your configuration.yaml. F
 custom_updater:
   component_urls:
     - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/master/custom_updater.json
+  card_urls:
+    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/lovelace_card/custom_cards.json
 ```
 
 **Lovelace card**

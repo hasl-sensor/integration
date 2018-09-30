@@ -158,8 +158,8 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
-        print("Check {}: {}".format(self._enabled_sensor, self._hass.states.get(self._enabled_sensor)))
-        if self._hass.states.get(self._enabled_sensor) == False:
+        _LOGGER.error("Check {}: {}".format(self._enabled_sensor, self._hass.states.get(self._enabled_sensor)))
+        if self._hass.states.get(self._enabled_sensor) in [False, 'off']:
             _LOGGER.error("{} Disabled, don't do anything.".format(self._enabled_sensor))
         else:
             _LOGGER.error("{} enabled, go ahead.".format(self._enabled_sensor))

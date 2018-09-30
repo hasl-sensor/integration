@@ -3,7 +3,7 @@
       "updated_at": "2018-09-29",
       "version": "0.0.3",
       "local_location": "/custom_components/sensor/sl.py",
-      "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_components/sensor/sl.py",
+      "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/master/custom_components/sensor/sl.py",
       "visit_repo": "https://github.com/fredrikbaberg/ha-sensor-sl",
       "changelog": "https://github.com/fredrikbaberg/ha-sensor-sl/releases/latest"
     }

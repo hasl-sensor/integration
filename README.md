@@ -24,6 +24,7 @@ When you have your API key, you're ready to add the component to your Home Assis
   siteid: 9189
   lines: 17, 18, 19
   direction: 1
+  sensor: binary_sensor.test
 ```
 
 
@@ -39,6 +40,8 @@ When you have your API key, you're ready to add the component to your Home Assis
 - lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
 
 - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
+
+- sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this is not set, update will be done.
 
 **sensor value**
 
@@ -71,5 +74,5 @@ For update check of this sensor, add the following to your configuration.yaml. F
 ```
 custom_updater:
   component_urls:
-    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_updater.json
+    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/master/custom_updater.json
 ```

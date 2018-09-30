@@ -89,6 +89,7 @@ class SLDepartureBoardSensor(Entity):
         self._board = []
         self._error_logged = False  # Keep track of if error has been logged.
         self._enabled_sensor = enabled_sensor
+        _LOGGER.error("{} enabled_sensor: {}".format(self._name, self._enabled_sensor))
 
     @property
     def name(self):
@@ -159,7 +160,6 @@ class SLDepartureBoardSensor(Entity):
         """Get the departure board."""
         sensor_state = self._hass.states.get(self._enabled_sensor)
         if sensor_state is None or sensor_state.state is STATE_ON:
-            _LOGGER.error("{} enabled, go ahead.".format(self._name))
             self._data.update()
             board = []
             if self._data.data['StatusCode'] != 0:

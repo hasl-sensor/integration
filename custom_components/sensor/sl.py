@@ -24,7 +24,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,11 +137,9 @@ class SLDepartureBoardSensor(Entity):
         try:        
             if t == 'Nu':
                 return 0
-
             s = t.split()
             if(len(s) > 1 and s[1] == 'min'):
                 return int(s[0])
-
             s = t.split(':')
             if(len(s) > 1):
                 now = datetime.datetime.now()
@@ -149,12 +147,10 @@ class SLDepartureBoardSensor(Entity):
                 if min < 0: 
                     min = min + 1440
                 return min
-
         except Exception:
             _LOGGER.error('Failed to parse departure time (%s) ', t)
-
         return 0
-        
+
     def update(self):
         """Get the departure board."""
         if self._enabled_sensor is not None:
@@ -167,7 +163,9 @@ class SLDepartureBoardSensor(Entity):
                     _LOGGER.warn("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
                     self._error_logged = True  # Only report error once, until success.
             else:
-                self._error_logged = False  # Reset that error has been reported.
+                if self._error_logged:
+                    _LOGGER.warn("API call successful again")
+                    self._error_logged = False  # Reset that error has been reported.
                 for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
                     for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
                         direction = value['JourneyDirection'] or 0
@@ -212,5 +210,4 @@ class SlDepartureBoardData(object):
         else:
             _LOGGER.error("failed fetching SL Data for '%s'"
                           "(HTTP Status_code = %d)", self._siteid,
-                          req.status_code)        
-
+                          req.status_code)

@@ -41,7 +41,7 @@ When you have your API key, you're ready to add the component to your Home Assis
 
 - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
 
-- sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this is not set, update will be done.
+- sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
 **sensor value**
 

@@ -82,6 +82,7 @@ class SLDepartureBoardSensor(Entity):
         self._data = data
         self._nextdeparture = 9999
         self._board = []
+        self.error_logged = False  # Keep track of if error has been logged.
 
     @property
     def name(self):
@@ -155,8 +156,11 @@ class SLDepartureBoardSensor(Entity):
 
         board = []
         if self._data.data['StatusCode'] != 0:
-            _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
+            if not self.error_logged:
+                _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
+                self.error_logged = True  # Only report error once, until success.
         else:
+            self.error_logged = False  # Reset that error has been reported.
             for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
                 for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
                     direction = value['JourneyDirection'] or 0

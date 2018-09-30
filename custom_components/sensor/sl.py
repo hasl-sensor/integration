@@ -17,6 +17,7 @@ from homeassistant.helpers.entity import Entity, ToggleEntity
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time, async_track_utc_time_change)
 from homeassistant.util import dt as dt_util
+from homeassistant.const import STATE_ON, STATE_OFF
 
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 import homeassistant.helpers.config_validation as cv
@@ -32,6 +33,7 @@ CONF_SITEID = 'siteid'
 CONF_LINES = 'lines'
 CONF_NAME = 'name'
 CONF_DIRECTION = 'direction'
+CONF_ENABLED_SENSOR = 'sensor'
 
 UPDATE_FREQUENCY = timedelta(seconds=60)
 FORCED_UPDATE_FREQUENCY = timedelta(seconds=5)
@@ -43,7 +45,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_SITEID): cv.string,
     vol.Optional(CONF_LINES): cv.string,
     vol.Optional(CONF_NAME): cv.string,
-    vol.Optional(CONF_DIRECTION) : cv.string
+    vol.Optional(CONF_DIRECTION): cv.string,
+    vol.Optional(CONF_ENABLED_SENSOR, default='binary_sensor.office_window_sensor'): cv.string
 
 })
 
@@ -58,7 +61,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
         config.get(CONF_RI4_KEY),
         config.get(CONF_SITEID),
         config.get(CONF_LINES),
-        config.get(CONF_DIRECTION)
+        config.get(CONF_DIRECTION),
     )
 
     sensors = []
@@ -67,42 +70,16 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
             hass,
             data, 
             config.get(CONF_SITEID),
-            config.get(CONF_NAME)
+            config.get(CONF_NAME),
+            config.get(CONF_ENABLED_SENSOR)
         )
     )
-    sensors.append(SlSwitch("switch.{}_enabled".format(config.get(CONF_SITEID))))
     add_devices(sensors)
-
-class SlSwitch(ToggleEntity):
-    """Enable and disable SL sensor"""
-
-    def __init__(self, name):
-        """Initialize the switch."""
-        self._name = name
-        self._state = True
-
-    @property
-    def name(self):
-        """Return the name of the switch."""
-        return self._name
-
-    @property
-    def is_on(self):
-        """Return true if device is on."""
-        return self._state
-
-    def turn_on(self, **kwargs):
-        """Turn the device on."""
-        self._state = True
-
-    def turn_off(self, **kwargs):
-        """Turn the device off."""
-        self._state = False
 
 class SLDepartureBoardSensor(Entity):
     """Department board for one SL site."""
 
-    def __init__(self, hass, data, siteid, name):
+    def __init__(self, hass, data, siteid, name, enabled_sensor):
         """Initialize"""
         self._hass = hass
         self._sensor = 'sl'
@@ -111,7 +88,8 @@ class SLDepartureBoardSensor(Entity):
         self._data = data
         self._nextdeparture = 9999
         self._board = []
-        self.error_logged = False  # Keep track of if error has been logged.
+        self._error_logged = False  # Keep track of if error has been logged.
+        self._enabled_sensor = enabled_sensor
 
     @property
     def name(self):
@@ -180,19 +158,19 @@ class SLDepartureBoardSensor(Entity):
         
     def update(self):
         """Get the departure board."""
-        print("Check {}: {}".format("switch.{}_enabled".format(self._siteid), self._hass.states.get("switch.{}_enabled".format(self._siteid))))
-        if self._hass.states.get("switch.{}_enabled".format(self._siteid)) == False:
-            _LOGGER.error("{} Disabled, don't do anything.".format("switch.{}_enabled".format(self._siteid)))
+        print("Check {}: {}".format(self._enabled_sensor, self._hass.states.get(self._enabled_sensor)))
+        if self._hass.states.get(self._enabled_sensor) == False:
+            _LOGGER.error("{} Disabled, don't do anything.".format(self._enabled_sensor))
         else:
-            _LOGGER.error("{} enabled, go ahead.".format("switch.{}_enabled".format(self._siteid)))
+            _LOGGER.error("{} enabled, go ahead.".format(self._enabled_sensor))
             self._data.update()
             board = []
             if self._data.data['StatusCode'] != 0:
-                if not self.error_logged:
+                if not self._error_logged:
                     _LOGGER.error("Status code: {}, {}".format(self._data.data['StatusCode'], self._data.data['Message']))
-                    self.error_logged = True  # Only report error once, until success.
+                    self._error_logged = True  # Only report error once, until success.
             else:
-                self.error_logged = False  # Reset that error has been reported.
+                self._error_logged = False  # Reset that error has been reported.
                 for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
                     for idx, value in enumerate(self._data.data['ResponseData'][traffictype]):
                         direction = value['JourneyDirection'] or 0

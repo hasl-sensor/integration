@@ -74,7 +74,7 @@ For update check of this sensor, add the following to your configuration.yaml. F
 ```
 custom_updater:
   component_urls:
-    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/master/custom_updater.json
+    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_updater.json
   card_urls:
     - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_cards.json
 ```

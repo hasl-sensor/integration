@@ -71,7 +71,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
             config.get(CONF_NAME)
         )
     )
-    sensors.append(SlSwitch(config.get(CONF_NAME) + '_enabled'))
+    sensors.append(SlSwitch(config.get(CONF_NAME)+'_enabled'))
     add_devices(sensors)
 
 class SlSwitch(SwitchDevice):
@@ -180,9 +180,9 @@ class SLDepartureBoardSensor(Entity):
     def update(self):
         """Get the departure board."""
         if self._hass.states.get(self._name+'_enabled') == False:
-            _LOGGER.error("Disabled, don't do anything.")
+            _LOGGER.error("{} Disabled, don't do anything.".format(self._name+'_enabled'))
         else:
-            _LOGGER.error("Enabled, go ahead.")
+            _LOGGER.error("{} enabled, go ahead.".format(self._name+'_enabled'))
             self._data.update()
             board = []
             if self._data.data['StatusCode'] != 0:

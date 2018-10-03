@@ -21,20 +21,25 @@ class SLCard extends HTMLElement {
             // Add data to table.
             for (var i = 0; i < data.length; i++){
                 const entity_data = hass.states[data[i]]
-                html += `
-                    <tr>
-                        <td align="left">${entity_data.attributes.friendly_name}</td>
-                        <td align="left">${entity_data.attributes.next_line}</td>
-                        <td align="left">${entity_data.attributes.next_destination}</td>
-                        <td align="left">${entity_data.attributes.next_departure}</td>
-                    </tr>
-                    <tr>
-                        <td align="left">${entity_data.attributes.friendly_name}</td>
-                        <td align="left">${entity_data.attributes.upcoming_line}</td>
-                        <td align="left">${entity_data.attributes.upcoming_destination}</td>
-                        <td align="left">${entity_data.attributes.upcoming_departure}</td>
-                    </tr>
-                `
+                if (typeof entity_data === 'undefined'){
+                    console.log('Entity data missing')
+                }
+                else{
+                    html += `
+                        <tr>
+                            <td align="left">${entity_data.attributes.friendly_name}</td>
+                            <td align="left">${entity_data.attributes.next_line}</td>
+                            <td align="left">${entity_data.attributes.next_destination}</td>
+                            <td align="left">${entity_data.attributes.next_departure}</td>
+                        </tr>
+                        <tr>
+                            <td align="left">${entity_data.attributes.friendly_name}</td>
+                            <td align="left">${entity_data.attributes.upcoming_line}</td>
+                            <td align="left">${entity_data.attributes.upcoming_destination}</td>
+                            <td align="left">${entity_data.attributes.upcoming_departure}</td>
+                        </tr>
+                    `
+                }
             }
             // Close table.
             html += `</table>`;

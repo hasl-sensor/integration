@@ -2,7 +2,7 @@ class SLCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
             const card = document.createElement('ha-card');
-            card.header = 'SL Card';
+            card.header = this.config.name;
             this.content = document.createElement('div');
             this.content.style.padding = '0 16px 16px';
             card.appendChild(this.content);
@@ -12,41 +12,41 @@ class SLCard extends HTMLElement {
             var html = `
             <table width="100%">
                 <tr>
-                    <th align="left">Stop</th>
-                    <th align="left">Line</th>
-                    <th align="left">Destination</th>
-                    <th align="left">Departure</th>
+                    <th align="left">Linje</th>
+                    <th align="left">Slutstation</th>
+                    <th align="left">Avgång</th>
                 </tr>
             `;
             // Add data to table.
+            var updatedDate = "";
             for (var i = 0; i < data.length; i++){
                 const entity_data = hass.states[data[i]]
                 if (typeof entity_data === 'undefined'){
                     console.log('Entity data missing')
                 }
                 else{
+                    for (var j = 0; j < entity_data.attributes.departure_board.length; j++) {
                     html += `
                         <tr>
-                            <td align="left">${entity_data.attributes.friendly_name}</td>
-                            <td align="left">${entity_data.attributes.next_line}</td>
-                            <td align="left">${entity_data.attributes.next_destination}</td>
-                            <td align="left">${entity_data.attributes.next_departure}</td>
+                            <td align="left">${entity_data.attributes.departure_board[j].line}</td>
+                            <td align="left">${entity_data.attributes.departure_board[j].destination}</td>
+                            <td align="left">${entity_data.attributes.departure_board[j].departure}</td>
                         </tr>
-                        <tr>
-                            <td align="left">${entity_data.attributes.friendly_name}</td>
-                            <td align="left">${entity_data.attributes.upcoming_line}</td>
-                            <td align="left">${entity_data.attributes.upcoming_destination}</td>
-                            <td align="left">${entity_data.attributes.upcoming_departure}</td>
-                        </tr>
-                    `
+                    `}
                 }
+                var updatedDate = new Date(entity_data.last_updated);
             }
+            html += `
+            <table width="100%">
+                <tr colspan=4>
+                    <td align="left"><i>Uppdaterat: ${updatedDate.toLocaleTimeString()}</i></th>
+                </tr>
+            `;
             // Close table.
             html += `</table>`;
             return html;
         }
-        this.content.innerHTML = getEntitiesContent(this.config.entities)
-        console.log(this.content.innerHTML)
+        this.content.innerHTML = getEntitiesContent(this.config.entities);
     }
 
     setConfig(config) {

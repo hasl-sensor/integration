@@ -24,7 +24,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,10 +35,10 @@ CONF_NAME = 'name'
 CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 
-UPDATE_FREQUENCY = timedelta(seconds=60)
+UPDATE_FREQUENCY = timedelta(seconds=600)
 FORCED_UPDATE_FREQUENCY = timedelta(seconds=5)
 
-USER_AGENT = "Home Assistant SL Sensor"
+USER_AGENT = "Home Assistant SL Actor by Daniel Sörlöv"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RI4_KEY): cv.string,   
@@ -96,9 +96,14 @@ class SLDepartureBoardSensor(Entity):
         return '{} {}'.format(self._sensor, self._name)
 
     @property
+    def intervall(self):
+        """Return the intervall of the sensor."""
+        return self._intervall
+        
+    @property
     def icon(self):
         """ Return the icon for the frontend."""
-        return 'fa-subway'
+        return 'mdi:subway'
 
     @property
     def state(self):
@@ -106,29 +111,21 @@ class SLDepartureBoardSensor(Entity):
         if len(self._board) > 0:
             return self._board[0]['time']
 
-        return 9999
+        return -1
 
     @property
     def device_state_attributes(self):
         """ Return the sensor attributes ."""
 
         val = {}
-        val['attribution'] = 'Data from sl.se / trafiklab.se'
+        val['attribution'] = 'Stockholms Lokaltrafik'
         val['unit_of_measurement'] = 'min'
 
         if not(self._data.data) :
             return val
 
-        if len(self._board) > 0:
-            val['next_line'] = self._board[0]['line']
-            val['next_destination'] = self._board[0]['destination']
-            val['next_departure'] = self._board[0]['departure']
+        val['departure_board'] = self._board
 
-        if len(self._board) > 1:
-            val['upcoming_line'] = self._board[1]['line']
-            val['upcoming_destination'] = self._board[1]['destination']
-            val['upcoming_departure'] = self._board[1]['departure']
-            
         return val
 
     def parseDepartureTime(self, t):
@@ -175,7 +172,7 @@ class SLDepartureBoardSensor(Entity):
                         if (int(self._data._direction) == 0 or int(direction) == int(self._data._direction)):
                             if(self._data._lines is None or (linenumber in self._data._lines)):
                                 diff = self.parseDepartureTime(displaytime)
-                                board.append({"line":linenumber,"departure":displaytime,"destination":destination, 'time': diff})
+                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype})
             self._board = sorted(board, key=lambda k: k['time'])
             _LOGGER.info(self._board)
 

@@ -1,9 +1,9 @@
 {
     "sl-card": {
-      "updated_at": "2018-09-30",
-      "version": "0.0.2",
-      "remote_location": "https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/www/sl-card.js",
-      "visit_repo": "https://github.com/fredrikbaberg/ha-sensor-sl",
-      "changelog": "https://github.com/fredrikbaberg/ha-sensor-sl/releases/latest"
+      "updated_at": "2018-11-16",
+      "version": "0.0.4",
+      "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/www/sl-card.js",
+      "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",
+      "changelog": "https://github.com/DSorlov/ha-sensor-sl/releases/latest"
     }
 }

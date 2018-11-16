@@ -53,7 +53,7 @@ unit_of_measurement: min
 icon: mdi:subway
 friendly_name: sl molnvik
 attribution: Stockholms Lokaltrafik
-departure_board: [
+departure_board: [{
  line: 474
  direction: 1
  departure: 10 min
@@ -61,15 +61,15 @@ departure_board: [
  diff: 10
  type: Buses
  icon: mdi:bus
-]
-deviances: [
+}]
+deviances: [{
  updated: 2018-11-16T15:59:40.063+01:00
  title: Inställd avgång
  fromDate: 2018-11-16T15:59:40.663
  toDate: 2018-11-17T00:00:00
  details: "Mölnvik kl 16:17 till Slussen är inställd pga framkomlighetsproblem - köer."
  sortOrder: 1
-]
+}]
 ```
 
 **API-call restrictions**
@@ -94,8 +94,9 @@ custom_updater:
 **Lovelace card**
 
 To display data using Lovelace, you can try the included card.
-
 Present departure times from custom component SL-sensor in a card. 
+
+![card](https://user-images.githubusercontent.com/8133650/48631584-272bb000-e9bf-11e8-8d77-372d252bf460.jpg)
 
 Install it throgh copying the file `www/sl-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
 ```

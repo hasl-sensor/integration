@@ -28,8 +28,8 @@ class SLCard extends HTMLElement {
                 else{
                     for (var j = 0; j < entity_data.attributes.departure_board.length; j++) {
                     html += `
-                        <tr><td align="left">
-                            <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon>${entity_data.attributes.departure_board[j].line}</td>
+                        <tr>
+                            <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon> ${entity_data.attributes.departure_board[j].line}</td>
                             <td align="left">${entity_data.attributes.departure_board[j].destination}</td>
                             <td align="left">${entity_data.attributes.departure_board[j].departure}</td>
                         </tr>

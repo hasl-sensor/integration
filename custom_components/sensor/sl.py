@@ -115,7 +115,7 @@ class SLTraficInformationSensor(Entity):
     @property
     def icon(self):
         """ Return the icon for the frontend."""
-        return 'mdi:subway'
+        return 'mdi:train-car'
 
     @property
     def state(self):
@@ -164,6 +164,16 @@ class SLTraficInformationSensor(Entity):
         except Exception:
             _LOGGER.error('Failed to parse departure time (%s) ', t)
         return 0
+        
+    def icon_mapper(argument):
+        switcher = {
+            "Buses": "mdi:bus",
+            "Trams": "mdi:tram",
+            "Ships": "mdi:boat",
+            "Metros": "mdi:subway-variant",
+            "Trains": "mdi:train"
+        }
+        return switcher.get(argument, "mdi:train-car")
 
     def update(self):
         """Get the departure board."""
@@ -186,10 +196,11 @@ class SLTraficInformationSensor(Entity):
                         displaytime = value['DisplayTime'] or ''
                         destination = value['Destination'] or ''
                         linenumber = value['LineNumber'] or ''
+                        if 
                         if (int(self._ri4data._direction) == 0 or int(direction) == int(self._ri4data._direction)):
                             if(self._ri4data._lines is None or (linenumber in self._ri4data._lines)):
                                 diff = self.parseDepartureTime(displaytime)
-                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype})
+                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype, 'icon': icon_mapper(traffictype)})
             self._board = sorted(board, key=lambda k: k['time'])
             _LOGGER.info(self._board)
             

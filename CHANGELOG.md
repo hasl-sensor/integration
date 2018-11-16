@@ -9,6 +9,15 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 - Rendering of deviances
 
+## [v0.0.6] (2018-11-16)
+
+### Added
+- Added output of icons
+
+### Changed
+- Buggfixes in lookup
+- Changed rendering in lovelace card
+
 ## [v0.0.5] (2018-11-16)
 
 ### Added
@@ -28,17 +37,14 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 [Full Changelog][v0.0.0-v0.0.4]
 
 ### Added
-
 - Use a binary_sensor to enable/disable API-calls
 - Log error code and message once in case of error at API call
 - Support for custom_updater
 
 ### Changed
-
 - Log error message instead of just reporting failure.
 
-### Removed
-
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[v0.0.6]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.6
 [v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.5
 [v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4

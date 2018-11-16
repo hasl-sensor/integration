@@ -40,6 +40,5 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ### Removed
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-<!-- [semantic-versioning]: http://semver.org/spec/v2.0.0.html -->
 [v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.5
-<!-- [v0.0.4-v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/compare/v0.0.4...v0.0.5 -->
+[v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4

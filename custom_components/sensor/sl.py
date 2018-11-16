@@ -164,16 +164,6 @@ class SLTraficInformationSensor(Entity):
         except Exception:
             _LOGGER.error('Failed to parse departure time (%s) ', t)
         return 0
-        
-    def icon_mapper(argument):
-        switcher = {
-            "Buses": "mdi:bus",
-            "Trams": "mdi:tram",
-            "Ships": "mdi:boat",
-            "Metros": "mdi:subway-variant",
-            "Trains": "mdi:train"
-        }
-        return switcher.get(argument, "mdi:train-car")
 
     def update(self):
         """Get the departure board."""
@@ -187,6 +177,13 @@ class SLTraficInformationSensor(Entity):
                     _LOGGER.warn("Status code: {}, {}".format(self._ri4data.data['StatusCode'], self._ri4data.data['Message']))
                     self._ri4error_logged = True  # Only report error once, until success.
             else:
+                iconswitcher = {
+                    "Buses": "mdi:bus",
+                    "Trams": "mdi:tram",
+                    "Ships": "mdi:boat",
+                    "Metros": "mdi:subway-variant",
+                    "Trains": "mdi:train"
+                }
                 if self._ri4error_logged:
                     _LOGGER.warn("API call successful again")
                     self._ri4error_logged = False  # Reset that error has been reported.
@@ -196,11 +193,11 @@ class SLTraficInformationSensor(Entity):
                         displaytime = value['DisplayTime'] or ''
                         destination = value['Destination'] or ''
                         linenumber = value['LineNumber'] or ''
-                        if 
+                        icon = iconswitcher.get(traffictype, "mdi:train-car")
                         if (int(self._ri4data._direction) == 0 or int(direction) == int(self._ri4data._direction)):
                             if(self._ri4data._lines is None or (linenumber in self._ri4data._lines)):
                                 diff = self.parseDepartureTime(displaytime)
-                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype, 'icon': icon_mapper(traffictype)})
+                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype, 'icon': icon})
             self._board = sorted(board, key=lambda k: k['time'])
             _LOGGER.info(self._board)
             

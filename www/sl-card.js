@@ -8,6 +8,7 @@ class SLCard extends HTMLElement {
             card.appendChild(this.content);
             this.appendChild(card);
         }
+        
         function getEntitiesContent(data) {
             var html = `
             <table width="100%">

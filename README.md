@@ -36,7 +36,7 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - si2key: Your API key from Trafiklab for the Störningsinformation 2 API
 
-- siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 9189 is Gullmarsplan. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
+- siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
 
 - lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
 

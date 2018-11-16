@@ -7,7 +7,21 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
+- Rendering of deviances
+
+## [v0.0.5] (2018-11-16)
+
+### Added
+- Dependency for new https://www.trafiklab.se/api/sl-storningsinformation-2
 - Lovelace card
+
+### Changed
+- Logging strings changed to indicate which api failed
+- User Agent String conforms to standard
+- Now renders the next hour of departures
+
+### Removed
+- JavaScript output
 
 ## [v0.0.4] (2018-09-30)
 
@@ -27,5 +41,5 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 <!-- [semantic-versioning]: http://semver.org/spec/v2.0.0.html -->
-[v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4
-<!-- [v0.0.4-v0.0.5]: https://github.com/fredrikbaberg/ha-sensor-sl/compare/v0.0.4...v0.0.5 -->
+[v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.5
+<!-- [v0.0.4-v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/compare/v0.0.4...v0.0.5 -->

@@ -1,12 +1,11 @@
-SL sensor for Home Assistant
+SL Traffic Information Sensor for Home Assistant
 ========================
 
-**This is a fork of fuffenz SL sensor (https://github.com/fuffenz/ha-sensor-sl).**
+**This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).**
 
-This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API key from SL / Trafiklab.
+This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab.
 
-- First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the one you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4).  
-When you have your API key, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
+- First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
 - Create a folder named **custom_components** under your Home Assistant **config** folder. 
 
@@ -19,10 +18,11 @@ When you have your API key, you're ready to add the component to your Home Assis
 ```yaml
 # Example configuration.yaml entry
 - platform: sl
-  name: gullmarsplan
-  ri4key: YOUR-API-KEY-HERE
-  siteid: 9189
-  lines: 17, 18, 19
+  name: mölnvik
+  ri4key: YOUR-RI4-KEY-HERE
+  si2key: YOUR-SI2-KEY-HERE
+  siteid: 4244
+  lines: 474, 480C
   direction: 1
   sensor: binary_sensor.test
 ```
@@ -30,12 +30,13 @@ When you have your API key, you're ready to add the component to your Home Assis
 
 **Configuration variables**
 
-
 - name: The name of the sensor (will be prefixed with "sl_") 
 
-- ri4key: Your API key from Trafiklab
+- ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
 
-- siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 9189 is Gullmarsplan.
+- si2key: Your API key from Trafiklab for the Störningsinformation 2 API
+
+- siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 9189 is Gullmarsplan. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
 
 - lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
 
@@ -48,16 +49,12 @@ When you have your API key, you're ready to add the component to your Home Assis
 The sensor value is the number of minutes to the next departure.  There are also a number of attributes:
 
 ```
-next_departure: 1 min
-next_line: 17
-next_destination: Åkeshov
-upcoming_departure: 4 min
-upcoming_line: 18
-upcoming_destination: Hässelby strand
 unit_of_measurement: min
-icon: fa-subway
-friendly_name: sl gullmarsplan
-attribution: Data from sl.se / trafiklab.se
+icon: mdi:subway
+friendly_name: sl molnvik
+attribution: Stockholms Lokaltrafik
+departure_board: [objects]
+deviances: [objects]
 ```
 
 **API-call restrictions**
@@ -74,18 +71,16 @@ For update check of this sensor, add the following to your configuration.yaml. F
 ```
 custom_updater:
   component_urls:
-    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_updater.json
+    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_updater.json
   card_urls:
-    - https://raw.githubusercontent.com/fredrikbaberg/ha-sensor-sl/dev/custom_cards.json
+    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_cards.json
 ```
 
 **Lovelace card**
 
 To display data using Lovelace, you can try the included card.
 
-Present departure times from custom component SL-sensor in a card. Can use multiple sensors, will show next and upcoming departure for each sensor.
-
-![sl-example](https://user-images.githubusercontent.com/19709460/46255050-d4427b80-c498-11e8-9d30-2510e803e02b.png)
+Present departure times from custom component SL-sensor in a card. 
 
 Install it throgh copying the file `www/sl-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
 ```

@@ -53,8 +53,23 @@ unit_of_measurement: min
 icon: mdi:subway
 friendly_name: sl molnvik
 attribution: Stockholms Lokaltrafik
-departure_board: [objects]
-deviances: [objects]
+departure_board: [
+ line: 474
+ direction: 1
+ departure: 10 min
+ destination: Slussen
+ diff: 10
+ type: Buses
+ icon: mdi:bus
+]
+deviances: [
+ updated: 2018-11-16T15:59:40.063+01:00
+ title: Inställd avgång
+ fromDate: 2018-11-16T15:59:40.663
+ toDate: 2018-11-17T00:00:00
+ details: "Mölnvik kl 16:17 till Slussen är inställd pga framkomlighetsproblem - köer."
+ sortOrder: 1
+]
 ```
 
 **API-call restrictions**

@@ -213,7 +213,7 @@ class SLTraficInformationSensor(Entity):
                     _LOGGER.warn("API call successful again")
                     self._si2error_logged = False  # Reset that error has been reported.
                 for idx, value in enumerate(self._si2data.data['ResponseData']):
-                    board.deviances({"updated":value['Updated'],"title":value['Header'],"fromDate":value['FromDateTime'],"toDate":value['UpToDateTime'], 'details': value['Details'], 'sortOrder': value['SortOrder']})
+                    deviances.append({"updated":value['Updated'],"title":value['Header'],"fromDate":value['FromDateTime'],"toDate":value['UpToDateTime'], 'details': value['Details'], 'sortOrder': value['SortOrder']})
             self._deviances = sorted(deviances, key=lambda k: k['sortOrder'])
             _LOGGER.info(self._deviances)
 

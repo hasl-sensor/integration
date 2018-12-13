@@ -26,15 +26,31 @@ class SLCard extends HTMLElement {
                     console.log('Entity data missing')
                 }
                 else{
-                    var len = (typeof entity_data.attributes.departure_board == 'undefined') ? 0 : entity_data.attributes.departure_board.length;
-                    for (var j = 0; j < len; j++) {
-                    html += `
-                        <tr>
-                            <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon> ${entity_data.attributes.departure_board[j].line}</td>
-                            <td align="left">${entity_data.attributes.departure_board[j].destination}</td>
-                            <td align="left">${entity_data.attributes.departure_board[j].departure}</td>
-                        </tr>
-                    `}
+                    if (typeof entity_data.attributes.departure_board !== 'undefined') {
+                        for (var j = 0; j < entity_data.attributes.departure_board.length; j++) {
+                        html += `
+                            <tr>
+                                <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon> ${entity_data.attributes.departure_board[j].line}</td>
+                                <td align="left">${entity_data.attributes.departure_board[j].destination}</td>
+                                <td align="left">${entity_data.attributes.departure_board[j].departure}</td>
+                            </tr>
+                        `}
+                    }
+                    if (typeof entity_data.attributes.deviances !== 'undefined') {
+                        for (var k = 0; k < entity_data.attributes.deviances.length; k++) {
+                        html += `
+                            <tr>
+                                <td align="left" colspan="3">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td align="left" colspan="3"><ha-icon style="width: 20px; height: 20px;" icon="mdi:alert-outline"></ha-icon> <b>${entity_data.attributes.deviances[k].title}</b></td>
+                            </tr>
+                            <tr>
+                                <td align="left" colspan="3"><i>${entity_data.attributes.deviances[k].details}</i></td>
+                            </tr>
+                        `}
+                    }
+                    
                 }
                 var updatedDate = new Date(entity_data.last_updated);
             }
@@ -59,7 +75,7 @@ class SLCard extends HTMLElement {
     }
 
     // The height of your card. Home Assistant uses this to automatically
-    // distribute all cards over the available columns.
+    // distribute all cards over the available columns. This kind of works but it is very dynamic
     getCardSize() {
         return this.config.entities.length + 1;
     }

@@ -26,7 +26,8 @@ class SLCard extends HTMLElement {
                     console.log('Entity data missing')
                 }
                 else{
-                    for (var j = 0; j < entity_data.attributes.departure_board.length; j++) {
+                    var len = (typeof entity_data.attributes.departure_board == 'undefined') ? 0 : entity_data.attributes.departure_board.length;
+                    for (var j = 0; j < len; j++) {
                     html += `
                         <tr>
                             <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon> ${entity_data.attributes.departure_board[j].line}</td>

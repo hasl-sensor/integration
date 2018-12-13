@@ -7,7 +7,16 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
+- No work items present
+
+## [v0.0.7] (2018-12-13)
+
+### Added
 - Rendering of deviances
+- Parameters to customize card
+
+### Changed
+- Rendering strategy
 
 ## [v0.0.6] (2018-11-16)
 
@@ -45,6 +54,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error message instead of just reporting failure.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[v0.0.7]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.7
 [v0.0.6]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.6
 [v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.5
 [v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4

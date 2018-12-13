@@ -108,6 +108,17 @@ and use the card throgh
 ```
 cards:
   - type: "custom:sl-card"
+    departures: true
+    deviations: true
+    updated: true
+    name: Departures
     entities:
       - sensor.sl_name
 ```
+- departures: Render departure section
+
+- deviations: Render deviation section
+
+- updated: Render the last updated time
+
+- name: If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name

@@ -85,6 +85,9 @@ For update check of this sensor, add the following to your configuration.yaml. F
 
 ```
 custom_updater:
+  track:
+    - components
+	- cards
   component_urls:
     - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_updater.json
   card_urls:

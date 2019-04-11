@@ -1,8 +1,4 @@
-"""
-Simple service for SL (Storstockholms Lokaltrafik)
-
-
-"""
+"""Simple service for SL (Storstockholms Lokaltrafik)"""
 import datetime
 from datetime import timedelta
 import logging
@@ -24,7 +20,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
 
-__version__ = '0.0.6'
+__version__ = '0.0.8'
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,10 +49,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Setup the sensors.
-    
-       right now only one, but later there should probably be another sensor for deviations at the same site
-    """
+    """Setup the sensors."""
 
     ri4data = SlDepartureData(
         config.get(CONF_RI4_KEY),
@@ -186,7 +179,7 @@ class SLTraficInformationSensor(Entity):
                 }
                 if self._ri4error_logged:
                     _LOGGER.warn("API call successful again")
-                    self._ri4error_logged = False  # Reset that error has been reported.
+                    self._ri4error_logged = False 
                 for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
                     for idx, value in enumerate(self._ri4data.data['ResponseData'][traffictype]):
                         direction = value['JourneyDirection'] or 0

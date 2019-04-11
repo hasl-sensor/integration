@@ -42,7 +42,7 @@ class SLCard extends HTMLElement {
                                <tr>
                                     <th align="left">Linje</th>
                                     <th align="left">Slutstation</th>
-                                    <th align="left">AvgÃ¥ng</th>
+                                    <th align="left">Avg&aring;ng</th>
                                 </tr>
                         `
 

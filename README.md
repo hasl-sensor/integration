@@ -9,9 +9,9 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - Create a folder named **custom_components** under your Home Assistant **config** folder. 
 
-- Create a folder named **sensor** under the **custom_components** folder.
+- Create a folder named **sl** under the **custom_components** folder.
 
-- Download sl.py from here and put it in the **sensor** folder.
+- Download sensor.py from here and put it in the **sl** folder.
 
 - Edit your configuration.yaml file and add the component
 

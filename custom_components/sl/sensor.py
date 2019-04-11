@@ -10,69 +10,73 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import Entity, ToggleEntity
-from homeassistant.helpers.event import (
-    async_track_point_in_utc_time, async_track_utc_time_change)
+from homeassistant.helpers.event import (async_track_point_in_utc_time,
+                                         async_track_utc_time_change,
+										 track_time_interval)
 from homeassistant.util import dt as dt_util
-from homeassistant.const import STATE_ON, STATE_OFF
-
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
+                                 CONF_USERNAME, STATE_ON, STATE_OFF)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
 
-__version__ = '0.0.8'
-
+__version__ = '0.0.9'
 _LOGGER = logging.getLogger(__name__)
+
+DEPENDENCIES = []
+REQUIREMENTS = ['hasl==1.0.1']
 
 CONF_RI4_KEY = 'ri4key'
 CONF_SI2_KEY = 'si2key'
 CONF_SITEID = 'siteid'
 CONF_LINES = 'lines'
-CONF_NAME = 'name'
 CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
+CONF_INTERVAL = 'interval'
+CONF_TIMEWINDOW = 'timewindow'
 
-UPDATE_FREQUENCY = timedelta(seconds=600)
-FORCED_UPDATE_FREQUENCY = timedelta(seconds=5)
+DEFAULT_INTERVAL=5
+DEFAULT_TIMEWINDOW=30
+DEFAULT_PREFIX='SL'
 
-USER_AGENT = "HomeAssistant-Traffic-Info/"+__version__
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
+    vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+	vol.Optional(ATTR_NAME): cv.string,
     vol.Required(CONF_RI4_KEY): cv.string,   
     vol.Required(CONF_SI2_KEY): cv.string,
     vol.Required(CONF_SITEID): cv.string,
-    vol.Optional(CONF_LINES): cv.string,
-    vol.Optional(CONF_NAME): cv.string,
-    vol.Optional(CONF_DIRECTION): cv.string,
-    vol.Optional(CONF_ENABLED_SENSOR): cv.string
+	vol.Optional(CONF_PREFIX,default=DEFAULT_PREFIX): cv.string,
+    vol.Optional(CONF_LINES): vol.All(
+        cv.ensure_list, [cv.positive_int]),
+    vol.Optional(CONF_DIRECTION): ,
+    vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW): vol.All(
+	    cv.positive_int, vol.Range(min=0,max=60)),
+    vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+    vol.Optional(CONF_INTERVAL,default=DEFAULT_INTERVAL): vol.All(
+	    cv.time_period, vol.Range(min=5,max=60))
 })
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the sensors."""
 
-    ri4data = SlDepartureData(
-        config.get(CONF_RI4_KEY),
-        config.get(CONF_SITEID),
-        config.get(CONF_LINES),
-        config.get(CONF_DIRECTION),
-    )
-    si2data = SlDevianceData(
-        config.get(CONF_SI2_KEY),
-        config.get(CONF_SITEID),
-        config.get(CONF_LINES),
-        config.get(CONF_DIRECTION),
-    )
-
     sensors = []
     sensors.append(
         SLTraficInformationSensor(
             hass,
-            ri4data,
-            si2data,
-            config.get(CONF_SITEID),
-            config.get(CONF_NAME),
-            config.get(CONF_ENABLED_SENSOR)
+            config.get(CONF_SI2_KEY),
+	        config.get(CONF_RI4_KEY),
+			config.get(CONF_SITEID),
+			config.get(CONF_LINES),
+			config.get(CONF_SITEID),
+			config.get(ATTR_NAME),
+            config.get(ATTR_FRIENDLY_NAME),			
+            config.get(CONF_PREFIX),			
+            config.get(CONF_ENABLED_SENSOR),
+            config.get(CONF_INTERVAL),
+            config.get(CONF_DIRECTION),
+			config.get(CONF_TIMEWINDOW)
         )
     )
     add_devices(sensors)
@@ -80,31 +84,36 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class SLTraficInformationSensor(Entity):
     """Department board for one SL site."""
 
-    def __init__(self, hass, ri4data, si2data, siteid, name, enabled_sensor):
-        """Initialize"""
+    def __init__(self, hass, si2key, ri4key, siteid, lines, name,
+	             friendly_name, prefix, enabled_sensor, interval,
+				 direction, timewindow):
+				 
+        """Initialize""" 
+		from hasl import hasl		
+		self._haslapi = hasl(si2key,ri4key,siteid,lines,timewindow);
         self._hass = hass
-        self._sensor = 'sl'
+		
+        self._sensor = name or "{}_{}".format(prefix,siteid);
+        self._name = name or "{}_{}".format(prefix,siteid);
+        self._lines = lines
         self._siteid = siteid
-        self._name = name or siteid
-        self._ri4data = ri4data
-        self._si2data = si2data
-        self._nextdeparture = -1
-        self._board = []
-        self._deviances = []
-        self._ri4error_logged = False
-        self._si2error_logged = False
+        self._friendly_name = friendly_name		
         self._enabled_sensor = enabled_sensor
+		
+		self._departuredata = '{}'
+		self._deviationdata = '{}'
+        self._departure_table = []
+        self._deviations_table = []
+		self._direction = 0
+		self._timewindow = timewindow
+		
+		track_time_interval(hass, self.update, interval)
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return '{} {}'.format(self._sensor, self._name)
+        return _friendly_name
 
-    @property
-    def intervall(self):
-        """Return the intervall of the sensor."""
-        return self._intervall
-        
     @property
     def icon(self):
         """ Return the icon for the frontend."""
@@ -113,8 +122,8 @@ class SLTraficInformationSensor(Entity):
     @property
     def state(self):
         """ Return number of minutes to the next departure """
-        if len(self._board) > 0:
-            return self._board[0]['time']
+        if len(self._departure_table) > 0:
+            return self._departure_table[0]['time']
 
         return -1
 
@@ -125,16 +134,8 @@ class SLTraficInformationSensor(Entity):
         val = {}
         val['attribution'] = 'Stockholms Lokaltrafik'
         val['unit_of_measurement'] = 'min'
-
-        if not(self._ri4data.data) :
-            return val
-
-        val['departure_board'] = self._board
-
-        if not(self._si2data.data) :
-            return val
-
-        val['deviances'] = self._deviances
+        val['departure_board'] = self._departure_table
+        val['deviations'] = self._deviations_table
 
         return val
 
@@ -163,13 +164,9 @@ class SLTraficInformationSensor(Entity):
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-            self._ri4data.update()
-            board = []
-            if self._ri4data.data['StatusCode'] != 0:
-                if not self._ri4error_logged:
-                    _LOGGER.warn("Status code: {}, {}".format(self._ri4data.data['StatusCode'], self._ri4data.data['Message']))
-                    self._ri4error_logged = True  # Only report error once, until success.
-            else:
+            _LOGGER.info('SL Sensor updating departures for site %s...', self._siteid)
+            self._departuredata = _haslapi.get_departures();
+            departures = []
                 iconswitcher = {
                     "Buses": "mdi:bus",
                     "Trams": "mdi:tram",
@@ -177,105 +174,27 @@ class SLTraficInformationSensor(Entity):
                     "Metros": "mdi:subway-variant",
                     "Trains": "mdi:train"
                 }
-                if self._ri4error_logged:
-                    _LOGGER.warn("API call successful again")
-                    self._ri4error_logged = False 
                 for i,traffictype in enumerate(['Metros','Buses','Trains','Trams', 'Ships']):
-                    for idx, value in enumerate(self._ri4data.data['ResponseData'][traffictype]):
+                    for idx, value in enumerate(self._departuredata.data['ResponseData'][traffictype]):
                         direction = value['JourneyDirection'] or 0
                         displaytime = value['DisplayTime'] or ''
                         destination = value['Destination'] or ''
                         linenumber = value['LineNumber'] or ''
                         icon = iconswitcher.get(traffictype, "mdi:train-car")
-                        if (int(self._ri4data._direction) == 0 or int(direction) == int(self._ri4data._direction)):
-                            if(self._ri4data._lines is None or (linenumber in self._ri4data._lines)):
+                        if (int(self._direction) == 0 or int(direction) == int(self._direction)):
+                            if(self._lines is None or (linenumber in self._lines)):
                                 diff = self.parseDepartureTime(displaytime)
-                                board.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype, 'icon': icon})
-            self._board = sorted(board, key=lambda k: k['time'])
-            _LOGGER.info(self._board)
+                                departures.append({"line":linenumber,"direction":direction,"departure":displaytime,"destination":destination, 'time': diff, 'type': traffictype, 'icon': icon})
+            self._departure_table = sorted(departures, key=lambda k: k['time'])
+            _LOGGER.info(self._departure_table)
             
-            self._si2data.update()
-            deviances = []
-            if self._si2data.data['StatusCode'] != 0:
-                if not self._si2error_logged:
-                    _LOGGER.warn("Status code: {}, {}".format(self._si2data.data['StatusCode'], self._si2data.data['Message']))
-                    self._si2error_logged = True  # Only report error once, until success.
-            else:
-                if self._si2error_logged:
-                    self._ri4error_logged = False  # Reset that error has been reported.
-                    _LOGGER.warn("API call successful again")
-                    self._si2error_logged = False  # Reset that error has been reported.
-                for idx, value in enumerate(self._si2data.data['ResponseData']):
-                    deviances.append({"updated":value['Updated'],"title":value['Header'],"fromDate":value['FromDateTime'],"toDate":value['UpToDateTime'], 'details': value['Details'], 'sortOrder': value['SortOrder']})
-            self._deviances = sorted(deviances, key=lambda k: k['sortOrder'])
-            _LOGGER.info(self._deviances)
+            _LOGGER.info('SL Sensor updating deviations for site %s...', self._siteid)
+            self._deviationdata = _haslapi.get_deviations();
+            deviations = []
+                for idx, value in enumerate(self._deviationdata.data['ResponseData']):
+                    deviations.append({"updated":value['Updated'],"title":value['Header'],"fromDate":value['FromDateTime'],"toDate":value['UpToDateTime'], 'details': value['Details'], 'sortOrder': value['SortOrder']})
+            self._deviations_table = sorted(deviations, key=lambda k: k['sortOrder'])
+            _LOGGER.info(self._deviations_table)
 
-
-class SlDepartureData(object):
-    """ Class for retrieving API data """
-    def __init__(self, apikey, siteid, lines, direction):
-        """Initialize the data object."""
-        self._apikey = apikey
-        self._siteid = siteid
-        self._lines = lines 
-        self._direction = direction or 0
-        self.data = {}
-
-    @Throttle(UPDATE_FREQUENCY, FORCED_UPDATE_FREQUENCY)
-    def update(self, **kwargs):
-        """Get the latest data for this site from the API."""
-        try:
-            _LOGGER.info("SL: fetching RI4 Data for '%s'", self._siteid)
-            url = "https://api.sl.se/api2/realtimedeparturesV4.json?key={}&siteid={}". \
-                   format(self._apikey, self._siteid)
-
-            req = requests.get(url, headers={"User-agent": USER_AGENT}, allow_redirects=True, timeout=5)
-
-        except requests.exceptions.RequestException:
-            _LOGGER.error("SL: failed fetching RI4 Data for '%s'", self._siteid)
-            return
-
-        if req.status_code == 200:
-            self.data = req.json()
-
-        else:
-            _LOGGER.error("SL: failed fetching RI4 Data for '%s'"
-                          "(HTTP Status_code = %d)", self._siteid,
-                          req.status_code)
-
-                          
-class SlDevianceData(object):
-    """ Class for retrieving API data """
-    def __init__(self, apikey, siteid, lines, direction):
-        """Initialize the data object."""
-        self._apikey = apikey
-        self._siteid = siteid
-        self._lines = lines 
-        self._direction = direction or 0
-        self.data = {}
-
-    @Throttle(UPDATE_FREQUENCY, FORCED_UPDATE_FREQUENCY)
-    def update(self, **kwargs):
-        """Get the latest data for this site from the API."""
-        try:
-            _LOGGER.info("SL: fetching SI2 Data for '%s'", self._siteid)
-            url = "https://api.sl.se/api2/deviations.json?key={}&siteid={}&lineNumber={}". \
-                   format(self._apikey, self._siteid,self._lines)
-
-            req = requests.get(url, headers={"User-agent": USER_AGENT}, allow_redirects=True, timeout=5)
-
-        except requests.exceptions.RequestException:
-            _LOGGER.error("SL: failed fetching SI2 Data for '%s'", self._siteid)
-            return
-
-        if req.status_code == 200:
-            self.data = req.json()
-
-        else:
-            _LOGGER.error("SL: failed fetching SI2 Data for '%s'"
-                          "(HTTP Status_code = %d)", self._siteid,
-                          req.status_code)                          
-                          
-                          
                           
                           

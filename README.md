@@ -1,9 +1,11 @@
-SL Traffic Information Sensor for Home Assistant
-========================
+Home Assistant SL Sensor Platform (HASL)
+========================================
 
 **This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).**
+**This branch is NOT ready for production, it is experimental and trying to get ready for packaging and submission to official component gallery**
 
-This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab.
+This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually.
+
 
 - First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
@@ -18,19 +20,18 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 ```yaml
 # Example configuration.yaml entry
 - platform: sl
-  name: mölnvik
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
   siteid: 4244
+  friendly_name: Mölnvik
   lines: 474, 480C
   direction: 1
   sensor: binary_sensor.test
 ```
 
 
-**Configuration variables**
+**Mandatory configuration variables**
 
-- name: The name of the sensor (will be prefixed with "sl_") 
 
 - ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
 
@@ -44,6 +45,16 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
+- interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+
+- timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
+
+- sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+
+- name: (optional) The name of the sensor (default is "HASL_<siteid>") 
+
+- friendly_name: (optional) Used as display name, if not specifed the name is used by default
+
 **sensor value**
 
 The sensor value is the number of minutes to the next departure.  There are also a number of attributes:
@@ -51,7 +62,8 @@ The sensor value is the number of minutes to the next departure.  There are also
 ```
 unit_of_measurement: min
 icon: mdi:subway
-friendly_name: sl molnvik
+friendly_name: Mölnvik
+name: HASL_4244
 attribution: Stockholms Lokaltrafik
 departure_board: [{
  line: 474
@@ -77,6 +89,7 @@ deviances: [{
 The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month.
 For a private project, `Silver` level does not seem possible.
 With 10.000 calls per month, that allows for less than one call every 4 minute.
+That is why it is better to specify a binary_sensor that perhaps is turned of when no-one is at home or similar.
 
 
 **custom_updater**
@@ -116,7 +129,7 @@ cards:
     updated: true
     name: Departures
     entities:
-      - sensor.sl_name
+      - sensor.hasl_name
 ```
 - departures: Render departure section
 

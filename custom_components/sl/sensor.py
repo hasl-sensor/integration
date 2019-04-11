@@ -24,7 +24,7 @@ __version__ = '0.0.9'
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = []
-REQUIREMENTS = ['hasl==1.0.1']
+REQUIREMENTS = ['hasl==1.0.2']
 
 CONF_RI4_KEY = 'ri4key'
 CONF_SI2_KEY = 'si2key'
@@ -37,7 +37,7 @@ CONF_TIMEWINDOW = 'timewindow'
 
 DEFAULT_INTERVAL=5
 DEFAULT_TIMEWINDOW=30
-DEFAULT_PREFIX='SL'
+DEFAULT_PREFIX='HASL'
 
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({

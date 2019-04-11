@@ -26,15 +26,20 @@ class SLCard extends HTMLElement {
             </style>`;
             // Add data to table.
             var updatedDate = "";
-            if (config.name) html += " <div class=\"header\">" + config.name + "</div>"
-
+			
             for (var i = 0; i < data.length; i++){
                 const entity_data = hass.states[data[i]]
                 if (typeof entity_data === 'undefined'){
                     console.log('Entity data missing')
                 }
                 else{
-                    if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name.replace("sl ", "") + "</div>"
+                    if (entity_data.attributes.friendly_name) {
+					    html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>" 
+				    } else {
+					    html += " <div class=\"header\">" + entity_data.attributes.name + "</div>"
+					}
+
+					
                     html += "<table width=\"100%\">"
 
                     if (config.departures) {    

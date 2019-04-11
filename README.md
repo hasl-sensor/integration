@@ -1,5 +1,5 @@
-Home Assistant SL Sensor Platform (HASL)
-========================================
+Home Assistant SL Sensor (HASL)
+===============================
 
 **This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).**
 **This branch is NOT ready for production, it is experimental and trying to get ready for packaging and submission to official component gallery**

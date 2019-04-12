@@ -2,10 +2,10 @@ Home Assistant SL Sensor (HASL)
 ===============================
 
 **This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).**
-**This branch is NOT ready for production, it is experimental and trying to get ready for packaging and submission to official component gallery**
 
 This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually.
 
+** Note: There is a breaking change from name to friendly_name attribute in the config from pre 1.0.0 versions. **
 
 - First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
@@ -51,20 +51,21 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-- name: (optional) The name of the sensor (default is "HASL_<siteid>") 
-
 - friendly_name: (optional) Used as display name, if not specifed the name is used by default
 
 **sensor value**
 
-The sensor value is the number of minutes to the next departure.  There are also a number of attributes:
+The sensor value is the number of minutes to the next departure.  There are also a number of attributes that can help you with filtering or whatever you need:
 
 ```
 unit_of_measurement: min
 icon: mdi:subway
 friendly_name: Mölnvik
-name: HASL_4244
 attribution: Stockholms Lokaltrafik
+next_departure_minutes: 10
+next_departure_expected: 19:10:00
+last_refresh: 2018-11-16 19:08:40
+refresh_enabled: on
 departure_board: [{
  line: 474
  direction: 1

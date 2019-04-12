@@ -5,7 +5,7 @@ Home Assistant SL Sensor (HASL)
 
 This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually.
 
-** Note: There is a breaking change from name to friendly_name attribute in the config from pre 1.0.0 versions and also the default rendering in the card have been updated to show time instead of minutes left. **
+**Note: There is a breaking change from name to friendly_name attribute in the config from pre 1.0.0 versions and also the default rendering in the card have been updated to show time instead of minutes left.**
 
 - First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
@@ -127,7 +127,7 @@ cards:
   - type: "custom:sl-card"
     departures: true
     deviations: true
-	timeleft: false
+    timeleft: false
     updated: true
     name: Departures
     entities:

@@ -26,23 +26,19 @@ class SLCard extends HTMLElement {
             </style>`;
             // Add data to table.
             var updatedDate = "";
+			if (config.name) html += " <div class=\"header\">" + config.name + "</div>"
 			
             for (var i = 0; i < data.length; i++){
+
                 const entity_data = hass.states[data[i]]
                 if (typeof entity_data === 'undefined'){
                     console.log('Entity data missing')
                 }
                 else{
-                    if (entity_data.attributes.friendly_name) {
-					    html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>" 
-				    } else {
-					    html += " <div class=\"header\">" + entity_data.attributes.name + "</div>"
-					}
-
-					
+					if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"					
                     html += "<table width=\"100%\">"
 
-                    if (config.departures) {    
+                    if (config.departures===true) {    
                             html += `
                                <tr>
                                     <th align="left">Linje</th>
@@ -51,37 +47,47 @@ class SLCard extends HTMLElement {
                                 </tr>
                         `
 
-                        if (typeof entity_data.attributes.departure_board !== 'undefined') {
-                            for (var j = 0; j < entity_data.attributes.departure_board.length; j++) {
+                        if (typeof entity_data.attributes.departures !== 'undefined') {
+                            for (var j = 0; j < entity_data.attributes.departures.length; j++) {
+							
+							var depTime = '';
+							if (config.timeleft===true) {	
+								depTime = entity_data.attributes.departures[j].departure
+							} else {
+								var expectedTime = new Date(entity_data.attributes.departures[j].expected);
+								depTime = expectedTime.toLocaleTimeString('sv-SE', { hour: "numeric", 
+                                             minute: "numeric"})
+							}
+								
                             html += `
                                 <tr>
-                                    <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departure_board[j].icon}"></ha-icon> ${entity_data.attributes.departure_board[j].line}</td>
-                                    <td align="left">${entity_data.attributes.departure_board[j].destination}</td>
-                                    <td align="left">${entity_data.attributes.departure_board[j].departure}</td>
+                                    <td align="left"><ha-icon style="width: 20px; height: 20px;" icon="${entity_data.attributes.departures[j].icon}"></ha-icon> ${entity_data.attributes.departures[j].line}</td>
+                                    <td align="left">${entity_data.attributes.departures[j].destination}</td>
+                                    <td align="left">${depTime}</td>
                                 </tr>
                             `}
                         }
                     }
-                    if (config.deviations) {    
-                        if (typeof entity_data.attributes.deviances !== 'undefined') {
-                            for (var k = 0; k < entity_data.attributes.deviances.length; k++) {
+                    if (config.deviations===true) {    
+                        if (typeof entity_data.attributes.deviations !== 'undefined') {
+                            for (var k = 0; k < entity_data.attributes.deviations.length; k++) {
                             html += `
                                 <tr>
                                     <td align="left" colspan="3">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td align="left" colspan="3"><ha-icon style="width: 20px; height: 20px;" icon="mdi:alert-outline"></ha-icon> <b>${entity_data.attributes.deviances[k].title}</b></td>
+                                    <td align="left" colspan="3"><ha-icon style="width: 20px; height: 20px;" icon="mdi:alert-outline"></ha-icon> <b>${entity_data.attributes.deviations[k].title}</b></td>
                                 </tr>
                                 <tr>
-                                    <td align="left" colspan="3"><i>${entity_data.attributes.deviances[k].details}</i></td>
+                                    <td align="left" colspan="3"><i>${entity_data.attributes.deviations[k].details}</i></td>
                                 </tr>
                             `}
                         }
                     } //deviations
-                    if (config.updated) {    
+                    if (config.updated===true) {    
                         var updatedDate = new Date(entity_data.last_updated);
                         html += `<tr colspan=3>
-                                <td align="left"><sub><i>Senast uppdaterat: ${updatedDate.toLocaleTimeString()}</i></sub></th>
+                                <td align="left"><sub><i>Senast uppdaterat ${updatedDate.toLocaleString('sv-SE')}</i></sub></th>
                             </tr>`;
                     }    
                     html += `</table>`;

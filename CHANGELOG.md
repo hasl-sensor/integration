@@ -7,7 +7,26 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-- Cleaning and restructuring as required to submit as official platform of HA
+- Nothing planned at the moment
+
+## [v1.0.0] (2019-04-12)
+
+### Added
+- Added configuration for TimeWindow
+- Added friendly_name (and removed name)
+- Updated sl-card.js to support time or minutes departures
+- Exposed unique_id for each sensor
+- Added multiple properties to the sensor output
+
+### Changed
+- Moved communication to external PyPi library (HASL)
+- Changed default repo from dev to hasl
+- Cleaned up the code
+- Using constant keywords from HomeAssistant
+- If update error occures now deliver '-' as value instead of -1
+
+### Removed
+- name configuration (replaced by friendly_name)
 
 ## [v0.0.8] (2019-04-11)
 

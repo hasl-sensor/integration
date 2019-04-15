@@ -131,9 +131,9 @@ class SLCard extends HTMLElement {
                         if (config.header === true) {    
                             html += `
                                <tr>
-                                    <th class="col1">Line</th>
-                                    <th class="col2">Destination</th>
-                                    <th class="col3">Departure</th>
+                                    <th class="col1">Linje</th>
+                                    <th class="col2">Slutstation</th>
+                                    <th class="col3">Avg&aring;ng</th>
                                 </tr>
                         `
                         }

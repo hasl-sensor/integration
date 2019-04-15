@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 - Nothing planned at the moment
 
+## [v1.0.1] (2019-04-15)
+
+### Changed
+- Fixed documtentation about interval being changed to scan_interval this to better support the Home Assistant standard.
+- Fixed direction parameter that had been hardcoded for some strage reason. Blaming it on someone else. =)
+
 ## [v1.0.0] (2019-04-12)
 
 ### Added
@@ -81,6 +87,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error message instead of just reporting failure.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.1
+[v1.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.0
 [v0.0.8]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.8
 [v0.0.7]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.7
 [v0.0.6]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.6

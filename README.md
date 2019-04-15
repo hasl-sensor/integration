@@ -45,7 +45,7 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-- interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+- scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
 
 - timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
 

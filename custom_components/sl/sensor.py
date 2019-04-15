@@ -17,7 +17,7 @@ from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_SCAN_INTERVAL)
 import homeassistant.helpers.config_validation as cv
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = []
@@ -88,7 +88,7 @@ class SLTraficInformationSensor(Entity):
         
         self._departure_table = []
         self._deviations_table = []
-        self._direction = 0
+        self._direction = direction
         self._timewindow = timewindow
         self._nextdeparture_minutes = '0'
         self._nextdeparture_expected = '-'

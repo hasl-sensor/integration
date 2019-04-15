@@ -7,7 +7,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-- Nothing planned at the moment
+- Fix for naming of unique_id for certain cases
+- Fix for boat icon beeing replaced
 
 ## [v1.0.1] (2019-04-15)
 

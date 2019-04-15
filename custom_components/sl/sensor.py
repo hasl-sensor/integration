@@ -17,7 +17,7 @@ from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_SCAN_INTERVAL)
 import homeassistant.helpers.config_validation as cv
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = []
@@ -80,8 +80,8 @@ class SLTraficInformationSensor(Entity):
         from hasl import hasl        
         self._haslapi = hasl(si2key,ri4key,siteid,lines,timewindow);
         self._hass = hass 
-        self._uniqueid = "hasl-{}-{}".format(siteid,direction)    
-        self._name = friendly_name or "hasl_{}_{}".format(siteid,direction)
+        self._uniqueid = "hasl-{}-{}-{}".format(siteid,direction,friendly_name)    
+        self._name = friendly_name or "hasl_{}_{}_{}".format(siteid,direction)
         self._lines = lines
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
@@ -186,7 +186,7 @@ class SLTraficInformationSensor(Entity):
             iconswitcher = {
                 "Buses": "mdi:bus",
                 "Trams": "mdi:tram",
-                "Ships": "mdi:boat",
+                "Ships": "mdi:ship",
                 "Metros": "mdi:subway-variant",
                 "Trains": "mdi:train"
             }

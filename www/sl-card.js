@@ -7,8 +7,30 @@ class SLCard extends HTMLElement {
             this.appendChild(card);
         }
         
-        const config = this.config;
-        
+        const config = this.config;    
+		const lang = {
+		 'sv-SE': {
+			 entity_missing: 'Ingen data hittades',
+			 line: 'Linje',
+			 destination: 'Till',
+			 departure: 'Avg&aring;ng',
+			 min: 'min',
+			 last_updated: 'Senast uppdaterad ',
+			 now: 'Nu',
+			 departed: 'Avg&aring;tt',
+		 },
+		 'en-EN': {
+			 entity_missing: 'Entity data missing',
+			 line: 'Line',
+			 destination: 'Destination',
+			 departure: 'Departure',
+			 min: 'min',
+			 last_updated: 'Last updated ',
+			 now: 'Now',
+			 departed: 'Departed',
+		 }
+		}
+		
         function getEntitiesContent(data) {
             var html =`<style>
             ha-card {
@@ -115,13 +137,16 @@ class SLCard extends HTMLElement {
             </style>`;
             // Add data to table.
             var updatedDate = "";
-            if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>"
+			var culture = "";
+            if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>" 
+			config.language ? culture = config.language : culture = "sv-SE"
 			
             for (var i = 0; i < data.length; i++){
 
                 const entity_data = hass.states[data[i]]
                 if (typeof entity_data === 'undefined'){
-                    console.log('Entity data missing')
+					var str = lang[culture].entity_missing
+                    console.log(str)
                 }
                 else{
 					if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"					
@@ -131,22 +156,59 @@ class SLCard extends HTMLElement {
                         if (config.header === true) {    
                             html += `
                                <tr>
-                                    <th class="col1">Line</th>
-                                    <th class="col2">Destination</th>
-                                    <th class="col3">Departure</th>
+                                    <th class="col1">${lang[culture].line}</th>
+                                    <th class="col2">${lang[culture].destination}</th>
+                                    <th class="col3">${lang[culture].departure}</th>
                                 </tr>
                         `
                         }
 
                         if (typeof entity_data.attributes.departures !== 'undefined') {
+							
+							var minutesSinceUpdate = 0;
+                            if (config.adjust_times===true && config.updated===true) {
+                                var updatedDate = new Date(entity_data.last_updated);
+                                var now = new Date();
+                                minutesSinceUpdate =
+                                    Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
+                            }							
+							
                             for (var j = 0; j < entity_data.attributes.departures.length; j++) {
 							
-							var depTime = '';
+							var depText = '';
+							var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
+							
 							if (config.timeleft===true) {	
-								depTime = entity_data.attributes.departures[j].departure
+								
+								if (config.adjust_times===true) {
+									if (minutesSinceUpdate > 0) {
+										if (depMin > 0) {
+											depText = "" + depMin + " "+ lang[culture].min;
+											if (entity_data.attributes.departures[j].departure.indexOf(":") > -1) {
+												depText += " (" + entity_data.attributes.departures[j].departure + ")";
+											}
+										} else if (depMin === 0) {
+											depText = lang[culture].now;
+										} else if (depMin < 0) {
+											if (config.hide_departed) {
+												continue;
+											}
+											depText = lang[culture].departed;
+										}
+									} else {
+										depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
+									}								
+								} else {
+									depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
+								}	
+								
 							} else {
+								if (depMin < 0 && config.hide_departed) {
+									continue;
+								}
+												
 								var expectedTime = new Date(entity_data.attributes.departures[j].expected);
-								depTime = expectedTime.toLocaleTimeString('sv-SE', { hour: "numeric", 
+								depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
                                              minute: "numeric"})
 							}
                             
@@ -189,7 +251,7 @@ class SLCard extends HTMLElement {
                                 <tr>
                                     <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
                                     <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
-                                    <td class="col3">${depTime}</td>
+                                    <td class="col3">${depText}</td>
                                 </tr>
                             `
                             }
@@ -209,8 +271,17 @@ class SLCard extends HTMLElement {
                     } //deviations
                     if (config.updated===true) {    
                         var updatedDate = new Date(entity_data.last_updated);
+					    var updatedValue = updatedDate.toLocaleString(culture);
+						
+                        if (config.adjust_times===true) {
+                            var now = new Date();
+                            var minutesSinceUpdate =
+                                Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
+                            updatedValue = "" + minutesSinceUpdate + " "+ lang[culture].min +" (" + updatedDate.toLocaleString(culture) + ")";
+                        }					
+						
                         html += `<tr>
-                                <td colspan="3" align="left"><sub><i>Last updated ${updatedDate.toLocaleString('sv-SE')}</i></sub></th>
+                                <td colspan="3" align="left"><sub><i>${lang[culture].last_updated} ${updatedValue}</i></sub></th>
                             </tr>`;
                     }    
                     html += `</table>`;

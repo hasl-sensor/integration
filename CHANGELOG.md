@@ -7,7 +7,14 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
+- Nothing
+
+## [v1.0.3] (2019-04-16)
+
+### Changed
 - Missing default value for direction parameter
+- Integrated magic to better show time left to departure from fork [lokanx-home-assistant](https://github.com/lokanx-home-assistant/ha-sensor-sl/commit/df7de55f040a7fab5b15be176ec5d61400b1dbba)
+- Added support for languages (sv-SE and en-EN) in sl-card.js
 
 ## [v1.0.2] (2019-04-16)
 

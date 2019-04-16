@@ -127,6 +127,9 @@ cards:
     timeleft: false
     updated: true
     name: Departures
+	adjust_time: false
+	hide_departed: false
+	language: en-EN
     entities:
       - sensor.hasl_name
 ```
@@ -136,8 +139,14 @@ cards:
 
 - deviations: Render deviation section
 
-- updated: Render the last updated time
+- updated: Render the last updated time section
 
 - timeleft: Show as SL real time with minutes instead of time
+
+- adjust_time: Calculate time left adjusted to last update (used in conjunction with timeleft)
+
+- hide_departed: This can hide already departured
+
+- language: The texts will be rendered in this language (sv-SE or en-EN)
 
 - name: If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name

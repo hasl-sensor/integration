@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-- Nothing
+- Missing default value for direction parameter
 
 ## [v1.0.2] (2019-04-16)
 

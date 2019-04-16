@@ -17,7 +17,7 @@ from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_SCAN_INTERVAL)
 import homeassistant.helpers.config_validation as cv
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = []
@@ -33,6 +33,7 @@ CONF_TIMEWINDOW = 'timewindow'
 
 DEFAULT_INTERVAL=timedelta(minutes=10)
 DEFAULT_TIMEWINDOW=30
+DEFAULT_DIRECTION='0'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RI4_KEY): cv.string,   
@@ -40,7 +41,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_SITEID): cv.string,
     vol.Optional(ATTR_FRIENDLY_NAME): cv.string,
     vol.Optional(CONF_LINES): cv.string,
-    vol.Optional(CONF_DIRECTION): cv.string,
+    vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
     vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
         vol.All(vol.Coerce(int), vol.Range(min=0,max=60)),
     vol.Optional(CONF_ENABLED_SENSOR): cv.string,

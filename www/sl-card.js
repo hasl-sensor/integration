@@ -47,12 +47,12 @@ class SLCard extends HTMLElement {
 
             th.col1, td.col1 {
                 text-align: center;
-                width: 40px;
+                width: 24px;
                 height: 30px;
             }
 
             th.col2, td.col2 {
-                padding-left:16px;
+                padding-left:10px;
                 text-align: left;
                 line-height: 18px;
             }

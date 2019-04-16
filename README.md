@@ -127,9 +127,9 @@ cards:
     timeleft: false
     updated: true
     name: Departures
-	adjust_time: false
-	hide_departed: false
-	language: en-EN
+    adjust_time: false
+    hide_departed: false
+    language: en-EN
     entities:
       - sensor.hasl_name
 ```

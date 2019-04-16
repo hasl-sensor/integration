@@ -93,7 +93,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error message instead of just reporting failure.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.2
+[v1.0.2]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.2
 [v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.1
 [v1.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.0
 [v0.0.8]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.8

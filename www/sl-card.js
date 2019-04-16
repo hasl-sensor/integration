@@ -48,18 +48,18 @@ class SLCard extends HTMLElement {
             th.col1, td.col1 {
                 text-align: center;
                 width: 40px;
-                height: 40px;
+                height: 30px;
             }
 
             th.col2, td.col2 {
                 padding-left:16px;
                 text-align: left;
-                line-height: 20px;
+                line-height: 18px;
             }
 
             th.col3, td.col3 {
                 text-align: right;
-                line-height: 20px;
+                line-height: 18px;
             }
 
             /* Icons - Default for Boats and Metro Blue Line */
@@ -85,6 +85,11 @@ class SLCard extends HTMLElement {
             /* Buses and Metro Red Line */
             .line-icon.bus_red, .line-icon.met_red {
                 background-color: #d71d24;
+            }            
+
+            /* Metro Blue Line */
+            .line-icon.met_blue {
+                background-color: #0089ca;
             }            
 
             /* Commuter Trains */
@@ -164,23 +169,15 @@ class SLCard extends HTMLElement {
                             case 'Metros':
                                 switch (lineNumber) {
                                 case '10':
-                                    typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
-                                    break;
                                 case '11':
                                     typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
                                     break;
                                 case '13':
-                                    typeClass = ' ' + 'met_red met_red_' + lineNumber;
-                                    break;
                                 case '14':
                                     typeClass = ' ' + 'met_red met_red_' + lineNumber;
                                     break;
                                 case '17':
-                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
-                                    break;
                                 case '18':
-                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
-                                    break;
                                 case '19':
                                     typeClass = ' ' + 'met_green met_green_' + lineNumber;
                                     break;                                
@@ -208,17 +205,8 @@ class SLCard extends HTMLElement {
                             for (var k = 0; k < entity_data.attributes.deviations.length; k++) {
                             html += `
                                 <tr>
-                                    <td align="left">&nbsp;</td>
-                                </tr>
-                                <tr>
                                     <td class="col1"><ha-icon class="alert" icon="mdi:alert-outline"></ha-icon></td>
-                                    <td class="col2"><b>${entity_data.attributes.deviations[k].title}</b></td>
-                                    <td class="col3"></td>
-                                </tr>
-                                <tr> 
-                                    <td class="col1"></td>
-                                    <td class="col2"><i>${entity_data.attributes.deviations[k].details}</i></td>
-                                    <td class="col3"></td>
+                                    <td class="col2" colspan="2"><b>${entity_data.attributes.deviations[k].title}</b><br/><i>${entity_data.attributes.deviations[k].details}</i></td>
                                 </tr>
                             `
                             }
@@ -226,8 +214,8 @@ class SLCard extends HTMLElement {
                     } //deviations
                     if (config.updated===true) {    
                         var updatedDate = new Date(entity_data.last_updated);
-                        html += `<tr colspan=3>
-                                <td align="left"><sub><i>Last updated ${updatedDate.toLocaleString('sv-SE')}</i></sub></th>
+                        html += `<tr>
+                                <td colspan="3" align="left"><sub><i>Last updated ${updatedDate.toLocaleString('sv-SE')}</i></sub></th>
                             </tr>`;
                     }    
                     html += `</table>`;

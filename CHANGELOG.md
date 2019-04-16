@@ -7,8 +7,13 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-- Fix for naming of unique_id for certain cases
-- Fix for boat icon beeing replaced
+- Nothing
+
+## [v1.0.2] (2019-04-16)
+
+### Changed
+- Fix for naming of unique_id for certain cases (still not good however)
+- sl-card.js enhanced and styled by [@dimmanramone](https://github.com/dimmanramone)! Huge thanks!!
 
 ## [v1.0.1] (2019-04-15)
 
@@ -88,6 +93,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error message instead of just reporting failure.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.2
 [v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.1
 [v1.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.0
 [v0.0.8]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.8

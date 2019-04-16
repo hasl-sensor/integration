@@ -112,8 +112,9 @@ custom_updater:
 
 To display data using Lovelace, you can try the included card.
 Present departure times from custom component SL-sensor in a card. 
+Thanks to [@dimmanramone](https://github.com/dimmanramone) for pimping the card!
 
-![card](https://user-images.githubusercontent.com/8133650/48631584-272bb000-e9bf-11e8-8d77-372d252bf460.jpg)
+![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
 Install it throgh copying the file `www/sl-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
 ```
@@ -125,6 +126,7 @@ and use the card throgh
 ```
 cards:
   - type: "custom:sl-card"
+    header: false
     departures: true
     deviations: true
     timeleft: false
@@ -133,6 +135,8 @@ cards:
     entities:
       - sensor.hasl_name
 ```
+- header: Render headers in the such as "line", "destination" and "time"
+
 - departures: Render departure section
 
 - deviations: Render deviation section

@@ -1,7 +1,7 @@
 {
     "sl-card": {
-      "updated_at": "2019-04-12",
-      "version": "1.0.0",
+      "updated_at": "2019-04-16",
+      "version": "1.0.2",
       "local_location": "/www/sl-card.js",
       "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/www/sl-card.js",
       "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",

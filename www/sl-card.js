@@ -131,9 +131,9 @@ class SLCard extends HTMLElement {
                         if (config.header === true) {    
                             html += `
                                <tr>
-                                    <th class="col1">Linje</th>
-                                    <th class="col2">Slutstation</th>
-                                    <th class="col3">Avg&aring;ng</th>
+                                    <th class="col1">Line</th>
+                                    <th class="col2">Destination</th>
+                                    <th class="col3">Departure</th>
                                 </tr>
                         `
                         }
@@ -150,49 +150,53 @@ class SLCard extends HTMLElement {
                                              minute: "numeric"})
 							}
                             
-                            var spanClass = 'line-icon';
+                            var lineNumber = entity_data.attributes.departures[j].line;
+
+                            var typeClass = '';
 
                             switch (entity_data.attributes.departures[j].type) {
                             case 'Buses':
-                                spanClass = spanClass + ' ' + 'bus_red bus_red_' + entity_data.attributes.departures[j].line;
+                                typeClass = ' ' + 'bus_red bus_red_' + lineNumber;
                                 break;
                             case 'Trams':
-                                spanClass = spanClass + ' ' + 'trm trm_' + entity_data.attributes.departures[j].line;
+                                typeClass = ' ' + 'trm trm_' + lineNumber;
                                 break;
                             case 'Metros':
-                                switch (entity_data.attributes.departures[j].line) {
+                                switch (lineNumber) {
                                 case '10':
-                                    spanClass = spanClass;
+                                    typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
                                     break;
                                 case '11':
-                                    spanClass = spanClass;
+                                    typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
                                     break;
                                 case '13':
-                                    spanClass = spanClass + ' ' + 'met_red';
+                                    typeClass = ' ' + 'met_red met_red_' + lineNumber;
                                     break;
                                 case '14':
-                                    spanClass = spanClass + ' ' + 'met_red';
+                                    typeClass = ' ' + 'met_red met_red_' + lineNumber;
                                     break;
                                 case '17':
-                                        spanClass = spanClass + ' ' + 'met_green met_green_' + entity_data.attributes.departures[j].line;
+                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
                                     break;
                                 case '18':
-                                    spanClass = spanClass + ' ' + 'met_green met_green_' + entity_data.attributes.departures[j].line;
+                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
                                     break;
                                 case '19':
-                                    spanClass = spanClass + ' ' + 'met_green met_green_' + entity_data.attributes.departures[j].line;
+                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
                                     break;                                
                                 }
                                 break;
                             case 'Trains':
-                                spanClass = spanClass + ' ' + 'trn trn_' + entity_data.attributes.departures[j].line;
+                                typeClass = ' ' + 'trn trn_' + lineNumber;
                                 break;
                             }
+
+                            var spanClass = 'line-icon' + typeClass;
                                                         
                             html += `
                                 <tr>
                                     <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
-                                    <td class="col2"><span class="${spanClass}">${entity_data.attributes.departures[j].line}</span> ${entity_data.attributes.departures[j].destination}</td>
+                                    <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
                                     <td class="col3">${depTime}</td>
                                 </tr>
                             `

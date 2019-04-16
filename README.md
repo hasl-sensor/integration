@@ -1,11 +1,7 @@
 Home Assistant SL Sensor (HASL)
 ===============================
 
-**This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).**
-
-This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually.
-
-**Note: There is a breaking change from name to friendly_name attribute in the config from pre 1.0.0 versions and also the default rendering in the card have been updated to show time instead of minutes left.**
+This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl) that is now archived.
 
 - First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
@@ -30,8 +26,7 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 ```
 
 
-**Mandatory configuration variables**
-
+**Configuration variables**
 
 - ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
 
@@ -53,7 +48,7 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - friendly_name: (optional) Used as display name, if not specifed the name is used by default
 
-**sensor value**
+**Sensor value**
 
 The sensor value is the number of minutes to the next departure.  There are also a number of attributes that can help you with filtering or whatever you need:
 
@@ -93,7 +88,7 @@ With 10.000 calls per month, that allows for less than one call every 4 minute.
 That is why it is better to specify a binary_sensor that perhaps is turned of when no-one is at home or similar.
 
 
-**custom_updater**
+**Automatic updates**
 
 For update check of this sensor, add the following to your configuration.yaml. For more information, see [[custom_updater](https://github.com/custom-components/custom_updater/wiki/Installation)]
 
@@ -103,9 +98,9 @@ custom_updater:
     - components
 	- cards
   component_urls:
-    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_updater.json
+    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_updater.json
   card_urls:
-    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_cards.json
+    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_cards.json
 ```
 
 **Lovelace card**

@@ -87,11 +87,6 @@ class SLCard extends HTMLElement {
                 background-color: #d71d24;
             }            
 
-            /* Metro Blue Line */
-            .line-icon.met_blue {
-                background-color: #0089ca;
-            }            
-
             /* Commuter Trains */
             .line-icon.trn {
                 background-color: #ec619f;

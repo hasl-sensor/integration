@@ -28,6 +28,8 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 **Configuration variables**
 
+- friendly_name: Used as display name
+
 - ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
 
 - si2key: Your API key from Trafiklab for the Störningsinformation 2 API
@@ -46,16 +48,14 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-- friendly_name: (optional) Used as display name, if not specifed the name is used by default
-
 **Sensor value**
 
 The sensor value is the number of minutes to the next departure.  There are also a number of attributes that can help you with filtering or whatever you need:
 
 ```
+friendly_name: Mölnvik
 unit_of_measurement: min
 icon: mdi:subway
-friendly_name: Mölnvik
 attribution: Stockholms Lokaltrafik
 next_departure_minutes: 10
 next_departure_expected: 19:10:00

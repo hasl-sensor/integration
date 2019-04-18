@@ -22,6 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = []
 REQUIREMENTS = ['hasl==1.1.0']
 
+# Keys used in the configuration
 CONF_RI4_KEY = 'ri4key'
 CONF_SI2_KEY = 'si2key'
 CONF_SITEID = 'siteid'
@@ -29,21 +30,29 @@ CONF_LINES = 'lines'
 CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
+CONF_SENSORPROPERTY = 'defaultvalue'
+CONF_SENSORTYPE = 'type'
 
+# Default values for configuration
 DEFAULT_INTERVAL=timedelta(minutes=10)
 DEFAULT_TIMEWINDOW=30
 DEFAULT_DIRECTION='0'
+DEFAULT_SENSORPROPERTY = 'm'
 
+# Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
+    vol.Required(ATTR_FRIENDLY_NAME): cv.string,
     vol.Required(CONF_RI4_KEY): cv.string,   
     vol.Required(CONF_SI2_KEY): cv.string,
     vol.Required(CONF_SITEID): cv.string,
-    vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+
     vol.Optional(CONF_LINES): cv.string,
+    vol.Optional(CONF_ENABLED_SENSOR): cv.string,
     vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
     vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
         vol.All(vol.Coerce(int), vol.Range(min=0,max=60)),
-    vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+    vol.Optional(CONF_SENSORPROPERTY):
+	    vol.In(['min', 'time', 'deviations', 'refresh']),
     vol.Optional(CONF_SCAN_INTERVAL):
         vol.Any(cv.time_period, cv.positive_timedelta),
 })
@@ -51,10 +60,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the sensors."""
-
+	
     sensors = []
     sensors.append(
-        SLTraficInformationSensor(
+        HASLSensor(
             hass,
             config.get(CONF_SI2_KEY),
             config.get(CONF_RI4_KEY),
@@ -64,27 +73,37 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
             config.get(CONF_ENABLED_SENSOR),
             config.get(CONF_SCAN_INTERVAL),
             config.get(CONF_DIRECTION),
-            config.get(CONF_TIMEWINDOW)
+            config.get(CONF_TIMEWINDOW),
+			config.get(CONF_SENSORPROPERTY)
         )
     )
     add_devices(sensors)
 
-class SLTraficInformationSensor(Entity):
+class HASLSensor(Entity):
     """Department board for one SL site."""
 
     def __init__(self, hass, si2key, ri4key, siteid, lines,
                  friendly_name, enabled_sensor, interval,
-                 direction, timewindow):
-                 
+                 direction, timewindow, property):
         """Initialize""" 
-        from hasl import hasl        
-        self._haslapi = hasl(si2key,ri4key,siteid,lines,timewindow);
+
+        # The table of resulttypes and the corresponding units of measure		
+		unit_table = {
+			'min': 'min',
+			'time': '',
+			'deviations': '',
+			'refresh': ''
+        }	 
+		
+		# Setup API and stuff needed for internal processing
+        from hasl import hasl     
+        self._api = hasl(si2key, ri4key,siteid,lines,timewindow);
         self._hass = hass 
         self._name = friendly_name
         self._lines = lines
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
-        
+		self._property = property
         self._departure_table = []
         self._deviations_table = []
         self._direction = direction
@@ -92,7 +111,9 @@ class SLTraficInformationSensor(Entity):
         self._nextdeparture_minutes = '0'
         self._nextdeparture_expected = '-'
         self._lastupdate = '-'
+		self._unit_of_measure = unit_table.get(property, "min")
         
+		# Setup updating of the sensor
         self.update = Throttle(interval)(self._update)
 
     @property
@@ -108,31 +129,58 @@ class SLTraficInformationSensor(Entity):
     @property
     def state(self):
         """ Return number of minutes to the next departure """
-        return self._nextdeparture_minutes
+		
+		# If the sensor should return minutes to next departure
+		if self._property is 'min':
+			return self._departure_table[0]['time']
+		
+		# If the sensor should return the time at which next departure occurs
+		if self._property is 'time':
+            expected = self._departure_table[0]['expected'] or '-'
+            if expected is not '-':
+                expected = datetime.datetime.strptime(
+				   self._nextdeparture_expected,
+                   '%Y-%m-%dT%H:%M:%S')
+                expected = expected.strftime('%H:%M:%S')		
+		    return expected
+		
+		# If the sensor should return the number of deviations
+		if self._property is 'deviations':
+		    return len(self._deviations_table)
+
+		# If the sensor should return if it is updating or not
+		if self._property is 'refresh':
+            if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+                return STATE_ON
+            return STATE_OFF
+				
+		# Failsafe
+		return "-"
         
     @property
     def device_state_attributes(self):
         """ Return the sensor attributes ."""
 
-        expected = self._nextdeparture_expected
+		# Initialize the state attributes
+        val = {}
+
+		# Format the next exptected time
+        expected = self._departure_table[0]['expected'] or '-'
         if expected is not '-':
             expected = datetime.datetime.strptime(self._nextdeparture_expected,
                 '%Y-%m-%dT%H:%M:%S')
             expected = expected.strftime('%H:%M:%S')
-            
+        
+		# Format the last refresh time
         refresh = self._lastupdate
         if self._lastupdate is not '-':
             refresh = refresh.strftime('%Y-%m-%d %H:%M:%S')
-            
-        val = {}
-        val['attribution'] = 'Stockholms Lokaltrafik'
-        val['unit_of_measurement'] = 'min'
-        val['next_departure_minutes'] = self._nextdeparture_minutes
-        val['next_departure_expected'] = expected
-        val['departures'] = self._departure_table
-        val['deviations'] = self._deviations_table
-        val['last_refresh'] = refresh
-        
+            			
+		# Setup the unit of measure
+        if self._unit_of_measure is not '':
+            val['unit_of_measurement'] = self._unit_of_measure
+
+		# Check if sensor is currently updating or not
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
             
@@ -141,6 +189,14 @@ class SLTraficInformationSensor(Entity):
         else:
             val['refresh_enabled'] = STATE_OFF
 
+		# Set values of the sensor
+        val['attribution'] = 'Stockholms Lokaltrafik'
+        val['next_departure_minutes'] = self._departure_table[0]['time']
+        val['next_departure_expected'] = expected
+        val['departures'] = self._departure_table
+        val['deviations'] = self._deviations_table
+        val['last_refresh'] = refresh
+			
         return val
 
     def parseDepartureTime(self, t):
@@ -164,7 +220,7 @@ class SLTraficInformationSensor(Entity):
             _LOGGER.error('Failed to parse departure time (%s) ', t)
         return 0
 
-    def update(self):
+    def _update(self):
         """Get the departure board."""
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
@@ -173,7 +229,7 @@ class SLTraficInformationSensor(Entity):
             _LOGGER.info('SL Sensor updating departures for site %s...',
                 self._siteid)
                 
-            departuredata = self._haslapi.get_departures();
+            departuredata = self._api.get_departures();
             departures = []
             
             iconswitcher = {
@@ -214,7 +270,7 @@ class SLTraficInformationSensor(Entity):
         _LOGGER.info('SL Sensor updating deviations for site %s...',
             self._siteid)
 
-        deviationdata = self._haslapi.get_deviations();
+        deviationdata = self._api.get_deviations();
         deviations = []
 
         for idx, value in enumerate(deviationdata['ResponseData']):
@@ -229,11 +285,5 @@ class SLTraficInformationSensor(Entity):
                 key=lambda k: k['sortOrder'])
 
         self._lastupdate = datetime.datetime.now()
-        if len(self._departure_table) > 0:
-            self._nextdeparture_minutes = self._departure_table[0]['time']
-            self._nextdeparture_expected = self._departure_table[0]['expected']
-        else:
-            self._nextdeparture_minutes = '-'
-            self._nextdeparture_expected = '-'
                           
                           

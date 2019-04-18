@@ -127,7 +127,7 @@ cards:
     timeleft: false
     updated: true
     name: Departures
-    adjust_time: false
+    adjust_times: false
     hide_departed: false
     language: en-EN
     entities:
@@ -143,7 +143,7 @@ cards:
 
 - timeleft: Show as SL real time with minutes instead of time
 
-- adjust_time: Calculate time left adjusted to last update (used in conjunction with timeleft)
+- adjust_times: Calculate time left adjusted to last update (used in conjunction with timeleft)
 
 - hide_departed: This can hide already departured
 

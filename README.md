@@ -141,9 +141,11 @@ cards:
 
 - updated: Render the last updated time section
 
-- timeleft: Show as SL real time with minutes instead of time
+- timeleft: Show as SL real time with minutes instead of time (over 60 mins left also shows time)
 
-- adjust_times: Calculate time left adjusted to last update (used in conjunction with timeleft)
+   - adjust_times: Calculate time left adjusted to last update (used in conjunction with timeleft)
+
+   - always_show_time: Always show "2 min (12:22)" instead of just "2 min" for sub hour departures (used in conjunction with timeleft)
 
 - hide_departed: This can hide already departured
 

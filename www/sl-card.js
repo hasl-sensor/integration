@@ -184,7 +184,7 @@ class SLCard extends HTMLElement {
 									if (minutesSinceUpdate > 0) {
 										if (depMin > 0) {
 											depText = "" + depMin + " "+ lang[culture].min;
-											if (entity_data.attributes.departures[j].departure.indexOf(":") > -1) {
+											if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
 												depText += " (" + entity_data.attributes.departures[j].departure + ")";
 											}
 										} else if (depMin === 0) {

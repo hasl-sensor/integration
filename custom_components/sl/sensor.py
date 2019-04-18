@@ -10,13 +10,14 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import (async_track_point_in_utc_time,
                                          async_track_utc_time_change,
                                          track_time_interval)
+from homeassistant.util import dt as dt_util
 from homeassistant.util import Throttle
 from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_USERNAME, STATE_ON, STATE_OFF,
                                  CONF_SCAN_INTERVAL)
 import homeassistant.helpers.config_validation as cv
 
-__version__ = '1.0.4'
+__version__ = '1.0.3'
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = []
@@ -38,7 +39,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RI4_KEY): cv.string,   
     vol.Required(CONF_SI2_KEY): cv.string,
     vol.Required(CONF_SITEID): cv.string,
-    vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+    vol.Optional(ATTR_FRIENDLY_NAME): cv.string,
     vol.Optional(CONF_LINES): cv.string,
     vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
     vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
@@ -80,7 +81,8 @@ class SLTraficInformationSensor(Entity):
         from hasl import hasl        
         self._haslapi = hasl(si2key,ri4key,siteid,lines,timewindow);
         self._hass = hass 
-        self._name = friendly_name
+        self._uniqueid = "hasl-{}-{}-{}".format(siteid,direction,friendly_name)    
+        self._name = friendly_name or "hasl_{}_{}_{}".format(siteid,direction)
         self._lines = lines
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
@@ -93,12 +95,17 @@ class SLTraficInformationSensor(Entity):
         self._nextdeparture_expected = '-'
         self._lastupdate = '-'
         
-        self.update = Throttle(interval)(self._update)
+        #track_time_interval(hass, self.update, interval)
 
     @property
     def name(self):
         """Return the name of the sensor."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return the name of the sensor."""
+        return self._uniqueid
 
     @property
     def icon(self):
@@ -164,6 +171,7 @@ class SLTraficInformationSensor(Entity):
             _LOGGER.error('Failed to parse departure time (%s) ', t)
         return 0
 
+    @Throttle(DEFAULT_INTERVAL)
     def update(self):
         """Get the departure board."""
         if self._enabled_sensor is not None:

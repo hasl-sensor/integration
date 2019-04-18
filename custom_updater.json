@@ -1,9 +1,9 @@
 {
     "custom_component.sl.sensor": {
-      "updated_at": "2019-04-16",
-      "version": "1.0.3",
+      "updated_at": "2019-04-18",
+      "version": "1.0.4",
       "local_location": "/custom_components/sl/sensor.py",
-      "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/sl/sensor.py",
+      "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/dev/custom_components/sl/sensor.py",
       "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",
       "changelog": "https://github.com/DSorlov/ha-sensor-sl/releases/latest"
     }

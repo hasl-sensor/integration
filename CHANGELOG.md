@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
-- Nothing
+### Added
+- Config 'property' in sensor to set which property that is reported as state
+- Config 'always_show_time' in sl-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
 
 ## [v1.0.3] (2019-04-16)
 

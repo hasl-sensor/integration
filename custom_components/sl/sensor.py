@@ -30,14 +30,13 @@ CONF_LINES = 'lines'
 CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
-CONF_SENSORPROPERTY = 'defaultvalue'
-CONF_SENSORTYPE = 'type'
+CONF_SENSORPROPERTY = 'property'
 
 # Default values for configuration
 DEFAULT_INTERVAL=timedelta(minutes=10)
 DEFAULT_TIMEWINDOW=30
 DEFAULT_DIRECTION='0'
-DEFAULT_SENSORPROPERTY = 'm'
+DEFAULT_SENSORPROPERTY = 'min'
 
 # Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({

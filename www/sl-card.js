@@ -8,29 +8,29 @@ class SLCard extends HTMLElement {
         }
         
         const config = this.config;    
-		const lang = {
-		 'sv-SE': {
-			 entity_missing: 'Ingen data hittades',
-			 line: 'Linje',
-			 destination: 'Till',
-			 departure: 'Avg&aring;ng',
-			 min: 'min',
-			 last_updated: 'Senast uppdaterad ',
-			 now: 'Nu',
-			 departed: 'Avg&aring;tt',
-		 },
-		 'en-EN': {
-			 entity_missing: 'Entity data missing',
-			 line: 'Line',
-			 destination: 'Destination',
-			 departure: 'Departure',
-			 min: 'min',
-			 last_updated: 'Last updated ',
-			 now: 'Now',
-			 departed: 'Departed',
-		 }
-		}
-		
+        const lang = {
+         'sv-SE': {
+             entity_missing: 'Ingen data hittades',
+             line: 'Linje',
+             destination: 'Till',
+             departure: 'Avg&aring;ng',
+             min: 'min',
+             last_updated: 'Senast uppdaterad ',
+             now: 'Nu',
+             departed: 'Avg&aring;tt',
+         },
+         'en-EN': {
+             entity_missing: 'Entity data missing',
+             line: 'Line',
+             destination: 'Destination',
+             departure: 'Departure',
+             min: 'min',
+             last_updated: 'Last updated ',
+             now: 'Now',
+             departed: 'Departed',
+         }
+        }
+        
         function getEntitiesContent(data) {
             var html =`<style>
             ha-card {
@@ -137,19 +137,19 @@ class SLCard extends HTMLElement {
             </style>`;
             // Add data to table.
             var updatedDate = "";
-			var culture = "";
+            var culture = "";
             if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>" 
-			config.language ? culture = config.language : culture = "sv-SE"
-			
+            config.language ? culture = config.language : culture = "sv-SE"
+            
             for (var i = 0; i < data.length; i++){
 
                 const entity_data = hass.states[data[i]]
                 if (typeof entity_data === 'undefined'){
-					var str = lang[culture].entity_missing
+                    var str = lang[culture].entity_missing
                     console.log(str)
                 }
                 else{
-					if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"					
+                    if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"                    
                     html += "<table class=\"sl-table\">"
 
                     if (config.departures===true) {
@@ -164,53 +164,53 @@ class SLCard extends HTMLElement {
                         }
 
                         if (typeof entity_data.attributes.departures !== 'undefined') {
-							
-							var minutesSinceUpdate = 0;
+                            
+                            var minutesSinceUpdate = 0;
                             if (config.adjust_times===true && config.updated===true) {
                                 var updatedDate = new Date(entity_data.last_updated);
                                 var now = new Date();
                                 minutesSinceUpdate =
                                     Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
-                            }							
-							
+                            }                            
+                            
                             for (var j = 0; j < entity_data.attributes.departures.length; j++) {
-							
-							var depText = '';
-							var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
-							
-							if (config.timeleft===true) {	
-								
-								if (config.adjust_times===true) {
-									if (minutesSinceUpdate > 0) {
-										if (depMin > 0) {
-											depText = "" + depMin + " "+ lang[culture].min;
-											if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
-												depText += " (" + entity_data.attributes.departures[j].departure + ")";
-											}
-										} else if (depMin === 0) {
-											depText = lang[culture].now;
-										} else if (depMin < 0) {
-											if (config.hide_departed) {
-												continue;
-											}
-											depText = lang[culture].departed;
-										}
-									} else {
-										depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-									}								
-								} else {
-									depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-								}	
-								
-							} else {
-								if (depMin < 0 && config.hide_departed) {
-									continue;
-								}
-												
-								var expectedTime = new Date(entity_data.attributes.departures[j].expected);
-								depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
+                            
+                            var depText = '';
+                            var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
+                            
+                            if (config.timeleft===true) {    
+                                
+                                if (config.adjust_times===true) {
+                                    if (minutesSinceUpdate > 0) {
+                                        if (depMin > 0) {
+                                            depText = "" + depMin + " "+ lang[culture].min;
+                                            if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
+                                                depText += " (" + entity_data.attributes.departures[j].departure + ")";
+                                            }
+                                        } else if (depMin === 0) {
+                                            depText = lang[culture].now;
+                                        } else if (depMin < 0) {
+                                            if (config.hide_departed) {
+                                                continue;
+                                            }
+                                            depText = lang[culture].departed;
+                                        }
+                                    } else {
+                                        depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
+                                    }                                
+                                } else {
+                                    depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
+                                }    
+                                
+                            } else {
+                                if (depMin < 0 && config.hide_departed) {
+                                    continue;
+                                }
+                                                
+                                var expectedTime = new Date(entity_data.attributes.departures[j].expected);
+                                depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
                                              minute: "numeric"})
-							}
+                            }
                             
                             var lineNumber = entity_data.attributes.departures[j].line;
 
@@ -271,15 +271,15 @@ class SLCard extends HTMLElement {
                     } //deviations
                     if (config.updated===true) {    
                         var updatedDate = new Date(entity_data.last_updated);
-					    var updatedValue = updatedDate.toLocaleString(culture);
-						
+                        var updatedValue = updatedDate.toLocaleString(culture);
+                        
                         if (config.adjust_times===true) {
                             var now = new Date();
                             var minutesSinceUpdate =
                                 Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
                             updatedValue = "" + minutesSinceUpdate + " "+ lang[culture].min +" (" + updatedDate.toLocaleString(culture) + ")";
-                        }					
-						
+                        }                    
+                        
                         html += `<tr>
                                 <td colspan="3" align="left"><sub><i>${lang[culture].last_updated} ${updatedValue}</i></sub></th>
                             </tr>`;

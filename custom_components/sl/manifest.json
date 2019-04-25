@@ -1,0 +1,8 @@
+{
+  "domain": "sl",
+  "name": "SL",
+  "documentation": "HomeAssistant Sensor for SL (Storstockholms Lokaltrafik)",
+  "dependencies": [],
+  "codeowners": ["@DSorlov"],
+  "requirements": ["hasl==1.1.0"]
+} 

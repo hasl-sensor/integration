@@ -19,9 +19,6 @@ import homeassistant.helpers.config_validation as cv
 __version__ = '1.0.4'
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = []
-REQUIREMENTS = ['hasl==1.1.0']
-
 # Keys used in the configuration
 CONF_RI4_KEY = 'ri4key'
 CONF_SI2_KEY = 'si2key'

@@ -7,9 +7,14 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
+### Changed
+- Changed naming of a few functions
+- Fixed issue #16: sync_interval not working
+
 ### Added
 - Config 'property' in sensor to set which property that is reported as state
 - Config 'always_show_time' in sl-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
+- Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
 
 ## [v1.0.3] (2019-04-16)
 

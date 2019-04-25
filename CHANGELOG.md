@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## Unreleased
 
 ### Changed
-- Changed naming of a few functions
+- Changed naming of a few functions to make it more clean
 - Fixed issue #16: sync_interval not working
+- Fixed issue #11: wrong time shown, thanks to [@isabellaalstrom] for suggesting fix
 
 ### Added
 - Config 'property' in sensor to set which property that is reported as state

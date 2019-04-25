@@ -11,6 +11,7 @@ from homeassistant.helpers.event import (async_track_point_in_utc_time,
                                          async_track_utc_time_change,
                                          track_time_interval)
 from homeassistant.util import Throttle
+from homeassistant.util.dt import now
 from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_USERNAME, STATE_ON, STATE_OFF,
                                  CONF_SCAN_INTERVAL)
@@ -83,7 +84,7 @@ class HASLSensor(Entity):
                  direction, timewindow, property):
         """Initialize""" 
 
-		
+        
         # The table of resulttypes and the corresponding units of measure        
         unit_table = {
             'min': 'min',
@@ -208,8 +209,8 @@ class HASLSensor(Entity):
                 return int(s[0])
             s = t.split(':')
             if(len(s) > 1):
-                now = datetime.datetime.now()
-                min = (int(s[0])*60 + int(s[1])) - (now.hour*60 + now.minute)
+                rightnow = now(self._hass.config.time_zone)
+                min = (int(s[0])*60 + int(s[1])) - (rightnow.hour*60 + rightnow.minute)
                 if min < 0: 
                     min = min + 1440
                 return min
@@ -281,6 +282,6 @@ class HASLSensor(Entity):
             self._deviations_table = sorted(deviations,
                 key=lambda k: k['sortOrder'])
 
-        self._lastupdate = datetime.datetime.now()
+        self._lastupdate = now(self._hass.config.time_zone)
                           
                           

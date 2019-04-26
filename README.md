@@ -35,6 +35,8 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - si2key: Your API key from Trafiklab for the Störningsinformation 2 API
 
+- tl2key: (optional) Your API key from Trafiklab for the Trafikläget 2 API
+
 - sensors: Dictionary key with all sensors created (each will be separate sensor and multiple can be created):
 
    - siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
@@ -47,15 +49,23 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
    - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
 
-   - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
-
    - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
 
    - timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
 
    - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-**Sensor value**
+- tl2: Dictionary key with all TL2 sensors created (each will be separate sensor and multiple can be created, tl2key must also be set):   
+
+   - friendly_name: Used as display name
+   
+   - type: (optional) A comma separated list of the types to present in the sensor (metro,train,local,tram,bus,fer)
+
+   - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
+
+   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+   
+**Departure Sensor value**
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 
@@ -88,6 +98,35 @@ deviances: [{
 }]
 ```
 
+**TL2 Sensor value**
+
+The sensor value is the last update of the sensor.  There are also a number of attributes that can help you with filtering:
+
+```
+metro_status: Good
+metro_icon: mdi:check-bold
+metro_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+train_status: Good
+train_icon: mdi:check-bold
+train_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+local_status: Good
+local_icon: mdi:check-bold
+local_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+tram_status: Minor
+tram_icon: mdi:clock-outline
+tram_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+bus_status: Good
+bus_icon: mdi:check-bold
+bus_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+fer_status: Good
+fer_icon: mdi:check-bold
+fer_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+attribution: Stockholms Lokaltrafik
+last_updated: 2019-04-26 19:30:27
+friendly_name: SL Trafikstatus
+icon: mdi:train-car
+```
+
 **API-call restrictions**
 
 The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month.
@@ -111,7 +150,7 @@ custom_updater:
     - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_cards.json
 ```
 
-**Lovelace card**
+**Lovelace card (for Departure Sensor)**
 
 To display data using Lovelace, you can try the included card.
 Present departure times from custom component SL-sensor in a card. 

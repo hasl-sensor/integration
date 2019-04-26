@@ -20,12 +20,14 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Icon changed to mdi:bus if no deviances, otherwise mdi:bus-alert
 - Recomended install directory is now 'hasl' instead of 'sl' to align
 - Fixed the autoupdater URLS (dev branch will be off but who cares, dev should not be used in prod)
+- Using HASL 2.0.0 Communications Library with support for Trafikläget2 API from SL
 
 ### Added
 - Config 'property' in sensor to set which property that is reported as state
 - Config 'always_show_time' in sl-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
 - Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
 - Added property deviation_count to sensor to show number of deviations
+- New sensor type TL2 for displaying trafic status messages
 
 ## [v1.0.3] (2019-04-16)
 

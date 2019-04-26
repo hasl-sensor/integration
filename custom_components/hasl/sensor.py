@@ -14,7 +14,7 @@ from homeassistant.util import Throttle
 from homeassistant.util.dt import now
 from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_USERNAME, STATE_ON, STATE_OFF,
-                                 CONF_SCAN_INTERVAL, CONF_SENSORS)
+                                 CONF_SCAN_INTERVAL, CONF_SENSORS, CONF_TYPE)
 import homeassistant.helpers.config_validation as cv
 
 __version__ = '1.0.4'
@@ -23,18 +23,21 @@ _LOGGER = logging.getLogger(__name__)
 # Keys used in the configuration
 CONF_RI4_KEY = 'ri4key'
 CONF_SI2_KEY = 'si2key'
+CONF_TL2_KEY = 'tl2key'
 CONF_SITEID = 'siteid'
 CONF_LINES = 'lines'
 CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
 CONF_SENSORPROPERTY = 'property'
+CONF_TL2 = 'tl2'
 
 # Default values for configuration
 DEFAULT_INTERVAL=timedelta(minutes=10)
 DEFAULT_TIMEWINDOW=30
 DEFAULT_DIRECTION='0'
 DEFAULT_SENSORPROPERTY = 'min'
+DEFAULT_TL2_TYPES = 'metro,train,local,tram,bus,fer'
 
 # Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -52,9 +55,22 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
             vol.Optional(CONF_ENABLED_SENSOR): cv.string,
             vol.Optional(CONF_SENSORPROPERTY,default=DEFAULT_SENSORPROPERTY):
                 vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
-            vol.Optional(CONF_SCAN_INTERVAL):
+            vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
                 vol.Any(cv.time_period, cv.positive_timedelta),    
-        })])    
+        })]),  
+
+    vol.Optional(CONF_TL2_KEY): cv.string,
+    vol.Optional(CONF_TL2, default=[]):
+        vol.All(cv.ensure_list, [vol.All({
+            vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+            vol.Optional(CONF_TYPE,default=DEFAULT_TL2_TYPES): cv.string,
+            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+            vol.Optional(CONF_SENSORPROPERTY,default=DEFAULT_SENSORPROPERTY):
+                vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
+            vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
+                vol.Any(cv.time_period, cv.positive_timedelta),    
+        })]),
+        
 }, extra=vol.ALLOW_EXTRA)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
@@ -64,7 +80,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
      
     for sensorconf in config[CONF_SENSORS]:
         sensors.append(
-            HASLSensor(
+            SLCombinedSensor(
                 hass,
                 config[CONF_SI2_KEY],
                 config[CONF_RI4_KEY],
@@ -78,10 +94,96 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                 sensorconf.get(CONF_SENSORPROPERTY)
             )
         )
+    
+    tl2key = config.get(CONF_TL2_KEY)
+    if tl2key:
+        for sensorconf in config[CONF_TL2]:
+            sensors.append(
+                SLTLSensor(
+                    hass,
+                    tl2key,
+                    sensorconf[ATTR_FRIENDLY_NAME],
+                    sensorconf.get(CONF_ENABLED_SENSOR),
+                    sensorconf.get(CONF_SCAN_INTERVAL),
+                    sensorconf.get(CONF_TYPE)
+                )
+            )
+    
     add_devices(sensors)
 
-class HASLSensor(Entity):
-    """Department board for one SL site."""
+    
+class SLTLSensor(Entity):
+    """Trafic Situation Sensor."""
+
+    def __init__(self, hass, tl2key, friendly_name,
+                 enabled_sensor, interval, type):
+    
+        from hasl import tl2api
+        self._tl2api = tl2api(tl2key)
+        self._hass = hass 
+        self._name = friendly_name
+        self._enabled_sensor = enabled_sensor
+        self._type = type
+        self._lastupdate = '-'
+        self._sensordata = []
+        
+        self.update = Throttle(interval)(self._update)        
+        
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+        
+    @property
+    def icon(self):
+        """ Return the icon for the frontend."""
+        return 'mdi:train-car'
+        
+    @property
+    def device_state_attributes(self):
+        """ Return the sensor attributes ."""
+        return self._sensordata
+
+    @property
+    def state(self):
+        """ Return the state of the sensor """
+        return self._lastupdate
+        
+    def _update(self):
+    
+        if self._enabled_sensor is not None:
+            sensor_state = self._hass.states.get(self._enabled_sensor)
+            
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+               
+            newdata = {}
+            statuses = { 'EventGood': 'Good',
+                 'EventMinor': 'Minor',
+                 'EventMajor': 'Closed',
+                 'EventPlanned': 'Planned' }
+                 
+            icons = { 'EventGood': 'mdi:check-bold',
+                 'EventMinor': 'mdi:clock-outline',
+                 'EventMajor': 'mdi:skull-crossbones-outline',
+                 'EventPlanned': 'mdi:triangle-outline' } 
+
+            apidata = self._tl2api.request()
+
+            for response in apidata['ResponseData']['TrafficTypes']:
+                type = response['Type']
+                if (self._type is None or (type in self._type)):
+                    newdata[type+'_status'] = statuses.get(response['StatusIcon'])
+                    newdata[type+'_icon'] = icons.get(response['StatusIcon'])
+                    newdata[type+'_events'] = response['Events'] 
+
+            newdata['attribution'] = 'Stockholms Lokaltrafik'
+            newdata['last_updated'] = now(self._hass.config.time_zone).strftime('%Y-%m-%d %H:%M:%S')
+
+            self._sensordata = newdata
+            self._lastupdate = newdata['last_updated']
+
+class SLCombinedSensor(Entity):
+    """Departure board for one SL site."""
 
     def __init__(self, hass, si2key, ri4key, siteid, lines,
                  friendly_name, enabled_sensor, interval,
@@ -99,8 +201,9 @@ class HASLSensor(Entity):
         }     
         
         # Setup API and stuff needed for internal processing
-        from hasl import hasl     
-        self._api = hasl(si2key, ri4key,siteid,lines,timewindow);
+        from hasl import ri4api,si2api
+        self._ri4api = ri4api(ri4key,siteid,timewindow)
+        self._si2api = si2api(si2key,siteid,lines)
         self._hass = hass 
         self._name = friendly_name
         self._lines = lines
@@ -250,7 +353,7 @@ class HASLSensor(Entity):
             _LOGGER.info('SL Sensor updating departures for site %s...',
                 self._siteid)
                 
-            departuredata = self._api.get_departures();
+            departuredata = self._ri4api.request();
             departures = []
             
             iconswitcher = {
@@ -291,7 +394,7 @@ class HASLSensor(Entity):
         _LOGGER.info('SL Sensor updating deviations for site %s...',
             self._siteid)
 
-        deviationdata = self._api.get_deviations();
+        deviationdata = self._si2api.request();
         deviations = []
 
         for idx, value in enumerate(deviationdata['ResponseData']):

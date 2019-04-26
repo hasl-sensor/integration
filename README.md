@@ -105,22 +105,22 @@ The sensor value is the last update of the sensor.  There are also a number of a
 ```
 metro_status: Good
 metro_icon: mdi:check-bold
-metro_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+metro_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 train_status: Good
 train_icon: mdi:check-bold
-train_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+train_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 local_status: Good
 local_icon: mdi:check-bold
-local_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+local_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 tram_status: Minor
 tram_icon: mdi:clock-outline
-tram_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+tram_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 bus_status: Good
 bus_icon: mdi:check-bold
-bus_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+bus_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 fer_status: Good
 fer_icon: mdi:check-bold
-fer_events: [TrafficEvent object array](https://www.trafiklab.se/node/12603/documentation)
+fer_events: ["[TrafficEvent object array]"](https://www.trafiklab.se/node/12603/documentation)
 attribution: Stockholms Lokaltrafik
 last_updated: 2019-04-26 19:30:27
 friendly_name: SL Trafikstatus

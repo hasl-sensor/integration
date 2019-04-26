@@ -139,8 +139,9 @@ class SLCard extends HTMLElement {
             var updatedDate = "";
             var culture = "";
             if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>" 
-            config.language ? culture = config.language : culture = "sv-SE"
-            
+            config.language ? culture = config.language : culture = navigator.language || navigator.userLanguage
+            if (!lang.hasOwnProperty(culture)) culture = 'sv-SE'
+			
             for (var i = 0; i < data.length; i++){
 
                 const entity_data = hass.states[data[i]]

@@ -14,7 +14,7 @@ from homeassistant.util import Throttle
 from homeassistant.util.dt import now
 from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_USERNAME, STATE_ON, STATE_OFF,
-                                 CONF_SCAN_INTERVAL)
+                                 CONF_SCAN_INTERVAL, CONF_SENSORS)
 import homeassistant.helpers.config_validation as cv
 
 __version__ = '1.0.4'
@@ -40,40 +40,44 @@ DEFAULT_SENSORPROPERTY = 'min'
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RI4_KEY): cv.string,   
     vol.Required(CONF_SI2_KEY): cv.string,
-    vol.Required(CONF_SITEID): cv.string,
-    vol.Required(ATTR_FRIENDLY_NAME): cv.string,
 
-    vol.Optional(CONF_LINES): cv.string,
-    vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
-    vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
-        vol.All(vol.Coerce(int), vol.Range(min=0,max=60)),
-    vol.Optional(CONF_ENABLED_SENSOR): cv.string,
-    vol.Optional(CONF_SENSORPROPERTY):
-        vol.In(['min', 'time', 'deviations', 'refresh']),
-    vol.Optional(CONF_SCAN_INTERVAL):
-        vol.Any(cv.time_period, cv.positive_timedelta),
-})
-
+    vol.Required(CONF_SENSORS, default=[]):
+        vol.All(cv.ensure_list, [vol.All({
+            vol.Required(CONF_SITEID): cv.string,
+            vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+            vol.Optional(CONF_LINES): cv.string,
+            vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
+            vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
+                vol.All(vol.Coerce(int), vol.Range(min=0,max=60)),
+            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+            vol.Optional(CONF_SENSORPROPERTY,default=DEFAULT_SENSORPROPERTY):
+                vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
+            vol.Optional(CONF_SCAN_INTERVAL):
+                vol.Any(cv.time_period, cv.positive_timedelta),    
+        })])    
+}, extra=vol.ALLOW_EXTRA)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the sensors."""
     
     sensors = []
-    sensors.append(
-        HASLSensor(
-            hass,
-            config.get(CONF_SI2_KEY),
-            config.get(CONF_RI4_KEY),
-            config.get(CONF_SITEID),
-            config.get(CONF_LINES),
-            config.get(ATTR_FRIENDLY_NAME),            
-            config.get(CONF_ENABLED_SENSOR),
-            config.get(CONF_SCAN_INTERVAL),
-            config.get(CONF_DIRECTION),
-            config.get(CONF_TIMEWINDOW),
-            config.get(CONF_SENSORPROPERTY)
+     
+    for sensorconf in config[CONF_SENSORS]:
+        sensors.append(
+            HASLSensor(
+                hass,
+                config[CONF_SI2_KEY],
+                config[CONF_RI4_KEY],
+                sensorconf[CONF_SITEID],
+                sensorconf.get(CONF_LINES),
+                sensorconf[ATTR_FRIENDLY_NAME],            
+                sensorconf.get(CONF_ENABLED_SENSOR),
+                sensorconf.get(CONF_SCAN_INTERVAL),
+                sensorconf.get(CONF_DIRECTION),
+                sensorconf.get(CONF_TIMEWINDOW),
+                sensorconf.get(CONF_SENSORPROPERTY)
+            )
         )
-    )
     add_devices(sensors)
 
 class HASLSensor(Entity):
@@ -81,7 +85,7 @@ class HASLSensor(Entity):
 
     def __init__(self, hass, si2key, ri4key, siteid, lines,
                  friendly_name, enabled_sensor, interval,
-                 direction, timewindow, property):
+                 direction, timewindow, sensorproperty):
         """Initialize""" 
 
         
@@ -90,7 +94,8 @@ class HASLSensor(Entity):
             'min': 'min',
             'time': '',
             'deviations': '',
-            'refresh': ''
+            'refresh': '',
+            'update': ''
         }     
         
         # Setup API and stuff needed for internal processing
@@ -101,7 +106,7 @@ class HASLSensor(Entity):
         self._lines = lines
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
-        self._property = property
+        self._sensorproperty = sensorproperty
         self._departure_table = []
         self._deviations_table = []
         self._direction = direction
@@ -109,7 +114,7 @@ class HASLSensor(Entity):
         self._nextdeparture_minutes = '0'
         self._nextdeparture_expected = '-'
         self._lastupdate = '-'
-        self._unit_of_measure = unit_table.get(property, "min")
+        self._unit_of_measure = unit_table.get(self._sensorproperty, "min")
         
         # Setup updating of the sensor
         self.update = Throttle(interval)(self._update)
@@ -122,18 +127,25 @@ class HASLSensor(Entity):
     @property
     def icon(self):
         """ Return the icon for the frontend."""
-        return 'mdi:train-car'
+        if self._deviations_table:
+            return 'mdi:bus-alert'
+
+        return 'mdi:bus'
 
     @property
     def state(self):
         """ Return number of minutes to the next departure """
         
         # If the sensor should return minutes to next departure
-        if self._property is 'min':
+        if self._sensorproperty is 'min':
+            if not self._departure_table:
+                return '-'
             return self._departure_table[0]['time']
         
         # If the sensor should return the time at which next departure occurs
-        if self._property is 'time':
+        if self._sensorproperty is 'time':
+            if not self._departure_table:
+                return '-'
             expected = self._departure_table[0]['expected'] or '-'
             if expected is not '-':
                 expected = datetime.datetime.strptime(
@@ -143,14 +155,19 @@ class HASLSensor(Entity):
             return expected
         
         # If the sensor should return the number of deviations
-        if self._property is 'deviations':
+        if self._sensorproperty is 'deviations':
             return len(self._deviations_table)
 
         # If the sensor should return if it is updating or not
-        if self._property is 'refresh':
+        if self._sensorproperty is 'refresh':
             if self._enabled_sensor is None or sensor_state.state is STATE_ON:
                 return STATE_ON
             return STATE_OFF
+            
+        if self._sensorproperty is 'updated':
+            if self._lastupdate is '-':
+                return '-'
+            return refresh.strftime('%Y-%m-%d %H:%M:%S')            
                 
         # Failsafe
         return "-"
@@ -163,12 +180,17 @@ class HASLSensor(Entity):
         val = {}
 
         # Format the next exptected time
-        expected = self._departure_table[0]['expected'] or '-'
-        if expected is not '-':
-            expected = datetime.datetime.strptime(self._nextdeparture_expected,
-                '%Y-%m-%dT%H:%M:%S')
-            expected = expected.strftime('%H:%M:%S')
-        
+        if self._departure_table:
+            expected_time = self._departure_table[0]['expected'] or '-'
+            expected_minutes = self._departure_table[0]['time'] or '-'
+            if expected_time is not '-':
+                expected_time = datetime.datetime.strptime(expected_time,
+                    '%Y-%m-%dT%H:%M:%S')
+                expected_time = expected_time.strftime('%H:%M:%S')
+        else:
+            expected_time = '-'
+            expected_minutes = '-'
+            
         # Format the last refresh time
         refresh = self._lastupdate
         if self._lastupdate is not '-':
@@ -189,11 +211,12 @@ class HASLSensor(Entity):
 
         # Set values of the sensor
         val['attribution'] = 'Stockholms Lokaltrafik'
-        val['next_departure_minutes'] = self._departure_table[0]['time']
-        val['next_departure_expected'] = expected
         val['departures'] = self._departure_table
         val['deviations'] = self._deviations_table
         val['last_refresh'] = refresh
+        val['next_departure_minutes'] = expected_minutes
+        val['next_departure_time'] = expected_time
+        val['deviation_count'] = len(self._deviations_table)
             
         return val
 

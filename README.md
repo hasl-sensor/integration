@@ -3,13 +3,15 @@ Home Assistant SL Sensor (HASL)
 
 This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl) that is now archived.
 
+**If you are using pre 0.92 version of Home Assistant you will need to use release 1.0.3 or older from here and follow the instructions in the release files there instead (and there is some known issues with that release). The below information is for 0.92 or later versions of Home Assistant only.**
+
 - First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
 - Create a folder named **custom_components** under your Home Assistant **config** folder. 
 
-- Create a folder named **sl** under the **custom_components** folder.
+- Create a folder named **hasl** under the **custom_components** folder.
 
-- Download sensor.py from here and put it in the **sl** folder.
+- Download content from the **custom_components/hasl** folder from here and put it in the **custom_components/hasl** folder in your server.
 
 - Edit your configuration.yaml file and add the component
 
@@ -18,50 +20,54 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 - platform: sl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  siteid: 4244
-  friendly_name: Mölnvik
-  lines: 474, 480C
-  direction: 1
-  sensor: binary_sensor.test
+  sensors:
+   - friendly_name: Mölnvik
+     siteid: 4244
+     lines: 474, 480C
+     direction: 1
+     sensor: binary_sensor.test
 ```
 
 
 **Configuration variables**
 
-- friendly_name: Used as display name
-
 - ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
 
 - si2key: Your API key from Trafiklab for the Störningsinformation 2 API
 
-- siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
+- sensors: Dictionary key with all sensors created (each will be separate sensor and multiple can be created):
 
-- property: (optional) Which property to report as sensor state ['min'= minutes to departure (default), 'time'= next departure time, 'deviations'= number of active deviations, 'refresh'= if sensor is refreshing or not]
+   - siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
 
-- lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
+   - friendly_name: Used as display name
 
-- direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
+   - property: (optional) Which property to report as sensor state ['min'= minutes to departure (default), 'time'= next departure time, 'deviations'= number of active deviations, 'refresh'= if sensor is refreshing or not, 'updated'=when sensor data was last updated]
 
-- sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
+   - lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
 
-- scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+   - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
 
-- timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
+   - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-- sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+
+   - timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
+
+   - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
 **Sensor value**
 
-The sensor value is the number of minutes to the next departure.  There are also a number of attributes that can help you with filtering or whatever you need:
+The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 
 ```
 friendly_name: Mölnvik
 unit_of_measurement: min
 icon: mdi:subway
 attribution: Stockholms Lokaltrafik
-next_departure_minutes: 10
-next_departure_expected: 19:10:00
 last_refresh: 2018-11-16 19:08:40
+next_departure_minutes: 10
+next_departure_time: 19:18:40
+deviation_count: 1
 refresh_enabled: on
 departure_board: [{
  line: 474

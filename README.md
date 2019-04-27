@@ -17,7 +17,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 ```yaml
 # Example configuration.yaml entry
-- platform: sl
+- platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
   tl2key: YOUR-OPTIONAL-TL2-KEY-HERE

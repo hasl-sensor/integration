@@ -1,11 +1,11 @@
 Home Assistant SL Sensor (HASL)
 ===============================
 
-This is a simple component for Home Assistant that can be used to create a "Departure board" for buses and trains in Stockholm, Sweden.  You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl) that is now archived.
+This is a platform for Home Assistant that can be used to create "Departure board" or "Traffic Situation" sensors for buses and trains in Stockholm, Sweden. You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).
 
 **If you are using pre 0.92 version of Home Assistant you will need to use release 1.0.3 or older from here and follow the instructions in the release files there instead (and there is some known issues with that release). The below information is for 0.92 or later versions of Home Assistant only.**
 
-- First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2). When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
+- First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get tl2 sensors. When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
 
 - Create a folder named **custom_components** under your Home Assistant **config** folder. 
 
@@ -37,11 +37,17 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
 - tl2key: (optional) Your API key from Trafiklab for the Trafikläget 2 API
 
-- sensors: Dictionary key with all sensors created (each will be separate sensor and multiple can be created):
+- sensors: A list of all the sensors to be created. Theese can be of sensor_type 'dep' or 'tl2':
+  
+   **- sensor_type: 'dep'**
+  
+   - friendly_name: Used as display name
 
    - siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
 
-   - friendly_name: Used as display name
+   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+
+   - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
    - property: (optional) Which property to report as sensor state ['min'= minutes to departure (default), 'time'= next departure time, 'deviations'= number of active deviations, 'refresh'= if sensor is refreshing or not, 'updated'=when sensor data was last updated]
 
@@ -49,23 +55,21 @@ This is a simple component for Home Assistant that can be used to create a "Depa
 
    - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
 
-   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
-
    - timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
+
+   - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
+
+   **- sensor_type: 'tl2'**
+  
+   - friendly_name: Used as display name
+
+   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
 
    - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-- tl2: Dictionary key with all TL2 sensors created (each will be separate sensor and multiple can be created, tl2key must also be set):   
-
-   - friendly_name: Used as display name
+   - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
    
-   - type: (optional) A comma separated list of the types to present in the sensor (metro,train,local,tram,bus,fer)
-
-   - sensor: (optional) Sensor to determine if status should be updated. If sensor is 'on', or if this option is not set, update will be done.
-
-   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
-   
-**Departure Sensor value**
+**Dep Sensor value**
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 

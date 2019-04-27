@@ -14,7 +14,8 @@ from homeassistant.util import Throttle
 from homeassistant.util.dt import now
 from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
                                  CONF_USERNAME, STATE_ON, STATE_OFF,
-                                 CONF_SCAN_INTERVAL, CONF_SENSORS, CONF_TYPE)
+                                 CONF_SCAN_INTERVAL, CONF_SENSORS, CONF_TYPE,
+                                 CONF_SENSOR_TYPE )
 import homeassistant.helpers.config_validation as cv
 
 __version__ = '1.0.4'
@@ -30,47 +31,41 @@ CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
 CONF_SENSORPROPERTY = 'property'
-CONF_TL2 = 'tl2'
+CONF_TRAFFIC_CLASS = 'traffic_class'
 
 # Default values for configuration
 DEFAULT_INTERVAL=timedelta(minutes=10)
 DEFAULT_TIMEWINDOW=30
 DEFAULT_DIRECTION='0'
 DEFAULT_SENSORPROPERTY = 'min'
-DEFAULT_TL2_TYPES = 'metro,train,local,tram,bus,fer'
+DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
+DEFAULT_SENSORTYPE = 'dep'
 
 # Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RI4_KEY): cv.string,   
     vol.Required(CONF_SI2_KEY): cv.string,
+    vol.Optional(CONF_TL2_KEY): cv.string,
 
     vol.Required(CONF_SENSORS, default=[]):
         vol.All(cv.ensure_list, [vol.All({
-            vol.Required(CONF_SITEID): cv.string,
             vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+            vol.Required(CONF_SENSOR_TYPE,default=DEFAULT_SENSORTYPE):
+                vol.In(['dep', 'tl2']),
+            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+            vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
+                vol.Any(cv.time_period, cv.positive_timedelta),    
+
+            vol.Optional(CONF_SITEID): cv.string,
             vol.Optional(CONF_LINES): cv.string,
             vol.Optional(CONF_DIRECTION,default=DEFAULT_DIRECTION): cv.string,
             vol.Optional(CONF_TIMEWINDOW,default=DEFAULT_TIMEWINDOW):
                 vol.All(vol.Coerce(int), vol.Range(min=0,max=60)),
-            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
             vol.Optional(CONF_SENSORPROPERTY,default=DEFAULT_SENSORPROPERTY):
                 vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
-            vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
-                vol.Any(cv.time_period, cv.positive_timedelta),    
-        })]),  
-
-    vol.Optional(CONF_TL2_KEY): cv.string,
-    vol.Optional(CONF_TL2, default=[]):
-        vol.All(cv.ensure_list, [vol.All({
-            vol.Required(ATTR_FRIENDLY_NAME): cv.string,
-            vol.Optional(CONF_TYPE,default=DEFAULT_TL2_TYPES): cv.string,
-            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
-            vol.Optional(CONF_SENSORPROPERTY,default=DEFAULT_SENSORPROPERTY):
-                vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
-            vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
-                vol.Any(cv.time_period, cv.positive_timedelta),    
-        })]),
-        
+                
+            vol.Optional(CONF_TRAFFIC_CLASS,default=DEFAULT_TRAFFIC_CLASS): cv.string,
+            })]),          
 }, extra=vol.ALLOW_EXTRA)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
@@ -79,35 +74,39 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     sensors = []
      
     for sensorconf in config[CONF_SENSORS]:
-        sensors.append(
-            SLCombinedSensor(
-                hass,
-                config[CONF_SI2_KEY],
-                config[CONF_RI4_KEY],
-                sensorconf[CONF_SITEID],
-                sensorconf.get(CONF_LINES),
-                sensorconf[ATTR_FRIENDLY_NAME],            
-                sensorconf.get(CONF_ENABLED_SENSOR),
-                sensorconf.get(CONF_SCAN_INTERVAL),
-                sensorconf.get(CONF_DIRECTION),
-                sensorconf.get(CONF_TIMEWINDOW),
-                sensorconf.get(CONF_SENSORPROPERTY)
-            )
-        )
     
-    tl2key = config.get(CONF_TL2_KEY)
-    if tl2key:
-        for sensorconf in config[CONF_TL2]:
-            sensors.append(
-                SLTLSensor(
-                    hass,
-                    tl2key,
-                    sensorconf[ATTR_FRIENDLY_NAME],
-                    sensorconf.get(CONF_ENABLED_SENSOR),
-                    sensorconf.get(CONF_SCAN_INTERVAL),
-                    sensorconf.get(CONF_TYPE)
+        if sensorconf[CONF_SENSOR_TYPE] == 'dep':
+            sitekey = sensorconf.get(CONF_SITEID)
+            if sitekey:
+                sensors.append(
+                    SLCombinedSensor(
+                        hass,
+                        config[CONF_SI2_KEY],
+                        config[CONF_RI4_KEY],
+                        sensorconf.get(CONF_SITEID),
+                        sensorconf.get(CONF_LINES),
+                        sensorconf[ATTR_FRIENDLY_NAME],            
+                        sensorconf.get(CONF_ENABLED_SENSOR),
+                        sensorconf.get(CONF_SCAN_INTERVAL),
+                        sensorconf.get(CONF_DIRECTION),
+                        sensorconf.get(CONF_TIMEWINDOW),
+                        sensorconf.get(CONF_SENSORPROPERTY)
+                    )
                 )
-            )
+
+        if sensorconf[CONF_SENSOR_TYPE] == 'tl2':
+            tl2key = config.get(CONF_TL2_KEY)
+            if tl2key:
+                sensors.append(
+                    SLTLSensor(
+                        hass,
+                        tl2key,
+                        sensorconf[ATTR_FRIENDLY_NAME],
+                        sensorconf.get(CONF_ENABLED_SENSOR),
+                        sensorconf.get(CONF_SCAN_INTERVAL),
+                        sensorconf.get(CONF_TRAFFIC_CLASS)
+                    )
+                )
     
     add_devices(sensors)
 

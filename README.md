@@ -20,12 +20,16 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 - platform: sl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
+  tl2key: YOUR-OPTIONAL-TL2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
+     sensor_type: dep
      siteid: 4244
      lines: 474, 480C
      direction: 1
      sensor: binary_sensor.test
+   - friendly_name: Trafikstatus
+     sensor_type: tl2
 ```
 
 
@@ -39,7 +43,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 - sensors: A list of all the sensors to be created. Theese can be of sensor_type 'dep' or 'tl2':
   
-   **- sensor_type: 'dep'**
+  **- sensor_type: 'dep'**  -- this sensor type creates a departure sensor
   
    - friendly_name: Used as display name
 
@@ -59,7 +63,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
    - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
 
-   **- sensor_type: 'tl2'**
+  **- sensor_type: 'tl2'**  -- this sensor type creates a tl2 sensor
   
    - friendly_name: Used as display name
 

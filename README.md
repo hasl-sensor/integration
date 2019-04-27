@@ -23,7 +23,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
   tl2key: YOUR-OPTIONAL-TL2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
-     sensor_type: dep
+     sensor_type: comb
      siteid: 4244
      lines: 474, 480C
      direction: 1
@@ -35,15 +35,15 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 **Configuration variables**
 
-- ri4key: Your API key from Trafiklab for the Realtidsinformation 4 API
+- ri4key: (optional) Your API key from Trafiklab for the Realtidsinformation 4 API (required for comb sensor)
 
-- si2key: Your API key from Trafiklab for the Störningsinformation 2 API
+- si2key: (optional) Your API key from Trafiklab for the Störningsinformation 2 API (required for comb sensor)
 
-- tl2key: (optional) Your API key from Trafiklab for the Trafikläget 2 API
+- tl2key: (optional) Your API key from Trafiklab for the Trafikläget 2 API (required for tl2 sensor)
 
-- sensors: A list of all the sensors to be created. Theese can be of sensor_type 'dep' or 'tl2':
+- sensors: A list of all the sensors to be created. Theese can be of sensor_type 'comb' or 'tl2':
   
-  **- sensor_type: 'dep'**  -- this sensor type creates a departure sensor
+  **- sensor_type: 'comb'**  -- this sensor type creates a combined departure sensor
   
    - friendly_name: Used as display name
 
@@ -73,7 +73,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
    - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
    
-**Dep Sensor value**
+**COMB Sensor value**
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 

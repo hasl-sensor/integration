@@ -39,19 +39,20 @@ DEFAULT_TIMEWINDOW=30
 DEFAULT_DIRECTION='0'
 DEFAULT_SENSORPROPERTY = 'min'
 DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
-DEFAULT_SENSORTYPE = 'dep'
+DEFAULT_SENSORTYPE = 'comb'
 
 # Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_RI4_KEY): cv.string,   
-    vol.Required(CONF_SI2_KEY): cv.string,
+    # API Keys
+    vol.Optional(CONF_RI4_KEY): cv.string,   
+    vol.Optional(CONF_SI2_KEY): cv.string,
     vol.Optional(CONF_TL2_KEY): cv.string,
 
     vol.Required(CONF_SENSORS, default=[]):
         vol.All(cv.ensure_list, [vol.All({
             vol.Required(ATTR_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_SENSOR_TYPE,default=DEFAULT_SENSORTYPE):
-                vol.In(['dep', 'tl2']),
+                vol.In(['comb', 'tl2']),
             vol.Optional(CONF_ENABLED_SENSOR): cv.string,
             vol.Optional(CONF_SCAN_INTERVAL,default=DEFAULT_INTERVAL):
                 vol.Any(cv.time_period, cv.positive_timedelta),    
@@ -75,15 +76,17 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
      
     for sensorconf in config[CONF_SENSORS]:
     
-        if sensorconf[CONF_SENSOR_TYPE] == 'dep':
+        if sensorconf[CONF_SENSOR_TYPE] == 'comb':
             sitekey = sensorconf.get(CONF_SITEID)
-            if sitekey:
+            si2key = config.get(CONF_SI2_KEY)
+            ri4key = config.get(CONF_RI4_KEY)
+            if sitekey and si2key and ri4key:
                 sensors.append(
                     SLCombinedSensor(
                         hass,
-                        config[CONF_SI2_KEY],
-                        config[CONF_RI4_KEY],
-                        sensorconf.get(CONF_SITEID),
+                        si2key,
+                        ri4key,
+                        sitekey,
                         sensorconf.get(CONF_LINES),
                         sensorconf[ATTR_FRIENDLY_NAME],            
                         sensorconf.get(CONF_ENABLED_SENSOR),

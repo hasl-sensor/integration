@@ -12,10 +12,9 @@ from homeassistant.helpers.event import (async_track_point_in_utc_time,
                                          track_time_interval)
 from homeassistant.util import Throttle
 from homeassistant.util.dt import now
-from homeassistant.const import (ATTR_FRIENDLY_NAME, ATTR_NAME, CONF_PREFIX,
-                                 CONF_USERNAME, STATE_ON, STATE_OFF,
-                                 CONF_SCAN_INTERVAL, CONF_SENSORS, CONF_TYPE,
-                                 CONF_SENSOR_TYPE )
+from homeassistant.const import (ATTR_FRIENDLY_NAME, STATE_ON, STATE_OFF,
+                                 CONF_SCAN_INTERVAL, CONF_SENSORS,
+                                 CONF_SENSOR_TYPE)
 import homeassistant.helpers.config_validation as cv
 
 __version__ = '1.0.4'
@@ -81,6 +80,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
             si2key = config.get(CONF_SI2_KEY)
             ri4key = config.get(CONF_RI4_KEY)
             if sitekey and si2key and ri4key:
+                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
                 sensors.append(
                     SLCombinedSensor(
                         hass,
@@ -88,7 +88,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                         ri4key,
                         sitekey,
                         sensorconf.get(CONF_LINES),
-                        sensorconf[ATTR_FRIENDLY_NAME],            
+                        sensorname,            
                         sensorconf.get(CONF_ENABLED_SENSOR),
                         sensorconf.get(CONF_SCAN_INTERVAL),
                         sensorconf.get(CONF_DIRECTION),
@@ -96,20 +96,27 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                         sensorconf.get(CONF_SENSORPROPERTY)
                     )
                 )
+                _LOGGER.info('Created comb sensor %s...', sensorname)
+            else:
+                _LOGGER.error('Sensor %s is missing site, si2key or ri4key attribute', sensorconf[ATTR_FRIENDLY_NAME])
 
         if sensorconf[CONF_SENSOR_TYPE] == 'tl2':
             tl2key = config.get(CONF_TL2_KEY)
             if tl2key:
+                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
                 sensors.append(
                     SLTLSensor(
                         hass,
                         tl2key,
-                        sensorconf[ATTR_FRIENDLY_NAME],
+                        sensorname,
                         sensorconf.get(CONF_ENABLED_SENSOR),
                         sensorconf.get(CONF_SCAN_INTERVAL),
                         sensorconf.get(CONF_TRAFFIC_CLASS)
                     )
                 )
+                _LOGGER.info('Created tl2 sensor %s...', sensorname)
+            else:
+                _LOGGER.error('Sensor %s is missing tl2key attribute', sensorconf[ATTR_FRIENDLY_NAME])
     
     add_devices(sensors)
 
@@ -157,7 +164,9 @@ class SLTLSensor(Entity):
             sensor_state = self._hass.states.get(self._enabled_sensor)
             
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-               
+
+            _LOGGER.info('Updating traffic situation for %s...', self._name)
+        
             newdata = {}
             statuses = { 'EventGood': 'Good',
                  'EventMinor': 'Minor',
@@ -352,8 +361,7 @@ class SLCombinedSensor(Entity):
             sensor_state = self._hass.states.get(self._enabled_sensor)
             
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-            _LOGGER.info('SL Sensor updating departures for site %s...',
-                self._siteid)
+            _LOGGER.info('Updating departures for %s...', self._name)
                 
             departuredata = self._ri4api.request();
             departures = []
@@ -393,8 +401,7 @@ class SLCombinedSensor(Entity):
                                                
         self._departure_table = sorted(departures, key=lambda k: k['time'])
         
-        _LOGGER.info('SL Sensor updating deviations for site %s...',
-            self._siteid)
+        _LOGGER.info('Updating deviations for %s...', self._name)
 
         deviationdata = self._si2api.request();
         deviations = []

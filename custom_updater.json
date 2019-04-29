@@ -8,6 +8,7 @@
         "changelog": "https://github.com/DSorlov/ha-sensor-sl/blob/hasl/CHANGELOG.md",
         "resources": [
 	        "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/sl/sensor.py",
+	        "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/sl/services.yaml",
             "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/sl/manifest.js"
         ]
     },	

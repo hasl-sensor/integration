@@ -3,6 +3,9 @@ import datetime
 from datetime import timedelta
 import logging
 import voluptuous as vol
+import json
+import os
+import stat
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
@@ -15,10 +18,10 @@ from homeassistant.util.dt import now
 from homeassistant.const import (ATTR_FRIENDLY_NAME, STATE_ON, STATE_OFF,
                                  CONF_SCAN_INTERVAL, CONF_SENSORS,
                                  CONF_SENSOR_TYPE)
-import homeassistant.helpers.config_validation as cv
 
 __version__ = '1.0.4'
 _LOGGER = logging.getLogger(__name__)
+DOMAIN = 'hasl'
 
 # Keys used in the configuration
 CONF_RI4_KEY = 'ri4key'
@@ -39,6 +42,7 @@ DEFAULT_DIRECTION='0'
 DEFAULT_SENSORPROPERTY = 'min'
 DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
 DEFAULT_SENSORTYPE = 'comb'
+DEFAULT_CACHE_FILE = 'haslcache.json'
 
 # Defining the configuration schema
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -70,6 +74,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the sensors."""
+    
+    if not hass.data.get(DOMAIN):
+        hass.data[DOMAIN] = {}
     
     sensors = []
      
@@ -129,12 +136,18 @@ class SLTLSensor(Entity):
     
         from hasl import tl2api
         self._tl2api = tl2api(tl2key)
+        self._datakey = 'tl2_'+tl2key
+        self._interval = interval
         self._hass = hass 
         self._name = friendly_name
         self._enabled_sensor = enabled_sensor
         self._type = type
-        self._lastupdate = '-'
         self._sensordata = []
+        self._lastupdate = '-'
+        self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
+        
+        if not hass.data[DOMAIN].get(self._datakey):
+            hass.data[DOMAIN][self._datakey] = ''
         
         self.update = Throttle(interval)(self._update)        
         
@@ -158,6 +171,30 @@ class SLTLSensor(Entity):
         """ Return the state of the sensor """
         return self._lastupdate
         
+    def getCache(self,key):
+        try:
+            jsonFile = open(self._cachefile, "r")
+            data = json.load(jsonFile)
+            jsonFile.close()
+
+            return data.get(key)            
+        except:
+            return {} 
+
+    def putCache(self,key,value):
+        try:
+            jsonFile = open(self._cachefile, "r")
+            data = json.load(jsonFile)
+            jsonFile.close()
+            
+            data[key] = value
+        except:
+            data = { ''+key+'': value }
+        
+        jsonFile = open(self._cachefile, "w")
+        jsonFile.write(json.dumps(data))
+        jsonFile.close()
+        
     def _update(self):
     
         if self._enabled_sensor is not None:
@@ -167,29 +204,49 @@ class SLTLSensor(Entity):
 
             _LOGGER.info('Updating traffic situation for %s...', self._name)
         
+            # Object used to create our object
             newdata = {}
+            
+            # Use some nice translations for the statuses etc
             statuses = { 'EventGood': 'Good',
                  'EventMinor': 'Minor',
                  'EventMajor': 'Closed',
                  'EventPlanned': 'Planned' }
-                 
+            
+            # Icon table used for HomeAssistant
             icons = { 'EventGood': 'mdi:check-bold',
                  'EventMinor': 'mdi:clock-outline',
                  'EventMajor': 'mdi:skull-crossbones-outline',
                  'EventPlanned': 'mdi:triangle-outline' } 
 
-            apidata = self._tl2api.request()
+            # If the same API have already made the request in within the specified
+            # interval then use that data instead of requesting it again and spare
+            # some innocent credits from dying
+            cacheage = self._hass.data[DOMAIN][self._datakey]            
+            if not cacheage or now(self._hass.config.time_zone) - self._interval > cacheage:           
+                _LOGGER.info('Updating cache for %s...', self._name)
 
-            for response in apidata['ResponseData']['TrafficTypes']:
+                apidata = self._tl2api.request()
+                apidata = apidata['ResponseData']['TrafficTypes']
+
+                self.putCache(self._datakey, apidata)                
+                self._hass.data[DOMAIN][self._datakey] = now(self._hass.config.time_zone)
+            else:
+                _LOGGER.info('Reusing data from cache for %s...', self._name)                
+                apidata = getCache(self._datakey)
+                
+            # Return only the relevant portion of the results
+            for response in apidata:
                 type = response['Type']
                 if (self._type is None or (type in self._type)):
-                    newdata[type+'_status'] = statuses.get(response['StatusIcon'])
-                    newdata[type+'_icon'] = icons.get(response['StatusIcon'])
-                    newdata[type+'_events'] = response['Events'] 
+                    statustype = 'ferry' if type == 'fer' else type
+                    newdata[statustype+'_status'] = statuses.get(response['StatusIcon'])
+                    newdata[statustype+'_icon'] = icons.get(response['StatusIcon'])
+                    newdata[statustype+'_events'] = response['Events'] 
 
+            # Attribution and update sensor data
             newdata['attribution'] = 'Stockholms Lokaltrafik'
-            newdata['last_updated'] = now(self._hass.config.time_zone).strftime('%Y-%m-%d %H:%M:%S')
-
+            newdata['last_updated'] = self._hass.data[DOMAIN][self._datakey].strftime('%Y-%m-%d %H:%M:%S')
             self._sensordata = newdata
             self._lastupdate = newdata['last_updated']
 
@@ -213,8 +270,10 @@ class SLCombinedSensor(Entity):
         
         # Setup API and stuff needed for internal processing
         from hasl import ri4api,si2api
-        self._ri4api = ri4api(ri4key,siteid,timewindow)
-        self._si2api = si2api(si2key,siteid,lines)
+        self._ri4api = ri4api(ri4key,siteid,60)
+        self._si2api = si2api(si2key,siteid,'')
+        self._ri4datakey = 'ri2_'+ri4key+'_'+siteid
+        self._si2datakey = 'si2_'+si2key+'_'+siteid
         self._hass = hass 
         self._name = friendly_name
         self._lines = lines
@@ -228,11 +287,19 @@ class SLCombinedSensor(Entity):
         self._nextdeparture_minutes = '0'
         self._nextdeparture_expected = '-'
         self._lastupdate = '-'
+        self._interval = interval
         self._unit_of_measure = unit_table.get(self._sensorproperty, "min")
+        self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
         
-        # Setup updating of the sensor
-        self.update = Throttle(interval)(self._update)
+        if not hass.data[DOMAIN].get(self._ri4datakey):
+            hass.data[DOMAIN][self._ri4datakey] = ''        
+        
+        if not hass.data[DOMAIN].get(self._si2datakey):
+            hass.data[DOMAIN][self._si2datakey] = ''        
 
+        # Setup updating of the sensor
+        self.update = Throttle(interval)(self._update)       
+        
     @property
     def name(self):
         """Return the name of the sensor."""
@@ -332,8 +399,8 @@ class SLCombinedSensor(Entity):
         val['next_departure_time'] = expected_time
         val['deviation_count'] = len(self._deviations_table)
             
-        return val
-
+        return val        
+        
     def parseDepartureTime(self, t):
         """ weird time formats from the API,
         do some quick and dirty conversions """
@@ -352,9 +419,33 @@ class SLCombinedSensor(Entity):
                     min = min + 1440
                 return min
         except Exception:
-            _LOGGER.error('Failed to parse departure time (%s) ', t)
+            _LOGGER.warning('Failed to parse departure time (%s) ', t)
         return 0
+        
+    def getCache(self,key):
+        try:
+            jsonFile = open(self._cachefile, "r")
+            data = json.load(jsonFile)
+            jsonFile.close()
 
+            return data.get(key)            
+        except:
+            return {} 
+
+    def putCache(self,key,value):
+        try:
+            jsonFile = open(self._cachefile, "r")
+            data = json.load(jsonFile)
+            jsonFile.close()
+            
+            data[key] = value
+        except:
+            data = { ''+key+'': value }
+        
+        jsonFile = open(self._cachefile, "w")
+        jsonFile.write(json.dumps(data))
+        jsonFile.close()
+        
     def _update(self):
         """Get the departure board."""
         if self._enabled_sensor is not None:
@@ -362,10 +453,22 @@ class SLCombinedSensor(Entity):
             
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
             _LOGGER.info('Updating departures for %s...', self._name)
-                
-            departuredata = self._ri4api.request();
+                           
+            cacheage = self._hass.data[DOMAIN][self._ri4datakey]            
+            if not cacheage or now(self._hass.config.time_zone) - self._interval > cacheage:           
+                _LOGGER.info('Updating cache for %s...', self._name)
+
+                departuredata = self._ri4api.request()
+                departuredata = departuredata['ResponseData']
+
+                self.putCache(self._ri4datakey, departuredata)                
+                self._hass.data[DOMAIN][self._ri4datakey] = now(self._hass.config.time_zone)
+            else:
+                _LOGGER.info('Reusing data from cache for %s...', self._name)                
+                departuredata = getCache(self._ri4datakey)
+                           
             departures = []
-            
+           
             iconswitcher = {
                 "Buses": "mdi:bus",
                 "Trams": "mdi:tram",
@@ -378,7 +481,7 @@ class SLCombinedSensor(Entity):
                 ['Metros','Buses','Trains','Trams', 'Ships']):
                 
                 for idx, value in enumerate(
-                    departuredata['ResponseData'][traffictype]):
+                    departuredata[traffictype]):
                     
                     direction = value['JourneyDirection'] or 0
                     displaytime = value['DisplayTime'] or ''
@@ -402,11 +505,22 @@ class SLCombinedSensor(Entity):
         self._departure_table = sorted(departures, key=lambda k: k['time'])
         
         _LOGGER.info('Updating deviations for %s...', self._name)
+        cacheage = self._hass.data[DOMAIN][self._si2datakey]            
+        if not cacheage or now(self._hass.config.time_zone) - self._interval > cacheage:           
+            _LOGGER.info('Updating cache for %s...', self._name)
 
-        deviationdata = self._si2api.request();
+            deviationdata = self._si2api.request()
+            deviationdata = deviationdata['ResponseData']
+
+            self.putCache(self._si2datakey, deviationdata)                
+            self._hass.data[DOMAIN][self._si2datakey] = now(self._hass.config.time_zone)
+        else:
+            _LOGGER.info('Reusing data from cache for %s...', self._name)                
+            deviationdata = getCache(self._si2datakey)
+                
         deviations = []
 
-        for idx, value in enumerate(deviationdata['ResponseData']):
+        for idx, value in enumerate(deviationdata):
             deviations.append({'updated':value['Updated'],
                                'title':value['Header'],
                                'fromDate':value['FromDateTime'],

@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Recomended install directory is now 'hasl' instead of 'sl' to align naming
 - Fixed the autoupdater URLS (dev branch will be off but who cares, dev should not be used in prod)
 - Using HASL 2.0.0 Communications Library with support for Trafikläget2 API from SL
+- Implemented a request minimization strategy for API-calls / using caching (haslcache.json)
 
 ### Added
 - Config 'property' in comb sensor to set which property that is reported as state
@@ -28,6 +29,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
 - Added property deviation_count to comb sensor to show number of deviations
 - New sensor type TL2 for displaying trafic status messages
+- Service for force clearing of cache (adds services.json)
 
 ## [v1.0.3] (2019-04-16)
 

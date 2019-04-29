@@ -152,7 +152,7 @@ custom_updater:
     - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_cards.json
 ```
 
-**Lovelace card (for Departure Sensor)**
+**Lovelace card (for Departure Sensor, hasl-comb-card.js)**
 
 To display data using Lovelace, you can try the included card.
 Present departure times from custom component SL-sensor in a card. 
@@ -160,16 +160,16 @@ Thanks to [@dimmanramone](https://github.com/dimmanramone) for pimping the card!
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
-Install it throgh copying the file `www/sl-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
+Install it throgh copying the file `www/hasl-comb-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
 ```
 resources:
-  - url: /local/sl-card.js
+  - url: /local/hasl-comb-card.js
     type: js
 ```
 and use the card throgh
 ```
 cards:
-  - type: "custom:sl-card"
+  - type: "custom:hasl-comb-card"
     header: false
     departures: true
     deviations: true

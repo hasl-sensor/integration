@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Changed structure in configuration to be more standarlized, avoid key duplication etc
 - Cannot be used pre 0.92 as dependency code has moved (or atleast I have not tried it)
 - New install location for the autoupdater (changed from folder sl to hasl)
+- Rename of sl-card.js to hasl-comb-card.js
 
 ### Changed
 - Changed naming of a few functions to make it more clean

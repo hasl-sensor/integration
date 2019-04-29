@@ -1,7 +1,7 @@
-class SLCard extends HTMLElement {
+class HASLCombCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
-            const card = document.createElement('ha-card');
+            const card = document.createElement('hasl-comb-card');
             this.content = document.createElement('div');     
             card.appendChild(this.content);
             this.appendChild(card);
@@ -308,4 +308,4 @@ class SLCard extends HTMLElement {
     }
 }
 
-customElements.define('sl-card', SLCard);
+customElements.define('hasl-comb-card', HASLCombCard);

@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## [Unreleased]
 
-- Nothing for now
+- Fixed [#19](https://github.com/DSorlov/ha-sensor-sl/issues/19) Small changes for custom_updater
 
 ## [2.0.1] (2019-04-30)
 
@@ -146,6 +146,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.3...2.0.0
 [1.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.2...1.0.3

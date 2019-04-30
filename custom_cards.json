@@ -1,10 +1,10 @@
 {
     "sl-card": {
-      "updated_at": "2019-04-16",
-      "version": "1.0.3",
-      "local_location": "/www/sl-card.js",
-      "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/www/sl-card.js",
+      "updated_at": "2019-04-30",
+      "version": "2.0.0",
+      "local_location": "/www/hasl-comb-card.js",
+      "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/www/hasl-comb-card.js",
       "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",
-      "changelog": "https://github.com/DSorlov/ha-sensor-sl/releases/latest"
+      "changelog": "https://github.com/DSorlov/ha-sensor-sl/blob/hasl/CHANGELOG.md"
     }	
 }

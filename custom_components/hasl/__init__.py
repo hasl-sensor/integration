@@ -12,7 +12,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.util.dt import now
 from homeassistant.helpers.event import async_track_time_interval
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "hasl"

@@ -19,7 +19,7 @@ from homeassistant.const import (ATTR_FRIENDLY_NAME, STATE_ON, STATE_OFF,
                                  CONF_SCAN_INTERVAL, CONF_SENSORS,
                                  CONF_SENSOR_TYPE)
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 
@@ -502,35 +502,35 @@ class SLCombinedSensor(Entity):
                                                'type': traffictype,
                                                'icon': icon})
                                                
-        self._departure_table = sorted(departures, key=lambda k: k['time'])
+            self._departure_table = sorted(departures, key=lambda k: k['time'])
         
-        _LOGGER.info('Updating deviations for %s...', self._name)
-        cacheage = self._hass.data[DOMAIN][self._si2datakey]            
-        if not cacheage or now(self._hass.config.time_zone) - self._interval > cacheage:           
-            _LOGGER.info('Updating cache for %s...', self._name)
+            _LOGGER.info('Updating deviations for %s...', self._name)
+            cacheage = self._hass.data[DOMAIN][self._si2datakey]            
+            if not cacheage or now(self._hass.config.time_zone) - self._interval > cacheage:           
+                _LOGGER.info('Updating cache for %s...', self._name)
 
-            deviationdata = self._si2api.request()
-            deviationdata = deviationdata['ResponseData']
+                deviationdata = self._si2api.request()
+                deviationdata = deviationdata['ResponseData']
 
-            self.putCache(self._si2datakey, deviationdata)                
-            self._hass.data[DOMAIN][self._si2datakey] = now(self._hass.config.time_zone)
-        else:
-            _LOGGER.info('Reusing data from cache for %s...', self._name)                
-            deviationdata = getCache(self._si2datakey)
-                
-        deviations = []
+                self.putCache(self._si2datakey, deviationdata)                
+                self._hass.data[DOMAIN][self._si2datakey] = now(self._hass.config.time_zone)
+            else:
+                _LOGGER.info('Reusing data from cache for %s...', self._name)                
+                deviationdata = getCache(self._si2datakey)
+                    
+            deviations = []
 
-        for idx, value in enumerate(deviationdata):
-            deviations.append({'updated':value['Updated'],
-                               'title':value['Header'],
-                               'fromDate':value['FromDateTime'],
-                               'toDate':value['UpToDateTime'],
-                               'details': value['Details'],
-                               'sortOrder': value['SortOrder']})
+            for idx, value in enumerate(deviationdata):
+                deviations.append({'updated':value['Updated'],
+                                   'title':value['Header'],
+                                   'fromDate':value['FromDateTime'],
+                                   'toDate':value['UpToDateTime'],
+                                   'details': value['Details'],
+                                   'sortOrder': value['SortOrder']})
 
-            self._deviations_table = sorted(deviations,
-                key=lambda k: k['sortOrder'])
+                self._deviations_table = sorted(deviations,
+                    key=lambda k: k['sortOrder'])
 
-        self._lastupdate = now(self._hass.config.time_zone)
+            self._lastupdate = now(self._hass.config.time_zone)
                           
                           

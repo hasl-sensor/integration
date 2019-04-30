@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 - Nothing for now
 
+## [2.0.1] (2019-04-30)
+
+### Changed
+- Fixed [#18](https://github.com/DSorlov/ha-sensor-sl/issues/18) missing indentation in sensor.py
+
 ## [2.0.0] (2019-04-30)
 
 ### BREAKING CHANGES
@@ -141,6 +146,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.3...2.0.0
 [1.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.1...1.0.2

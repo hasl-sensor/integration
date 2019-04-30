@@ -16,7 +16,6 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 - Edit your configuration.yaml file and add the component
 
 ```yaml
-# Example configuration.yaml entry
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
@@ -77,7 +76,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 
-```
+```json
 friendly_name: Mölnvik
 unit_of_measurement: min
 icon: mdi:subway
@@ -87,7 +86,7 @@ next_departure_minutes: 10
 next_departure_time: 19:18:40
 deviation_count: 1
 refresh_enabled: on
-departure_board: [{
+departures: [{
  line: 474
  direction: 1
  departure: 10 min
@@ -112,7 +111,7 @@ The sensor value is the last update of the sensor.  There are also a number of a
 Depending on the settings only the traffic types selected will be availiable. Event sections might or might not contain
 information.
 
-```
+```json
   "ferry_status": "Good",
   "ferry_icon": "mdi:check-bold",
   "ferry_events": [
@@ -148,22 +147,19 @@ information.
   "last_updated": "2019-04-30 11:37:19",
   "friendly_name": "SL Trafikstatus",
   "icon": "mdi:train-car"
-}
 ```
 
-**API-call restrictions**
+**API-call restrictions and optimization**
 
-The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month.
-For a private project, `Silver` level does not seem possible.
-With 10.000 calls per month, that allows for less than one call every 4 minute.
-That is why it is better to specify a binary_sensor that perhaps is turned of when no-one is at home or similar.
-
+The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
+The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
+You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls.
 
 **Automatic updates**
 
 For update check of this sensor, add the following to your configuration.yaml. For more information, see [[custom_updater](https://github.com/custom-components/custom_updater/wiki/Installation)]
 
-```
+```yaml
 custom_updater:
   track:
     - components
@@ -183,13 +179,13 @@ Thanks to [@dimmanramone](https://github.com/dimmanramone) for pimping the card!
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
 Install it throgh copying the file `www/hasl-comb-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
-```
+```yaml
 resources:
   - url: /local/hasl-comb-card.js
     type: js
 ```
 and use the card throgh
-```
+```yaml
 cards:
   - type: "custom:hasl-comb-card"
     header: false

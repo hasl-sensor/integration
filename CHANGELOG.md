@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## [Unreleased]
 
+- Nothing for now
+
+## [2.0.2] (2019-04-30)
+
+### Changed
 - Fixed [#19](https://github.com/DSorlov/ha-sensor-sl/issues/19) Small changes for custom_updater
 
 ## [2.0.1] (2019-04-30)

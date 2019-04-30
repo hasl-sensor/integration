@@ -76,7 +76,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
 
-```json
+```
 friendly_name: Mölnvik
 unit_of_measurement: min
 icon: mdi:subway
@@ -87,21 +87,21 @@ next_departure_time: 19:18:40
 deviation_count: 1
 refresh_enabled: on
 departures: [{
- line: 474
- direction: 1
- departure: 10 min
- destination: Slussen
- diff: 10
- type: Buses
- icon: mdi:bus
+  line: 474
+  direction: 1
+  departure: 10 min
+  destination: Slussen
+  diff: 10
+  type: Buses
+  icon: mdi:bus
 }]
 deviances: [{
- updated: 2018-11-16T15:59:40.063+01:00
- title: Inställd avgång
- fromDate: 2018-11-16T15:59:40.663
- toDate: 2018-11-17T00:00:00
- details: "Mölnvik kl 16:17 till Slussen är inställd pga framkomlighetsproblem - köer."
- sortOrder: 1
+  updated: 2018-11-16T15:59:40.063+01:00
+  title: Inställd avgång
+  fromDate: 2018-11-16T15:59:40.663
+  toDate: 2018-11-17T00:00:00
+  details: "Mölnvik kl 16:17 till Slussen är inställd pga framkomlighetsproblem - köer."
+  sortOrder: 1
 }]
 ```
 
@@ -111,42 +111,40 @@ The sensor value is the last update of the sensor.  There are also a number of a
 Depending on the settings only the traffic types selected will be availiable. Event sections might or might not contain
 information.
 
-```json
-  "ferry_status": "Good",
-  "ferry_icon": "mdi:check-bold",
-  "ferry_events": [
-    {
-      "EventId": 0,
-      "Message": "Inga större störningar",
-      "LineNumbers": null,
-      "Expanded": false,
-      "Planned": false,
-      "SortIndex": 10000,
-      "TrafficLine": null,
-      "EventInfoUrl": null,
-      "Status": null,
-      "StatusIcon": "EventGood"
-    }
-  ],
-  "bus_status": "Good",
-  "bus_icon": "mdi:check-bold",
-  "bus_events": [],
-  "tram_status": "Good",
-  "tram_icon": "mdi:check-bold",
-  "tram_events": [],
-  "local_status": "Good",
-  "local_icon": "mdi:check-bold",
-  "local_events": [],
-  "train_status": "Good",
-  "train_icon": "mdi:check-bold",
-  "train_events": [],
-  "metro_status": "Good",
-  "metro_icon": "mdi:check-bold",
-  "metro_events": [],  
-  "attribution": "Stockholms Lokaltrafik",
-  "last_updated": "2019-04-30 11:37:19",
-  "friendly_name": "SL Trafikstatus",
-  "icon": "mdi:train-car"
+```
+ferry_status: Good,
+ferry_icon: mdi:check-bold,
+ferry_events: [{
+  EventId: 0
+  Message: Inga större störningar
+  LineNumbers: null
+  Expanded: false
+  Planned: false
+  SortIndex: 10000
+  TrafficLine: null
+  EventInfoUrl: null
+  Status: null
+  StatusIcon: EventGood
+}]
+bus_status: Good
+bus_icon: mdi:check-bold
+bus_events: []
+tram_status: Good
+tram_icon: mdi:check-bold
+tram_events: []
+local_status: Good
+local_icon: mdi:check-bold
+local_events: []
+train_status: Good
+train_icon: mdi:check-bold
+train_events: []
+metro_status: Good
+metro_icon: mdi:check-bold
+metro_events: []
+attribution: Stockholms Lokaltrafik
+last_updated: 2019-04-30 11:37:19
+friendly_name: SL Trafikstatus
+icon: mdi:train-car
 ```
 
 **API-call restrictions and optimization**
@@ -163,7 +161,7 @@ For update check of this sensor, add the following to your configuration.yaml. F
 custom_updater:
   track:
     - components
-	- cards
+    - cards
   component_urls:
     - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_updater.json
   card_urls:

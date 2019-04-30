@@ -1,15 +1,15 @@
 # ha-sensor-sl
 
-Changelog of this repo.
+Changelog for HomeAssistant SL Sensor (HASL).
 
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
-## Unreleased
+## [Unreleased]
 
 - Nothing for now
 
-## [v2.0.0] (2019-04-30)
+## [2.0.0] (2019-04-30)
 
 ### BREAKING CHANGES
 - Changed structure in configuration to be more standarlized, avoid key duplication etc
@@ -36,26 +36,26 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - New sensor type TL2 for displaying trafic status messages for the Trafikläget2 API
 - Service for force clearing of cache (adds services.json, mostly for troubleshooting)
 
-## [v1.0.3] (2019-04-16)
+## [1.0.3] (2019-04-16)
 
 ### Changed
 - Missing default value for direction parameter
 - Integrated magic to better show time left to departure from fork [lokanx-home-assistant](https://github.com/lokanx-home-assistant/ha-sensor-sl/commit/df7de55f040a7fab5b15be176ec5d61400b1dbba)
 - Added support for languages (sv-SE and en-EN) in sl-card.js
 
-## [v1.0.2] (2019-04-16)
+## [1.0.2] (2019-04-16)
 
 ### Changed
 - Fix for naming of unique_id for certain cases (still not good however)
 - sl-card.js enhanced and styled by [@dimmanramone](https://github.com/dimmanramone)! Huge thanks!!
 
-## [v1.0.1] (2019-04-15)
+## [1.0.1] (2019-04-15)
 
 ### Changed
 - Fixed documtentation about interval being changed to scan_interval this to better support the Home Assistant standard.
 - Fixed direction parameter that had been hardcoded for some strage reason. Blaming it on someone else. =)
 
-## [v1.0.0] (2019-04-12)
+## [1.0.0] (2019-04-12)
 
 ### Added
 - Added configuration for TimeWindow
@@ -74,7 +74,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ### Removed
 - name configuration (replaced by friendly_name)
 
-## [v0.0.8] (2019-04-11)
+## [0.0.8] (2019-04-11)
 
 ### Changed
 - Moved /sensor/sl.py to /sl/sensor.py
@@ -82,7 +82,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Fixed custom_updater instructions in readme
 - Fixed broken encoding issues for rendering in sl-card.js
 
-## [v0.0.7] (2018-12-13)
+## [0.0.7] (2018-12-13)
 
 ### Added
 - Rendering of deviances
@@ -91,7 +91,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ### Changed
 - Rendering strategy
 
-## [v0.0.6] (2018-11-16)
+## [0.0.6] (2018-11-16)
 
 ### Added
 - Added output of icons
@@ -100,7 +100,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Buggfixes in lookup
 - Changed rendering in lovelace card
 
-## [v0.0.5] (2018-11-16)
+## [0.0.5] (2018-11-16)
 
 ### Added
 - Dependency for new https://www.trafiklab.se/api/sl-storningsinformation-2
@@ -114,9 +114,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ### Removed
 - JavaScript output
 
-## [v0.0.4] (2018-09-30)
-
-[Full Changelog][v0.0.0-v0.0.4]
+## [0.0.4] (2018-09-30)
 
 ### Added
 - Use a binary_sensor to enable/disable API-calls
@@ -126,15 +124,33 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ### Changed
 - Log error message instead of just reporting failure.
 
+## [0.0.3] (2018-09-30)
+
+### Changed
+- Only log errors once 
+
+## [0.0.2] (2018-09-29)
+
+### Changed
+- Log error code.
+
+## [0.0.1] (2018-05-08)
+
+### Changed
+- Log error code.
+
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[v2.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v2.0.0
-[v1.0.4]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.4
-[v1.0.3]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.3
-[v1.0.2]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.2
-[v1.0.1]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.1
-[v1.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.0
-[v0.0.8]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.8
-[v0.0.7]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.7
-[v0.0.6]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.6
-[v0.0.5]: https://github.com/dsorlov/ha-sensor-sl/tree/v0.0.5
-[v0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/tree/v0.0.4
+[Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.3...2.0.0
+[1.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.8...1.0.0
+[0.0.8]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.7...0.0.8
+[0.0.7]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.6...0.0.7
+[0.0.6]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.5...0.0.6
+[0.0.5]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.4...0.0.5
+[0.0.4]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.3...v0.0.4
+[0.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.2...v0.0.3
+[0.0.2]: https://github.com/fredrikbaberg/ha-sensor-sl/releases/tag/v0.0.2
+[0.0.1]: https://github.com/fuffenz/ha-sensor-sl

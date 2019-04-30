@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## Unreleased
 
+- Nothing for now
+
+## [v2.0.0] (2019-04-30)
+
 ### BREAKING CHANGES
 - Changed structure in configuration to be more standarlized, avoid key duplication etc
 - Cannot be used pre 0.92 as dependency code has moved (or atleast I have not tried it)
@@ -22,15 +26,15 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Recomended install directory is now 'hasl' instead of 'sl' to align naming
 - Fixed the autoupdater URLS (dev branch will be off but who cares, dev should not be used in prod)
 - Using HASL 2.0.0 Communications Library with support for Trafikläget2 API from SL
-- Implemented a request minimization strategy for API-calls / using caching (haslcache.json)
+- Implemented a request minimization strategy for API-calls / using caching (haslcache.json) when using multiple sensors for same stops
 
 ### Added
-- Config 'property' in comb sensor to set which property that is reported as state
-- Config 'always_show_time' in sl-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
+- Config 'property' in comb sensor to set which property that is reported as default state
+- Config 'always_show_time' in hasl-comb-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
 - Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
-- Added property deviation_count to comb sensor to show number of deviations
-- New sensor type TL2 for displaying trafic status messages
-- Service for force clearing of cache (adds services.json)
+- Added property deviation_count to comb sensor to show number of deviations in total
+- New sensor type TL2 for displaying trafic status messages for the Trafikläget2 API
+- Service for force clearing of cache (adds services.json, mostly for troubleshooting)
 
 ## [v1.0.3] (2019-04-16)
 
@@ -123,6 +127,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error message instead of just reporting failure.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[v2.0.0]: https://github.com/dsorlov/ha-sensor-sl/tree/v2.0.0
 [v1.0.4]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.4
 [v1.0.3]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.3
 [v1.0.2]: https://github.com/dsorlov/ha-sensor-sl/tree/v1.0.2

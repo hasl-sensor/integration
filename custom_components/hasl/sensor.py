@@ -19,7 +19,7 @@ from homeassistant.const import (ATTR_FRIENDLY_NAME, STATE_ON, STATE_OFF,
                                  CONF_SCAN_INTERVAL, CONF_SENSORS,
                                  CONF_SENSOR_TYPE)
 
-__version__ = '1.0.4'
+__version__ = '2.0.0'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 

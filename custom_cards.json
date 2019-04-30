@@ -1,7 +1,7 @@
 {
     "sl-card": {
-      "updated_at": "2019-04-26",
-      "version": "1.0.4",
+      "updated_at": "2019-04-30",
+      "version": "2.0.0",
       "local_location": "/www/hasl-comb-card.js",
       "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/www/hasl-comb-card.js",
       "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",

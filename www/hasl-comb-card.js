@@ -1,7 +1,7 @@
 class HASLCombCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
-            const card = document.createElement('hasl-comb-card');
+            const card = document.createElement('ha-card');
             this.content = document.createElement('div');     
             card.appendChild(this.content);
             this.appendChild(card);

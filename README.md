@@ -26,10 +26,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
      siteid: 4244
      lines: 474, 480C
      direction: 1
-     scan_interval:
-       hours: 0
-       minutes: 7
-       seconds: 10
+     scan_interval: 00:05:00
      sensor: binary_sensor.test
    - friendly_name: Trafikstatus
      sensor_type: tl2
@@ -52,7 +49,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
    - siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
 
-   - scan_interval: (optional) Time between updates, default 10 minutes, minimum 1 second and max 60 minutes.
+   - scan_interval: (optional) Time between updates, default 10 minutesIn seconds or as hh:mm:ss
 
    - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
@@ -70,7 +67,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
   
    - friendly_name: Used as display name
 
-   - scan_interval: (optional) Time between updates, default 10 minutes, minimum 1 second and max 60 minutes.
+   - scan_interval: (optional) Time between updates, default 10 minutesIn seconds or as hh:mm:ss
 
    - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 

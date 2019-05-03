@@ -3,23 +3,22 @@
 """Simple service for SL (Storstockholms Lokaltrafik)."""
 
 import datetime
-from datetime import timedelta
-import logging
-import voluptuous as vol
 import json
+import logging
+from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.const import (ATTR_FRIENDLY_NAME, CONF_SCAN_INTERVAL,
+                                 CONF_SENSOR_TYPE, CONF_SENSORS, STATE_OFF,
+                                 STATE_ON)
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import async_track_point_in_utc_time, \
-                                        async_track_utc_time_change, \
-                                        track_time_interval
-
+from homeassistant.helpers.event import (async_track_point_in_utc_time,
+                                         async_track_utc_time_change,
+                                         track_time_interval)
 from homeassistant.util import Throttle
 from homeassistant.util.dt import now
-from homeassistant.const import ATTR_FRIENDLY_NAME, STATE_ON, \
-                                STATE_OFF, CONF_SCAN_INTERVAL, \
-                                CONF_SENSORS, CONF_SENSOR_TYPE
 
 __version__ = '2.0.1'
 _LOGGER = logging.getLogger(__name__)
@@ -106,9 +105,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     sensorconf.get(CONF_SENSORPROPERTY),
                     ))
 
-                _LOGGER.info('Created comb sensor %s...', sensorname)
+                _LOGGER.info("Created comb sensor %s...", sensorname)
             else:
-                _LOGGER.error('Sensor %s is missing site, si2key or ri4key',
+                _LOGGER.error("Sensor %s is missing site, si2key or ri4key",
                               sensorconf[ATTR_FRIENDLY_NAME])
 
         if sensorconf[CONF_SENSOR_TYPE] == 'tl2':
@@ -124,9 +123,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     sensorconf.get(CONF_TRAFFIC_CLASS),
                     ))
 
-                _LOGGER.info('Created tl2 sensor %s...', sensorname)
+                _LOGGER.info("Created tl2 sensor %s...", sensorname)
             else:
-                _LOGGER.error('Sensor %s is missing tl2key attribute',
+                _LOGGER.error("Sensor %s is missing tl2key attribute",
                               sensorconf[ATTR_FRIENDLY_NAME])
     
     add_devices(sensors)
@@ -205,7 +204,7 @@ class SLTLSensor(Entity):
 
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
 
-            _LOGGER.info('Updating traffic situation for %s...',
+            _LOGGER.info("Updating traffic situation for %s...",
                          self._name)
 
             # Object used to create our object.
@@ -234,7 +233,7 @@ class SLTLSensor(Entity):
             if not cacheage or now(self._hass.config.time_zone) \
                     - self._interval > cacheage:
 
-                _LOGGER.info('Updating cache for %s...', self._name)
+                _LOGGER.info("Updating cache for %s...", self._name)
 
                 apidata = self._tl2api.request()
                 apidata = apidata['ResponseData']['TrafficTypes']
@@ -243,7 +242,7 @@ class SLTLSensor(Entity):
                 self._hass.data[DOMAIN][self._datakey] = \
                     now(self._hass.config.time_zone)
             else:
-                _LOGGER.info('Reusing data from cache for %s...',
+                _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
                 apidata = getCache(self._datakey)
 
@@ -259,7 +258,7 @@ class SLTLSensor(Entity):
                     newdata[statustype + '_events'] = response['Events']
 
             # Attribution and update sensor data.
-            newdata['attribution'] = 'Stockholms Lokaltrafik'
+            newdata['attribution'] = "Stockholms Lokaltrafik"
             newdata['last_updated'] = \
                 self._hass.data[DOMAIN][self._datakey].strftime('%Y-%m-%d' +
                                                                 '%H:%M:%S')
@@ -438,7 +437,7 @@ class SLCombinedSensor(Entity):
                     min = min + 1440
                 return min
         except Exception:
-            _LOGGER.warning('Failed to parse departure time (%s) ', t)
+            _LOGGER.warning("Failed to parse departure time (%s) ", t)
         return 0
 
     def getCache(self, key):
@@ -474,13 +473,13 @@ class SLCombinedSensor(Entity):
         if self._enabled_sensor is None or sensor_state.state \
                 is STATE_ON:
 
-            _LOGGER.info('Updating departures for %s...', self._name)
+            _LOGGER.info("Updating departures for %s...", self._name)
 
             cacheage = self._hass.data[DOMAIN][self._ri4datakey]
             if not cacheage or now(self._hass.config.time_zone) \
                     - self._interval > cacheage:
 
-                _LOGGER.info('Updating cache for %s...', self._name)
+                _LOGGER.info("Updating cache for %s...", self._name)
 
                 departuredata = self._ri4api.request()
                 departuredata = departuredata['ResponseData']
@@ -489,7 +488,7 @@ class SLCombinedSensor(Entity):
                 self._hass.data[DOMAIN][self._ri4datakey] = \
                     now(self._hass.config.time_zone)
             else:
-                _LOGGER.info('Reusing data from cache for %s...',
+                _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
                 departuredata = getCache(self._ri4datakey)
 
@@ -532,7 +531,7 @@ class SLCombinedSensor(Entity):
 
             self._departure_table = sorted(departures, key=lambda k: k['time'])
 
-            _LOGGER.info('Updating deviations for %s...', self._name)
+            _LOGGER.info("Updating deviations for %s...", self._name)
             cacheage = self._hass.data[DOMAIN][self._si2datakey]
             if not cacheage or now(self._hass.config.time_zone) \
                     - self._interval > cacheage:
@@ -545,7 +544,7 @@ class SLCombinedSensor(Entity):
                 self._hass.data[DOMAIN][self._si2datakey] = \
                     now(self._hass.config.time_zone)
             else:
-                _LOGGER.info('Reusing data from cache for %s...',
+                _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
                 deviationdata = getCache(self._si2datakey)
 

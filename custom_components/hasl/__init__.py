@@ -1,14 +1,13 @@
 """HomeAssistant Sensor for SL (Storstockholms Lokaltrafik)"""
 import datetime
-from datetime import timedelta
-import logging
-import voluptuous as vol
 import json
+import logging
+from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-
-from homeassistant.util.dt import now
+import voluptuous as vol
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.util.dt import now
 
 __version__ = '2.0.1'
 _LOGGER = logging.getLogger(__name__)

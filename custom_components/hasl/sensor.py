@@ -493,7 +493,8 @@ class SLCombinedSensor(Entity):
                         int(direction) == int(self._direction)):
                         if(self._lines is None or (linenumber in self._lines)):
                             diff = self.parseDepartureTime(displaytime)
-                            departures.append({'line':linenumber,
+                            if diff<self._timewindow:
+                                departures.append({'line':linenumber,
                                                'direction':direction,
                                                'departure':displaytime,
                                                'destination':destination,

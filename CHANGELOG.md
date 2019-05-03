@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 
 - Meged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 
+- Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
+- Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
 
 ## [2.0.2] (2019-04-30)
 

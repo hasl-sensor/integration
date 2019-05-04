@@ -187,6 +187,8 @@ class HASLCombCard extends HTMLElement {
                                     Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
                             }
 
+                            var maxDepartures = entity_data.attributes.departures.length;
+
                             if (config.max_departures) {
                                 maxDepartures = config.max_departures;
                             }

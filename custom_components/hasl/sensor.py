@@ -497,7 +497,7 @@ class SLCombinedSensor(Entity):
             iconswitcher = {
                 'Buses': 'mdi:bus',
                 'Trams': 'mdi:tram',
-                'Ships': 'mdi:ship',
+                'Ships': 'mdi:ferry',
                 'Metros': 'mdi:subway-variant',
                 'Trains': 'mdi:train',
                 }

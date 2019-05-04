@@ -172,89 +172,93 @@ class HASLCombCard extends HTMLElement {
                                 var now = new Date();
                                 minutesSinceUpdate =
                                     Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
-                            }                            
+                            }            
                             
-                            for (var j = 0; j < entity_data.attributes.departures.length; j++) {
+                            if (config.max_departures) {
+                                maxDepartures = config.max_departures;
+                            }
                             
-                            var depText = '';
-                            var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
+                            for (var j = 0; j < maxDepartures; j++) {
                             
-                            if (config.timeleft===true) {    
+                                var depText = '';
+                                var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
                                 
-                                if (config.adjust_times===true) {
-                                    if (minutesSinceUpdate > 0) {
-                                        if (depMin > 0) {
-                                            depText = "" + depMin + " "+ lang[culture].min;
-                                            if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
-                                                depText += " (" + entity_data.attributes.departures[j].departure + ")";
+                                if (config.timeleft===true) {    
+                                    
+                                    if (config.adjust_times===true) {
+                                        if (minutesSinceUpdate > 0) {
+                                            if (depMin > 0) {
+                                                depText = "" + depMin + " "+ lang[culture].min;
+                                                if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
+                                                    depText += " (" + entity_data.attributes.departures[j].departure + ")";
+                                                }
+                                            } else if (depMin === 0) {
+                                                depText = lang[culture].now;
+                                            } else if (depMin < 0) {
+                                                if (config.hide_departed) {
+                                                    continue;
+                                                }
+                                                depText = lang[culture].departed;
                                             }
-                                        } else if (depMin === 0) {
-                                            depText = lang[culture].now;
-                                        } else if (depMin < 0) {
-                                            if (config.hide_departed) {
-                                                continue;
-                                            }
-                                            depText = lang[culture].departed;
-                                        }
+                                        } else {
+                                            depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
+                                        }                                
                                     } else {
                                         depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-                                    }                                
+                                    }    
+                                    
                                 } else {
-                                    depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-                                }    
+                                    if (depMin < 0 && config.hide_departed) {
+                                        continue;
+                                    }
+                                                    
+                                    var expectedTime = new Date(entity_data.attributes.departures[j].expected);
+                                    depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
+                                                minute: "numeric"})
+                                }
                                 
-                            } else {
-                                if (depMin < 0 && config.hide_departed) {
-                                    continue;
-                                }
-                                                
-                                var expectedTime = new Date(entity_data.attributes.departures[j].expected);
-                                depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
-                                             minute: "numeric"})
-                            }
-                            
-                            var lineNumber = entity_data.attributes.departures[j].line;
+                                var lineNumber = entity_data.attributes.departures[j].line;
 
-                            var typeClass = '';
+                                var typeClass = '';
 
-                            switch (entity_data.attributes.departures[j].type) {
-                            case 'Buses':
-                                typeClass = ' ' + 'bus_red bus_red_' + lineNumber;
-                                break;
-                            case 'Trams':
-                                typeClass = ' ' + 'trm trm_' + lineNumber;
-                                break;
-                            case 'Metros':
-                                switch (lineNumber) {
-                                case '10':
-                                case '11':
-                                    typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
+                                switch (entity_data.attributes.departures[j].type) {
+                                case 'Buses':
+                                    typeClass = ' ' + 'bus_red bus_red_' + lineNumber;
                                     break;
-                                case '13':
-                                case '14':
-                                    typeClass = ' ' + 'met_red met_red_' + lineNumber;
+                                case 'Trams':
+                                    typeClass = ' ' + 'trm trm_' + lineNumber;
                                     break;
-                                case '17':
-                                case '18':
-                                case '19':
-                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
-                                    break;                                
+                                case 'Metros':
+                                    switch (lineNumber) {
+                                    case '10':
+                                    case '11':
+                                        typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
+                                        break;
+                                    case '13':
+                                    case '14':
+                                        typeClass = ' ' + 'met_red met_red_' + lineNumber;
+                                        break;
+                                    case '17':
+                                    case '18':
+                                    case '19':
+                                        typeClass = ' ' + 'met_green met_green_' + lineNumber;
+                                        break;                                
+                                    }
+                                    break;
+                                case 'Trains':
+                                    typeClass = ' ' + 'trn trn_' + lineNumber;
+                                    break;
                                 }
-                                break;
-                            case 'Trains':
-                                typeClass = ' ' + 'trn trn_' + lineNumber;
-                                break;
-                            }
 
-                            var spanClass = 'line-icon' + typeClass;
-                                                        
-                            html += `
-                                <tr>
-                                    <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
-                                    <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
-                                    <td class="col3">${depText}</td>
-                                </tr>
-                            `
+                                var spanClass = 'line-icon' + typeClass;
+                                                            
+                                html += `
+                                    <tr>
+                                        <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
+                                        <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
+                                        <td class="col3">${depText}</td>
+                                    </tr>
+                                `
                             }
                         }
                     }

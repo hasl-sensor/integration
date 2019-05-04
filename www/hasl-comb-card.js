@@ -282,7 +282,7 @@ class HASLCombCard extends HTMLElement {
                         if (typeof entity_data.attributes.deviations !== 'undefined') {
                             var maxDeviations = entity_data.attributes.deviations.length;
 
-                            if (config.max_deviations) {
+                            if (config.max_deviations && maxDeviations > 0) {
                                 maxDeviations = config.max_deviations;
                             }
 

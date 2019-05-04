@@ -189,7 +189,7 @@ class HASLCombCard extends HTMLElement {
 
                             var maxDepartures = entity_data.attributes.departures.length;
 
-                            if (config.max_departures) {
+                            if (config.max_departures && maxDepartures > 0) {
                                 maxDepartures = config.max_departures;
                             }
 

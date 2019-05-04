@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
 ## [Unreleased]
+- Added max_departures card config variable
+- Added max_deviations card config variable
+- Added loose card config variable
+- Reverted so that the alert icon renders in the same table row as the deviation title
+- Changed icon of the SL boats from ship to ferry
 
-- Meged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 
+- Merged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 
 - Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
 - Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
 - PEP8 Compliance

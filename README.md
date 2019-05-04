@@ -216,3 +216,9 @@ cards:
 - language: The texts will be rendered in this language (sv-SE or en-EN)
 
 - name: If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name
+
+- max_departures: Max departures to show (optional)
+
+- max_deviations: Max deviations to show (optional)
+
+- loose: Loose style of the card. A little bit more padding between the row. Default value false (optional)

@@ -134,6 +134,19 @@ class HASLCombCard extends HTMLElement {
             .line-icon.trm.trm_22 {
                 background-color: #d77d00;
             }
+
+             th.loose-icon, td.loose-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            th.loose-cell, td.loose-cell {
+                line-height: 20px;    
+            }
+            
+            th.loose-padding, td.loose-padding {
+                padding-left:16px;
+            }
             </style>`;
             // Add data to table.
             var updatedDate = "";
@@ -253,9 +266,9 @@ class HASLCombCard extends HTMLElement {
                                                             
                                 html += `
                                     <tr>
-                                        <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
-                                        <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
-                                        <td class="col3">${depText}</td>
+                                        <td class="col1 ${config.loose === true ? 'loose-icon' : '' }"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
+                                        <td class="col2 ${config.loose === true ? 'loose-cell loose-padding' : '' }"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
+                                        <td class="col3 ${config.loose === true ? 'loose-cell' : '' }">${depText}</td>
                                     </tr>
                                 `
                             }

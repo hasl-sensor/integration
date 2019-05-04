@@ -178,8 +178,7 @@ class HASLCombCard extends HTMLElement {
                                 maxDepartures = config.max_departures;
                             }
                             
-                            for (var j = 0; j < maxDepartures; j++) {
-                            
+                            for (var j = 0; j < maxDepartures; j++) {                            
                                 var depText = '';
                                 var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
                                 
@@ -264,7 +263,13 @@ class HASLCombCard extends HTMLElement {
                     }
                     if (config.deviations===true) {    
                         if (typeof entity_data.attributes.deviations !== 'undefined') {
-                            for (var k = 0; k < entity_data.attributes.deviations.length; k++) {
+                            var maxDeviations = entity_data.attributes.deviations.length;
+
+                            if (config.max_deviations) {
+                                maxDeviations = config.max_deviations;
+                            }
+
+                            for (var k = 0; k < maxDeviations; k++) {
                             html += `
                                 <tr>
                                     <td class="col1"><ha-icon class="alert" icon="mdi:alert-outline"></ha-icon></td>

@@ -196,6 +196,9 @@ cards:
     adjust_times: false
     hide_departed: false
     language: en-EN
+    max_departures: 5
+    max_deviations: 3
+    compact: false
     entities:
       - sensor.hasl_name
 ```
@@ -221,4 +224,4 @@ cards:
 
 - max_deviations: Max deviations to show (optional)
 
-- loose: Loose style of the card. A little bit more padding between the row. Default value false (optional)
+- compact: Compact style of the card. Default value true (optional)

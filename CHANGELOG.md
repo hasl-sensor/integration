@@ -8,8 +8,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Added max_departures card config variable
 - Added max_deviations card config variable
-- Added loose card config variable
-- Reverted so that the alert icon renders in the same table row as the deviation title
+- Added compact card config variable
+- Changed the valign of the alert icon
 - Changed icon of the SL boats from ship to ferry
 
 - Merged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 

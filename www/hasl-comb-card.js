@@ -31,6 +31,12 @@ class HASLCombCard extends HTMLElement {
             }
         }
 
+        var compact = false;
+
+        if (config.compact === true) {
+            compact = true;
+        }
+
         function getEntitiesContent(data) {
             var html = `<style>
             ha-card {
@@ -270,9 +276,9 @@ class HASLCombCard extends HTMLElement {
 
                                 html += `
                                     <tr>
-                                        <td class="col1 ${config.loose === true ? 'loose-icon' : ''}"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
-                                        <td class="col2 ${config.loose === true ? 'loose-cell loose-padding' : ''}"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
-                                        <td class="col3 ${config.loose === true ? 'loose-cell' : ''}">${depText}</td>
+                                        <td class="col1 ${compact === false ? 'loose-icon' : ''}"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
+                                        <td class="col2 ${compact === false ? 'loose-cell loose-padding' : ''}"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
+                                        <td class="col3 ${compact === false ? 'loose-cell' : ''}">${depText}</td>
                                     </tr>
                                 `
                             }
@@ -287,7 +293,7 @@ class HASLCombCard extends HTMLElement {
                             }
 
                             for (var k = 0; k < maxDeviations; k++) {
-                                if (config.loose === true) {
+                                if (compact === false) {
                                     html += `
                                         <tr>	
                                             <td align="left">&nbsp;</td>	

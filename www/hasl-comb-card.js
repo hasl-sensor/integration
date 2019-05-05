@@ -301,14 +301,10 @@ class HASLCombCard extends HTMLElement {
                                     `
                                 }
 
-                                html += `
+                                html += `                                        
                                     <tr>
-                                        <td class="col1"><ha-icon class="alert" icon="mdi:alert-outline"></ha-icon></td>
-                                        <td class="col2"><b>${entity_data.attributes.deviations[k].title}</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col1"></td>
-                                        <td class="col2"><i>${entity_data.attributes.deviations[k].details}</i></td>
+                                        <td class="col1" valign="top"><ha-icon class="alert" icon="mdi:alert-outline"></td>
+                                        <td class="col2"><b>${entity_data.attributes.deviations[k].title}</b><br/><i>${entity_data.attributes.deviations[k].details}</i></td>
                                     </tr>
                                 `
                             }

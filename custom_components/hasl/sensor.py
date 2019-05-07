@@ -244,7 +244,7 @@ class SLTLSensor(Entity):
             else:
                 _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
-                apidata = getCache(self._datakey)
+                apidata = self.getCache(self._datakey)
 
             # Return only the relevant portion of the results.
             for response in apidata:
@@ -490,7 +490,7 @@ class SLCombinedSensor(Entity):
             else:
                 _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
-                departuredata = getCache(self._ri4datakey)
+                departuredata = self.getCache(self._ri4datakey)
 
             departures = []
 
@@ -546,7 +546,7 @@ class SLCombinedSensor(Entity):
             else:
                 _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
-                deviationdata = getCache(self._si2datakey)
+                deviationdata = self.getCache(self._si2datakey)
 
             deviations = []
 

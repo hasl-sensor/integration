@@ -11,10 +11,10 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Added compact card config variable
 - Changed the valign of the alert icon
 - Changed icon of the SL boats from ship to ferry
-
 - Merged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 
 - Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
 - Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
+- Fix [#25](https://github.com/DSorlov/ha-sensor-sl/issues/25) stupid bug introduced by DSorlov =)
 - PEP8 Compliance
 
 ## [2.0.2] (2019-04-30)

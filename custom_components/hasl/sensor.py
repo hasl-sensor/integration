@@ -127,7 +127,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
             else:
                 _LOGGER.error("Sensor %s is missing tl2key attribute",
                               sensorconf[ATTR_FRIENDLY_NAME])
-    
+
     add_devices(sensors)
 
 

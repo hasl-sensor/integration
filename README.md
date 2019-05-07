@@ -196,6 +196,9 @@ cards:
     adjust_times: false
     hide_departed: false
     language: en-EN
+    max_departures: 5
+    max_deviations: 3
+    compact: false
     entities:
       - sensor.hasl_name
 ```
@@ -216,3 +219,9 @@ cards:
 - language: The texts will be rendered in this language (sv-SE or en-EN)
 
 - name: If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name
+
+- max_departures: Max departures to show (optional)
+
+- max_deviations: Max deviations to show (optional)
+
+- compact: Compact style of the card. Default value true (optional)

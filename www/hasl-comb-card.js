@@ -2,37 +2,43 @@ class HASLCombCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
             const card = document.createElement('ha-card');
-            this.content = document.createElement('div');     
+            this.content = document.createElement('div');
             card.appendChild(this.content);
             this.appendChild(card);
         }
-        
-        const config = this.config;    
+
+        const config = this.config;
         const lang = {
-         'sv-SE': {
-             entity_missing: 'Ingen data hittades',
-             line: 'Linje',
-             destination: 'Till',
-             departure: 'Avg&aring;ng',
-             min: 'min',
-             last_updated: 'Senast uppdaterad ',
-             now: 'Nu',
-             departed: 'Avg&aring;tt',
-         },
-         'en-EN': {
-             entity_missing: 'Entity data missing',
-             line: 'Line',
-             destination: 'Destination',
-             departure: 'Departure',
-             min: 'min',
-             last_updated: 'Last updated ',
-             now: 'Now',
-             departed: 'Departed',
-         }
+            'sv-SE': {
+                entity_missing: 'Ingen data hittades',
+                line: 'Linje',
+                destination: 'Till',
+                departure: 'Avg&aring;ng',
+                min: 'min',
+                last_updated: 'Senast uppdaterad ',
+                now: 'Nu',
+                departed: 'Avg&aring;tt',
+            },
+            'en-EN': {
+                entity_missing: 'Entity data missing',
+                line: 'Line',
+                destination: 'Destination',
+                departure: 'Departure',
+                min: 'min',
+                last_updated: 'Last updated ',
+                now: 'Now',
+                departed: 'Departed',
+            }
         }
-        
+
+        var compact = false;
+
+        if (config.compact === true) {
+            compact = true;
+        }
+
         function getEntitiesContent(data) {
-            var html =`<style>
+            var html = `<style>
             ha-card {
                 padding: 16px;
             }
@@ -134,27 +140,40 @@ class HASLCombCard extends HTMLElement {
             .line-icon.trm.trm_22 {
                 background-color: #d77d00;
             }
+
+             th.loose-icon, td.loose-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            th.loose-cell, td.loose-cell {
+                line-height: 20px;    
+            }
+            
+            th.loose-padding, td.loose-padding {
+                padding-left:16px;
+            }
             </style>`;
             // Add data to table.
             var updatedDate = "";
             var culture = "";
-            if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>" 
+            if (config.name) html += " <div class=\"header\"><div class=\"name\">" + config.name + "</div></div>"
             config.language ? culture = config.language : culture = navigator.language || navigator.userLanguage
             if (!lang.hasOwnProperty(culture)) culture = 'sv-SE'
-			
-            for (var i = 0; i < data.length; i++){
+
+            for (var i = 0; i < data.length; i++) {
 
                 const entity_data = hass.states[data[i]]
-                if (typeof entity_data === 'undefined'){
+                if (typeof entity_data === 'undefined') {
                     var str = lang[culture].entity_missing
                     console.log(str)
                 }
-                else{
-                    if (!config.name) html +="<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"                    
+                else {
+                    if (!config.name) html += "<div class=\"header\">" + entity_data.attributes.friendly_name + "</div>"
                     html += "<table class=\"sl-table\">"
 
-                    if (config.departures===true) {
-                        if (config.header === true) {    
+                    if (config.departures === true) {
+                        if (config.header === true) {
                             html += `
                                <tr>
                                     <th class="col1">${lang[culture].line}</th>
@@ -165,128 +184,149 @@ class HASLCombCard extends HTMLElement {
                         }
 
                         if (typeof entity_data.attributes.departures !== 'undefined') {
-                            
+
                             var minutesSinceUpdate = 0;
-                            if (config.adjust_times===true && config.updated===true) {
+                            if (config.adjust_times === true && config.updated === true) {
                                 var updatedDate = new Date(entity_data.last_updated);
                                 var now = new Date();
                                 minutesSinceUpdate =
                                     Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
-                            }                            
-                            
-                            for (var j = 0; j < entity_data.attributes.departures.length; j++) {
-                            
-                            var depText = '';
-                            var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
-                            
-                            if (config.timeleft===true) {    
-                                
-                                if (config.adjust_times===true) {
-                                    if (minutesSinceUpdate > 0) {
-                                        if (depMin > 0) {
-                                            depText = "" + depMin + " "+ lang[culture].min;
-                                            if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time===true) {
-                                                depText += " (" + entity_data.attributes.departures[j].departure + ")";
+                            }
+
+                            var maxDepartures = entity_data.attributes.departures.length;
+
+                            if (config.max_departures && maxDepartures > 0) {
+                                maxDepartures = config.max_departures;
+                            }
+
+                            for (var j = 0; j < maxDepartures; j++) {
+                                var depText = '';
+                                var depMin = entity_data.attributes.departures[j].time - minutesSinceUpdate;
+
+                                if (config.timeleft === true) {
+
+                                    if (config.adjust_times === true) {
+                                        if (minutesSinceUpdate > 0) {
+                                            if (depMin > 0) {
+                                                depText = "" + depMin + " " + lang[culture].min;
+                                                if (entity_data.attributes.departures[j].departure.indexOf(":") > -1 || config.always_show_time === true) {
+                                                    depText += " (" + entity_data.attributes.departures[j].departure + ")";
+                                                }
+                                            } else if (depMin === 0) {
+                                                depText = lang[culture].now;
+                                            } else if (depMin < 0) {
+                                                if (config.hide_departed) {
+                                                    continue;
+                                                }
+                                                depText = lang[culture].departed;
                                             }
-                                        } else if (depMin === 0) {
-                                            depText = lang[culture].now;
-                                        } else if (depMin < 0) {
-                                            if (config.hide_departed) {
-                                                continue;
-                                            }
-                                            depText = lang[culture].departed;
+                                        } else {
+                                            depText = entity_data.attributes.departures[j].departure.replace('min', lang[culture].min);
                                         }
                                     } else {
-                                        depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-                                    }                                
+                                        depText = entity_data.attributes.departures[j].departure.replace('min', lang[culture].min);
+                                    }
+
                                 } else {
-                                    depText = entity_data.attributes.departures[j].departure.replace('min',lang[culture].min);
-                                }    
-                                
-                            } else {
-                                if (depMin < 0 && config.hide_departed) {
-                                    continue;
+                                    if (depMin < 0 && config.hide_departed) {
+                                        continue;
+                                    }
+
+                                    var expectedTime = new Date(entity_data.attributes.departures[j].expected);
+                                    depText = expectedTime.toLocaleTimeString(culture, {
+                                        hour: "numeric",
+                                        minute: "numeric"
+                                    })
                                 }
-                                                
-                                var expectedTime = new Date(entity_data.attributes.departures[j].expected);
-                                depText = expectedTime.toLocaleTimeString(culture, { hour: "numeric", 
-                                             minute: "numeric"})
-                            }
-                            
-                            var lineNumber = entity_data.attributes.departures[j].line;
 
-                            var typeClass = '';
+                                var lineNumber = entity_data.attributes.departures[j].line;
 
-                            switch (entity_data.attributes.departures[j].type) {
-                            case 'Buses':
-                                typeClass = ' ' + 'bus_red bus_red_' + lineNumber;
-                                break;
-                            case 'Trams':
-                                typeClass = ' ' + 'trm trm_' + lineNumber;
-                                break;
-                            case 'Metros':
-                                switch (lineNumber) {
-                                case '10':
-                                case '11':
-                                    typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
-                                    break;
-                                case '13':
-                                case '14':
-                                    typeClass = ' ' + 'met_red met_red_' + lineNumber;
-                                    break;
-                                case '17':
-                                case '18':
-                                case '19':
-                                    typeClass = ' ' + 'met_green met_green_' + lineNumber;
-                                    break;                                
+                                var typeClass = '';
+
+                                switch (entity_data.attributes.departures[j].type) {
+                                    case 'Buses':
+                                        typeClass = ' ' + 'bus_red bus_red_' + lineNumber;
+                                        break;
+                                    case 'Trams':
+                                        typeClass = ' ' + 'trm trm_' + lineNumber;
+                                        break;
+                                    case 'Metros':
+                                        switch (lineNumber) {
+                                            case '10':
+                                            case '11':
+                                                typeClass = ' ' + 'met_blue met_blue_' + lineNumber;;
+                                                break;
+                                            case '13':
+                                            case '14':
+                                                typeClass = ' ' + 'met_red met_red_' + lineNumber;
+                                                break;
+                                            case '17':
+                                            case '18':
+                                            case '19':
+                                                typeClass = ' ' + 'met_green met_green_' + lineNumber;
+                                                break;
+                                        }
+                                        break;
+                                    case 'Trains':
+                                        typeClass = ' ' + 'trn trn_' + lineNumber;
+                                        break;
                                 }
-                                break;
-                            case 'Trains':
-                                typeClass = ' ' + 'trn trn_' + lineNumber;
-                                break;
-                            }
 
-                            var spanClass = 'line-icon' + typeClass;
-                                                        
-                            html += `
-                                <tr>
-                                    <td class="col1"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
-                                    <td class="col2"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
-                                    <td class="col3">${depText}</td>
-                                </tr>
-                            `
+                                var spanClass = 'line-icon' + typeClass;
+
+                                html += `
+                                    <tr>
+                                        <td class="col1 ${compact === false ? 'loose-icon' : ''}"><ha-icon icon="${entity_data.attributes.departures[j].icon}"></ha-icon></td>
+                                        <td class="col2 ${compact === false ? 'loose-cell loose-padding' : ''}"><span class="${spanClass}">${lineNumber}</span> ${entity_data.attributes.departures[j].destination}</td>
+                                        <td class="col3 ${compact === false ? 'loose-cell' : ''}">${depText}</td>
+                                    </tr>
+                                `
                             }
                         }
                     }
-                    if (config.deviations===true) {    
+                    if (config.deviations === true) {
                         if (typeof entity_data.attributes.deviations !== 'undefined') {
-                            for (var k = 0; k < entity_data.attributes.deviations.length; k++) {
-                            html += `
-                                <tr>
-                                    <td class="col1"><ha-icon class="alert" icon="mdi:alert-outline"></ha-icon></td>
-                                    <td class="col2" colspan="2"><b>${entity_data.attributes.deviations[k].title}</b><br/><i>${entity_data.attributes.deviations[k].details}</i></td>
-                                </tr>
-                            `
+                            var maxDeviations = entity_data.attributes.deviations.length;
+
+                            if (config.max_deviations && maxDeviations > 0) {
+                                maxDeviations = config.max_deviations;
+                            }
+
+                            for (var k = 0; k < maxDeviations; k++) {
+                                if (compact === false) {
+                                    html += `
+                                        <tr>	
+                                            <td align="left">&nbsp;</td>	
+                                        </tr>
+                                    `
+                                }
+
+                                html += `                                        
+                                    <tr>
+                                        <td class="col1" valign="top"><ha-icon class="alert" icon="mdi:alert-outline"></td>
+                                        <td class="col2"><b>${entity_data.attributes.deviations[k].title}</b><br/><i>${entity_data.attributes.deviations[k].details}</i></td>
+                                    </tr>
+                                `
                             }
                         }
                     } //deviations
-                    if (config.updated===true) {    
+                    if (config.updated === true) {
                         var updatedDate = new Date(entity_data.last_updated);
                         var updatedValue = updatedDate.toLocaleString(culture);
-                        
-                        if (config.adjust_times===true) {
+
+                        if (config.adjust_times === true) {
                             var now = new Date();
                             var minutesSinceUpdate =
                                 Math.floor(((now.getTime() - updatedDate.getTime()) / 1000 / 60));
-                            updatedValue = "" + minutesSinceUpdate + " "+ lang[culture].min +" (" + updatedDate.toLocaleString(culture) + ")";
-                        }                    
-                        
+                            updatedValue = "" + minutesSinceUpdate + " " + lang[culture].min + " (" + updatedDate.toLocaleString(culture) + ")";
+                        }
+
                         html += `<tr>
                                 <td colspan="3" align="left"><sub><i>${lang[culture].last_updated} ${updatedValue}</i></sub></th>
                             </tr>`;
-                    }    
+                    }
                     html += `</table>`;
-                    
+
                 }
             }
             return html;
@@ -298,7 +338,7 @@ class HASLCombCard extends HTMLElement {
         if (!config.entities) {
             throw new Error('You need to define one or more entities');
         }
-    this.config = config;
+        this.config = config;
     }
 
     // The height of your card. Home Assistant uses this to automatically

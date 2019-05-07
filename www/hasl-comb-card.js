@@ -88,6 +88,7 @@ class HASLCombCard extends HTMLElement {
             th.col3, td.col3 {
                 text-align: right;
                 line-height: 18px;
+                min-width: 50px;
             }
 
             /* Icons - Default for Boats and Metro Blue Line */

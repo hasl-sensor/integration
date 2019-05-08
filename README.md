@@ -14,8 +14,8 @@ First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and cr
 Since this is a custom component it needs to manually installed. [Custom Updater](custom_updater.md) can be used to automatically update once new versions gets released. To install copy
 
 [`hasl/__init__.py`](../custom_components/hasl/__init__.py) at `<config>/custom_components/hasl/__init__.py`  
-[`hasl/device_tracker.py`](../custom_components/life360/device_tracker.py) at `<config>/custom_components/hasl/sensor.py`  
-[`hasl/manifest.json`](../custom_components/life360/manifest.json) at `<config>/custom_components/hasl/manifest.json`
+[`hasl/sensor.py`](../custom_components/hasl/sensor.py) at `<config>/custom_components/hasl/sensor.py`  
+[`hasl/manifest.json`](../custom_components/hasl/manifest.json) at `<config>/custom_components/hasl/manifest.json`
 
 where `<config>` is your Home Assistant configuration directory.
 

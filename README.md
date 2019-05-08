@@ -81,7 +81,7 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
 ## Display of sensor data
-The combination sensor can be used with [hasl-comb-card](hasl-comb-card.md) for displaying departure board type information as in the screenshot below. For the tl2 sensor you can instead use the hasl-tl2-card](hasl-tl2-card.md) card that displays overall traffic situation for SL.
+The combination sensor can be used with [hasl-comb-card](hasl-comb-card.md) for displaying departure board type information as in the screenshot below. For the tl2 sensor you can instead use the [hasl-tl2-card](hasl-tl2-card.md) card that displays overall traffic situation for SL.
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 

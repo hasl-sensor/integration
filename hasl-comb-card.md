@@ -8,7 +8,7 @@ Present departure times from custom component SL-sensor in a card. Huge thanks t
 ## Installation
 For updating instructions see [Custom Updater](custom_updater.md).
 
-Copy [`hasl/www/hasl-comb-card.js`](../www/hasl-comb-card.js) to `<config>/www/hasl-comb-card.js`  
+Copy [`hasl/www/hasl-comb-card.js`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/www/hasl-comb-card.js) to `<config>/www/hasl-comb-card.js`  
 
  and use the following in your ui-lovelace.yaml file:
  

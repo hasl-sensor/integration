@@ -6,8 +6,6 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 >__NOTE__: If you are using pre 0.92 version of Home Assistant you will need to use release 1.0.3 or older from here and follow the instructions in the release files there instead (and there is some known issues with that release). The below information is for 0.92 or later versions of Home Assistant only.
 
-![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
-
 ## Installation
 
 First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get tl2 sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
@@ -81,7 +79,11 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
-  
+
+## Display of sensor data
+The combination sensor can be used with [hasl-comb-card](hasl-comb-card.md) for displaying departure board type information as in the screenshot below. For the tl2 sensor you can instead use the hasl-tl2-card](hasl-tl2-card.md) card that displays overall traffic situation for SL.
+
+![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
 ## API-call restrictions and optimizations
 

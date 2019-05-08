@@ -1,4 +1,4 @@
-SL Combination Sensor Card
+SL Combination Sensor Lovelace Card
 ===============================
 This describes the sensor card for use with SL Comb Sensor as described in the [Home Assistant SL Sensor readme](README.md) To display data using Lovelace, you can try the included card.
 Present departure times from custom component SL-sensor in a card. Huge thanks to [@dimmanramone](https://github.com/dimmanramone) for pimping the card!

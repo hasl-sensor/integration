@@ -220,10 +220,10 @@ class SLTLSensor(Entity):
 
             # Icon table used for HomeAssistant.
             icons = {
-                'EventGood': 'mdi:check-bold',
-                'EventMinor': 'mdi:clock-outline',
-                'EventMajor': 'mdi:skull-crossbones-outline',
-                'EventPlanned': 'mdi:triangle-outline',
+                'EventGood': 'mdi:check',
+                'EventMinor': 'mdi:clock-alert-outline',
+                'EventMajor': 'mdi:close',
+                'EventPlanned': 'mdi:triangle-outline'
                 }
 
             # If the same API have already made the request in within

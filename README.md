@@ -43,6 +43,10 @@ sensor:
 
 - **tl2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for tl2 sensors)
 
+- **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
+
+- **api_minimization** (*Optional*): Use the api-call-minimization-strategy (default `True`)
+
 - **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `comb` or `tl2`:
   
   
@@ -89,4 +93,4 @@ The combination sensor can be used with [hasl-comb-card](hasl-comb-card.md) for 
 
 The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
 The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
-You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls.
+You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.

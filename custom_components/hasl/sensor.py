@@ -268,6 +268,15 @@ class SLTLSensor(Entity):
                 'EventPlanned': 'mdi:triangle-outline'
                 }
 
+            trafficTypeIcons = {
+                'ferry': 'mdi:ferry',
+                'bus': 'mdi:bus',
+                'tram': 'mdi:tram',
+                'train': 'mdi:train',
+                'local': 'mdi:train-variant',
+                'metro': 'mdi:subway-variant'
+                }
+
             # If the same API have already made the request in within
             # the specified interval then use that data instead of
             # requesting it again and spare some innocent credits from dying.
@@ -297,10 +306,12 @@ class SLTLSensor(Entity):
                         statuses.get(response['StatusIcon'])
                     newdata[statustype + '_icon'] = \
                         icons.get(response['StatusIcon'])
+                    newdata[statustype + '_type_icon'] = \
+                        trafficTypeIcons.get(statustype)
 
                     for event in response['Events']:
-                        event['StatusIcon'] = icons.get(event['StatusIcon'])
                         event['Status'] = statuses.get(event['StatusIcon'])
+                        event['StatusIcon'] = icons.get(event['StatusIcon'])                      
 
                     newdata[statustype + '_events'] = response['Events']
 

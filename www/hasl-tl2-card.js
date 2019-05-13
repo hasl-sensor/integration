@@ -247,8 +247,6 @@ class HASLTl2Card extends HTMLElement {
         if (events.length > 0 && config.hide_events !== true) {
           for (var j = 0; j < events.length; j++) {
     
-            var eventStatusIcon = events[j].StatusIcon;
-    
             switch (events[j].TrafficLine) {
               case 'Spårväg City':
                 iconClass = " trm trm_7";
@@ -266,7 +264,7 @@ class HASLTl2Card extends HTMLElement {
             
             var showEvent = true;
 
-            if(config.show_only_disturbances === true && events[j].StatusIcon === "mdi:check")
+            if(config.show_only_disturbances === true && events[j].Status === "Good")
             {
               showEvent = false;
             }
@@ -277,7 +275,7 @@ class HASLTl2Card extends HTMLElement {
                 html += `<td class="col1"></td>`
                 html += `<td class="col2">${events[j].TrafficLine !== null ?
                         `<span class="line-icon${iconClass}"><b>${events[j].TrafficLine}</b></span><br/>` : ''} ${events[j].Message.replace("Övriga linjer:", "<span class=\"line-icon\"><b>Övriga linjer</b></span><br/>").replace("inga större störningar", "Inga större störningar")}</td>` 
-                html += `<td class="col3" valign="top"><ha-icon class="${events[j].StatusIcon.replace("Event", "").toLowerCase()}" icon="${eventStatusIcon}"></ha-icon></td>`  
+                html += `<td class="col3" valign="top"><ha-icon class="${events[j].Status.toLowerCase()}" icon="${events[j].StatusIcon}"></ha-icon></td>`  
               html += `</tr>`
             }            
           }

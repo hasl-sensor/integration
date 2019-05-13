@@ -20,7 +20,7 @@ from homeassistant.helpers.event import (async_track_point_in_utc_time,
 from homeassistant.util import Throttle
 from homeassistant.util.dt import now
 
-__version__ = '2.0.1'
+__version__ = '2.1.0'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 
@@ -35,6 +35,8 @@ CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
 CONF_SENSORPROPERTY = 'property'
 CONF_TRAFFIC_CLASS = 'traffic_class'
+CONF_VERSION = 'version_sensor'
+CONF_USE_MINIMIZATION = 'api_minimization'
 
 # Default values for configuration.
 DEFAULT_INTERVAL = timedelta(minutes=10)
@@ -51,6 +53,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_RI4_KEY): cv.string,
     vol.Optional(CONF_SI2_KEY): cv.string,
     vol.Optional(CONF_TL2_KEY): cv.string,
+    vol.Optional(CONF_VERSION, default=False): cv.boolean,
+    vol.Optional(CONF_USE_MINIMIZATION, default=True): cv.boolean,
 
     vol.Required(CONF_SENSORS, default=[]):
         vol.All(cv.ensure_list, [vol.All({
@@ -83,6 +87,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     sensors = []
 
+    if config[CONF_VERSION]:
+        sensors.append(SLVERSensor(hass))
+
     for sensorconf in config[CONF_SENSORS]:
 
         if sensorconf[CONF_SENSOR_TYPE] == 'comb':
@@ -103,6 +110,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     sensorconf.get(CONF_DIRECTION),
                     sensorconf.get(CONF_TIMEWINDOW),
                     sensorconf.get(CONF_SENSORPROPERTY),
+                    config.get(CONF_USE_MINIMIZATION)
                     ))
 
                 _LOGGER.info("Created comb sensor %s...", sensorname)
@@ -121,6 +129,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     sensorconf.get(CONF_ENABLED_SENSOR),
                     sensorconf.get(CONF_SCAN_INTERVAL),
                     sensorconf.get(CONF_TRAFFIC_CLASS),
+                    config.get(CONF_USE_MINIMIZATION)
                     ))
 
                 _LOGGER.info("Created tl2 sensor %s...", sensorname)
@@ -131,10 +140,42 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     add_devices(sensors)
 
 
+class SLVERSensor(Entity):
+    """Trafic Situation Sensor."""
+    def __init__(self, hass):
+
+        from hasl import haslapi
+        self._hass = hass
+        self._name = 'HASL Version'
+        self._version = __version__
+        self._py_version = haslapi.version()
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def icon(self):
+        """ Return the icon for the frontend."""
+        return None
+
+    @property
+    def device_state_attributes(self):
+        """ Return the sensor attributes."""
+        return {'hasl': self._version, 'pyHasl': self._py_version}
+
+    @property
+    def state(self):
+        """ Return the state of the sensor."""
+        return self._version + "/" + self._py_version
+
+
 class SLTLSensor(Entity):
     """Trafic Situation Sensor."""
     def __init__(self, hass, tl2key, friendly_name,
-                 enabled_sensor, interval, type):
+                 enabled_sensor, interval, type,
+                 minimization):
 
         from hasl import tl2api
         self._tl2api = tl2api(tl2key)
@@ -147,6 +188,7 @@ class SLTLSensor(Entity):
         self._sensordata = []
         self._lastupdate = '-'
         self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
+        self._minimization = minimization
 
         if not hass.data[DOMAIN].get(self._datakey):
             hass.data[DOMAIN][self._datakey] = ''
@@ -231,7 +273,7 @@ class SLTLSensor(Entity):
             # requesting it again and spare some innocent credits from dying.
             cacheage = self._hass.data[DOMAIN][self._datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage:
+                    - self._interval > cacheage or self._minimization:
 
                 _LOGGER.info("Updating cache for %s...", self._name)
 
@@ -255,6 +297,11 @@ class SLTLSensor(Entity):
                         statuses.get(response['StatusIcon'])
                     newdata[statustype + '_icon'] = \
                         icons.get(response['StatusIcon'])
+
+                    for event in response['Events']:
+                        event['StatusIcon'] = icons.get(event['StatusIcon'])
+                        event['Status'] = statuses.get(event['StatusIcon'])
+
                     newdata[statustype + '_events'] = response['Events']
 
             # Attribution and update sensor data.
@@ -271,7 +318,8 @@ class SLCombinedSensor(Entity):
 
     def __init__(self, hass, si2key, ri4key, siteid,
                  lines, friendly_name, enabled_sensor,
-                 interval, direction, timewindow, sensorproperty):
+                 interval, direction, timewindow, sensorproperty,
+                 minimization):
         """Initialize"""
 
         # The table of resulttypes and the corresponding units of measure.
@@ -305,6 +353,7 @@ class SLCombinedSensor(Entity):
         self._interval = interval
         self._unit_of_measure = unit_table.get(self._sensorproperty, 'min')
         self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
+        self._minimization = minimization
 
         if not hass.data[DOMAIN].get(self._ri4datakey):
             hass.data[DOMAIN][self._ri4datakey] = ''
@@ -477,7 +526,7 @@ class SLCombinedSensor(Entity):
 
             cacheage = self._hass.data[DOMAIN][self._ri4datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage:
+                    - self._interval > cacheage or self._minimization:
 
                 _LOGGER.info("Updating cache for %s...", self._name)
 
@@ -534,7 +583,8 @@ class SLCombinedSensor(Entity):
             _LOGGER.info("Updating deviations for %s...", self._name)
             cacheage = self._hass.data[DOMAIN][self._si2datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage:
+                    - self._interval > cacheage or self._minimization:
+
                 _LOGGER.info('Updating cache for %s...', self._name)
 
                 deviationdata = self._si2api.request()

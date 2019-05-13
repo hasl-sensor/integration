@@ -4,5 +4,5 @@
   "documentation": "https://github.com/DSorlov/ha-sensor-sl",
   "dependencies": [],
   "codeowners": ["@DSorlov"],
-  "requirements": ["hasl==2.0.0"]
+  "requirements": ["hasl==2.1.0"]
 } 

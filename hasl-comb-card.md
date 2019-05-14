@@ -51,7 +51,7 @@ cards:
 
 - **hide_departed** (*Optional*): This can hide already departured transports
 
-- **language** (*Optional*): The texts will be rendered in this language. Can be one of `sv-SE` or `en-EN`-
+- **language** (*Optional*): The texts will be rendered in this language. Can be one of `sv-SE` or `en-EN`
 
 - **name** (*Optional*): If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name
 

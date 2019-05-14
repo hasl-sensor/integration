@@ -17,23 +17,28 @@ ferry_events: [{
   SortIndex: 10000
   TrafficLine: null
   EventInfoUrl: null
-  Status: null
-  StatusIcon: EventGood
+  Status: Good
+  StatusIcon: mdi:check
 }]
 bus_status: Good
-bus_icon: mdi:check-bold
+bus_icon: mdi:bus
+bus_status_icon: mdi:check
 bus_events: []
 tram_status: Good
-tram_icon: mdi:check-bold
+tram_icon: mdi:tram
+tram_status_icon: mdi:check
 tram_events: []
 local_status: Good
-local_icon: mdi:check-bold
+local_icon: mdi:train-variant
+local_status_icon: mdi:check
 local_events: []
 train_status: Good
-train_icon: mdi:check-bold
+train_icon: mdi:train
+train_status_icon: mdi:check
 train_events: []
 metro_status: Good
-metro_icon: mdi:check-bold
+metro_icon: mdi:subway-variant
+metro_status_icon: mdi:check
 metro_events: []
 attribution: Stockholms Lokaltrafik
 last_updated: 2019-04-30 11:37:19

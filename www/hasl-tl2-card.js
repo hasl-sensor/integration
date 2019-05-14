@@ -188,44 +188,44 @@ class HASLTl2Card extends HTMLElement {
 
     function getTableRow(trafficType, attributes, culture) {
       var status = attributes.metro_status;
-      var status_icon = attributes.metro_icon;
-      var traffic_type_icon = "mdi:subway-variant";
+      var status_icon = attributes.metro_status_icon;
+      var type_icon = attributes.metro_icon;
       var events = attributes.metro_events;
       var iconClass = '';
     
       switch (trafficType) {
         case 'bus':
           status = attributes.bus_status;
-          status_icon = attributes.bus_icon;
+          status_icon = attributes.bus_status_icon;
           events = attributes.bus_events;
-          traffic_type_icon = "mdi:bus";
+          type_icon = attributes.bus_icon;
           iconClass = ' bus_red';
           break;
         case 'ferry':
           status = attributes.ferry_status;
-          status_icon = attributes.ferry_icon;
+          status_icon = attributes.ferry_status_icon;
           events = attributes.ferry_events;
-          traffic_type_icon = "mdi:ferry";
+          type_icon = attributes.ferry_icon;
           break;
         case 'tram':
           status = attributes.tram_status;
-          status_icon = attributes.tram_icon;
+          status_icon = attributes.tram_status_icon;
           events = attributes.tram_events;
-          traffic_type_icon = "mdi:tram";
+          type_icon = attributes.tram_icon;
           iconClass = ' trm';
           break;
         case 'commuter_train':
           status = attributes.train_status;
-          status_icon = attributes.train_icon;
+          status_icon = attributes.train_status_icon;
           events = attributes.train_events;
-          traffic_type_icon = "mdi:train";
+          type_icon = attributes.train_icon;
           iconClass = ' trn';
           break;
         case 'light_railway':
           status = attributes.local_status;
-          status_icon = attributes.local_icon;
+          status_icon = attributes.local_status_icon;
           events = attributes.local_events;
-          traffic_type_icon = "mdi:train-variant";
+          type_icon = attributes.local_icon;
           iconClass = ' trm trm_21';
           break;
       }
@@ -238,7 +238,7 @@ class HASLTl2Card extends HTMLElement {
         html += "<table class=\"sl-traffic-status-table\">"
         html += `
             <tr>
-                <th class="col1"><ha-icon icon="${traffic_type_icon}"></ha-icon></th>
+                <th class="col1"><ha-icon icon="${type_icon}"></ha-icon></th>
                 <th class="col2">${trafficTypeLang}</th>      
                 <th class="col3"><ha-icon class="${status.toLowerCase()}" icon="${status_icon}"></ha-icon></td>                    
             </tr>

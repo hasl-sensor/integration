@@ -261,7 +261,7 @@ class SLTLSensor(Entity):
                 }
 
             # Icon table used for HomeAssistant.
-            icons = {
+            statusIcons = {
                 'EventGood': 'mdi:check',
                 'EventMinor': 'mdi:clock-alert-outline',
                 'EventMajor': 'mdi:close',
@@ -304,14 +304,14 @@ class SLTLSensor(Entity):
                     statustype = ('ferry' if type == 'fer' else type)
                     newdata[statustype + '_status'] = \
                         statuses.get(response['StatusIcon'])
+                    newdata[statustype + '_status_icon'] = \
+                        statusIcons.get(response['StatusIcon'])
                     newdata[statustype + '_icon'] = \
-                        icons.get(response['StatusIcon'])
-                    newdata[statustype + '_type_icon'] = \
                         trafficTypeIcons.get(statustype)
 
                     for event in response['Events']:
                         event['Status'] = statuses.get(event['StatusIcon'])
-                        event['StatusIcon'] = icons.get(event['StatusIcon'])                      
+                        event['StatusIcon'] = statusIcons.get(event['StatusIcon'])                      
 
                     newdata[statustype + '_events'] = response['Events']
 

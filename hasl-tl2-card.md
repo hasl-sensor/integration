@@ -2,6 +2,8 @@ SL TL2 Sensor Lovelace Card
 ===============================
 This describes the sensor card for use with SL TL2 Sensor as described in the [Home Assistant SL Sensor readme](README.md) To display data using Lovelace, you can try the included card.
 
+![card](https://user-images.githubusercontent.com/1217994/57677754-e1773980-7627-11e9-81e7-4b991a6e4dc1.png)
+
 ## Installation
 For updating instructions see [Custom Updater](custom_updater.md).
 

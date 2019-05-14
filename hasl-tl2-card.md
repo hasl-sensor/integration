@@ -32,7 +32,7 @@ cards:
 ## Configration variables 
 - **name** (*Optional*): If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name
 
-- **language** (*Optional*): The texts will be rendered in this language. Can be one of `sv-SE` or `en-EN`-
+- **language** (*Optional*): The texts will be rendered in this language. Can be one of `sv-SE` or `en-EN`
 
 - **show_time**: Render the time beside the name of the card
 

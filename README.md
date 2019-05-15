@@ -25,7 +25,7 @@ sensor:
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  statuskey: YOUR-OPTIONAL-status-KEY-HERE
+  ti2key: YOUR-OPTIONAL-TI2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
      sensor_type: departures
@@ -85,17 +85,16 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
 ## Display of sensor data
-The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options. 
+The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
-## Custom Updater for HASL
-===============================
+## Automatic Updates with Custom Updater
 
 This component is not part of the official distribution but can be updated with the help of Custom Updater.
-For more information, see [[custom_updater](https://github.com/custom-components/custom_updater/wiki/Installation)]
+For more information, see [Custom Updater](https://github.com/custom-components/custom_updater/wiki/Installation).
 
-For update check of this sensor and cards, add the following to your `configuration.yaml`.
+For update check of HASL, add the following to your `configuration.yaml`.
 
 ```yaml
 custom_updater:

@@ -1,4 +1,4 @@
-SL TL2 Sensor Description
+SL Status Sensor Object
 ===============================
 
 The sensor value is the last update of the sensor.  There are also a number of attributes that can help you with filtering:

@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
 - Fix [#25](https://github.com/DSorlov/ha-sensor-sl/issues/25) stupid bug introduced by DSorlov =)
 - PEP8 Compliance
+- Branched all display cards to new project [hasl-cards](https://github.com/DSorlov/hasl-cards).
+- Renamed repository from ha-sensor-sl to hasl-platform to conform to new naming.
+- Updated massive amounts of links and documentation
 
 ## [2.0.2] (2019-04-30)
 

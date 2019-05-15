@@ -44,7 +44,7 @@ DEFAULT_TIMEWINDOW = 30
 DEFAULT_DIRECTION = '0'
 DEFAULT_SENSORPROPERTY = 'min'
 DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
-DEFAULT_SENSORTYPE = 'comb'
+DEFAULT_SENSORTYPE = 'dep'
 DEFAULT_CACHE_FILE = 'haslcache.json'
 
 # Defining the configuration schema.
@@ -60,7 +60,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         vol.All(cv.ensure_list, [vol.All({
             vol.Required(ATTR_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_SENSOR_TYPE, default=DEFAULT_SENSORTYPE):
-                vol.In(['comb', 'tl2']),
+                vol.In(['departures', 'status', 'comb', 'tl2']),
             vol.Optional(CONF_ENABLED_SENSOR): cv.string,
             vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_INTERVAL):
                 vol.Any(cv.time_period, cv.positive_timedelta),
@@ -92,13 +92,15 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     for sensorconf in config[CONF_SENSORS]:
 
-        if sensorconf[CONF_SENSOR_TYPE] == 'comb':
+        if sensorconf[CONF_SENSOR_TYPE] == 'departures' or
+           sensorconf[CONF_SENSOR_TYPE] == 'comb':
+           
             sitekey = sensorconf.get(CONF_SITEID)
             si2key = config.get(CONF_SI2_KEY)
             ri4key = config.get(CONF_RI4_KEY)
             if sitekey and si2key and ri4key:
                 sensorname = sensorconf[ATTR_FRIENDLY_NAME]
-                sensors.append(SLCombinedSensor(
+                sensors.append(SLDeparturesSensor(
                     hass,
                     si2key,
                     ri4key,
@@ -113,16 +115,17 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     config.get(CONF_USE_MINIMIZATION)
                     ))
 
-                _LOGGER.info("Created comb sensor %s...", sensorname)
+                _LOGGER.info("Created departures sensor %s...", sensorname)
             else:
                 _LOGGER.error("Sensor %s is missing site, si2key or ri4key",
                               sensorconf[ATTR_FRIENDLY_NAME])
 
-        if sensorconf[CONF_SENSOR_TYPE] == 'tl2':
+        if sensorconf[CONF_SENSOR_TYPE] == 'status' or
+           sensorconf[CONF_SENSOR_TYPE] == 'tl2':
             tl2key = config.get(CONF_TL2_KEY)
             if tl2key:
                 sensorname = sensorconf[ATTR_FRIENDLY_NAME]
-                sensors.append(SLTLSensor(
+                sensors.append(SLStatusSensor(
                     hass,
                     tl2key,
                     sensorname,
@@ -132,7 +135,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                     config.get(CONF_USE_MINIMIZATION)
                     ))
 
-                _LOGGER.info("Created tl2 sensor %s...", sensorname)
+                _LOGGER.info("Created status sensor %s...", sensorname)
             else:
                 _LOGGER.error("Sensor %s is missing tl2key attribute",
                               sensorconf[ATTR_FRIENDLY_NAME])
@@ -172,7 +175,7 @@ class SLVERSensor(Entity):
         return self._version + "/" + self._py_version
 
 
-class SLTLSensor(Entity):
+class SLStatusSensor(Entity):
     """Trafic Situation Sensor."""
     def __init__(self, hass, tl2key, friendly_name,
                  enabled_sensor, interval, type,
@@ -317,7 +320,7 @@ class SLTLSensor(Entity):
             self._lastupdate = newdata['last_updated']
 
 
-class SLCombinedSensor(Entity):
+class SLDeparturesSensor(Entity):
     """Departure board for one SL site."""
 
     def __init__(self, hass, si2key, ri4key, siteid,
@@ -618,3 +621,4 @@ class SLCombinedSensor(Entity):
                                                 key=lambda k: k['sortOrder'])
 
             self._lastupdate = now(self._hass.config.time_zone)
+    

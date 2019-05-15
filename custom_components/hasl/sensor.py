@@ -302,6 +302,9 @@ class SLTLSensor(Entity):
                     for event in response['Events']:
                         event['StatusIcon'] = icons.get(event['StatusIcon'])
                         event['Status'] = statuses.get(event['StatusIcon'])
+                        if not event['Status']:
+                            event['Status'] = \
+                                statuses.get(response['StatusIcon'])
 
                     newdata[statustype + '_events'] = response['Events']
 

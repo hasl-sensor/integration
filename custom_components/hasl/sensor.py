@@ -92,13 +92,13 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     for sensorconf in config[CONF_SENSORS]:
 
-        if sensorconf[CONF_SENSOR_TYPE] == 'departures' or
+        if sensorconf[CONF_SENSOR_TYPE] == 'departures' or \
            sensorconf[CONF_SENSOR_TYPE] == 'comb':
-           
+
             sitekey = sensorconf.get(CONF_SITEID)
             si2key = config.get(CONF_SI2_KEY)
             ri4key = config.get(CONF_RI4_KEY)
-            if sitekey and si2key and ri4key:
+            if sitekey and ri4key:
                 sensorname = sensorconf[ATTR_FRIENDLY_NAME]
                 sensors.append(SLDeparturesSensor(
                     hass,
@@ -120,8 +120,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                 _LOGGER.error("Sensor %s is missing site, si2key or ri4key",
                               sensorconf[ATTR_FRIENDLY_NAME])
 
-        if sensorconf[CONF_SENSOR_TYPE] == 'status' or
+        if sensorconf[CONF_SENSOR_TYPE] == 'status' or \
            sensorconf[CONF_SENSOR_TYPE] == 'tl2':
+
             tl2key = config.get(CONF_TL2_KEY)
             if tl2key:
                 sensorname = sensorconf[ATTR_FRIENDLY_NAME]
@@ -340,6 +341,8 @@ class SLDeparturesSensor(Entity):
 
         # Setup API and stuff needed for internal processing.
         from hasl import ri4api, si2api
+        self._si2key = si2key
+        self._ri4key = ri4key
         self._ri4api = ri4api(ri4key, siteid, 60)
         self._si2api = si2api(si2key, siteid, '')
         self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
@@ -365,8 +368,9 @@ class SLDeparturesSensor(Entity):
         if not hass.data[DOMAIN].get(self._ri4datakey):
             hass.data[DOMAIN][self._ri4datakey] = ''
 
-        if not hass.data[DOMAIN].get(self._si2datakey):
-            hass.data[DOMAIN][self._si2datakey] = ''
+        if self._si2key:
+            if not hass.data[DOMAIN].get(self._si2datakey):
+                hass.data[DOMAIN][self._si2datakey] = ''
 
         # Setup updating of the sensor.
         self.update = Throttle(interval)(self._update)
@@ -587,38 +591,38 @@ class SLDeparturesSensor(Entity):
 
             self._departure_table = sorted(departures, key=lambda k: k['time'])
 
-            _LOGGER.info("Updating deviations for %s...", self._name)
-            cacheage = self._hass.data[DOMAIN][self._si2datakey]
-            if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or not self._minimization:
+            if self._si2key:
+                _LOGGER.info("Updating deviations for %s...", self._name)
+                cacheage = self._hass.data[DOMAIN][self._si2datakey]
+                if not cacheage or now(self._hass.config.time_zone) \
+                        - self._interval > cacheage or not self._minimization:
 
-                _LOGGER.info('Updating cache for %s...', self._name)
+                    _LOGGER.info('Updating cache for %s...', self._name)
 
-                deviationdata = self._si2api.request()
-                deviationdata = deviationdata['ResponseData']
+                    deviationdata = self._si2api.request()
+                    deviationdata = deviationdata['ResponseData']
 
-                self.putCache(self._si2datakey, deviationdata)
-                self._hass.data[DOMAIN][self._si2datakey] = \
-                    now(self._hass.config.time_zone)
-            else:
-                _LOGGER.info("Reusing data from cache for %s...",
-                             self._name)
-                deviationdata = self.getCache(self._si2datakey)
+                    self.putCache(self._si2datakey, deviationdata)
+                    self._hass.data[DOMAIN][self._si2datakey] = \
+                        now(self._hass.config.time_zone)
+                else:
+                    _LOGGER.info("Reusing data from cache for %s...",
+                                 self._name)
+                    deviationdata = self.getCache(self._si2datakey)
 
-            deviations = []
+                deviations = []
 
-            for (idx, value) in enumerate(deviationdata):
-                deviations.append({
-                    'updated': value['Updated'],
-                    'title': value['Header'],
-                    'fromDate': value['FromDateTime'],
-                    'toDate': value['UpToDateTime'],
-                    'details': value['Details'],
-                    'sortOrder': value['SortOrder'],
-                    })
+                for (idx, value) in enumerate(deviationdata):
+                    deviations.append({
+                        'updated': value['Updated'],
+                        'title': value['Header'],
+                        'fromDate': value['FromDateTime'],
+                        'toDate': value['UpToDateTime'],
+                        'details': value['Details'],
+                        'sortOrder': value['SortOrder'],
+                        })
 
-                self._deviations_table = sorted(deviations,
-                                                key=lambda k: k['sortOrder'])
+                    self._deviations_table = \
+                        sorted(deviations, key=lambda k: k['sortOrder'])
 
             self._lastupdate = now(self._hass.config.time_zone)
-    

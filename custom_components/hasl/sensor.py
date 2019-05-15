@@ -146,9 +146,10 @@ class SLVERSensor(Entity):
 
         from hasl import haslapi
         self._hass = hass
+        self._haslapi = haslapi()
         self._name = 'HASL Version'
         self._version = __version__
-        self._py_version = haslapi.version()
+        self._py_version = self._haslapi.version()
 
     @property
     def name(self):
@@ -273,7 +274,7 @@ class SLTLSensor(Entity):
             # requesting it again and spare some innocent credits from dying.
             cacheage = self._hass.data[DOMAIN][self._datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or self._minimization:
+                    - self._interval > cacheage or not self._minimization:
 
                 _LOGGER.info("Updating cache for %s...", self._name)
 
@@ -526,7 +527,7 @@ class SLCombinedSensor(Entity):
 
             cacheage = self._hass.data[DOMAIN][self._ri4datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or self._minimization:
+                    - self._interval > cacheage or not self._minimization:
 
                 _LOGGER.info("Updating cache for %s...", self._name)
 
@@ -583,7 +584,7 @@ class SLCombinedSensor(Entity):
             _LOGGER.info("Updating deviations for %s...", self._name)
             cacheage = self._hass.data[DOMAIN][self._si2datakey]
             if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or self._minimization:
+                    - self._interval > cacheage or not self._minimization:
 
                 _LOGGER.info('Updating cache for %s...', self._name)
 

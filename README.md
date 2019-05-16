@@ -8,7 +8,7 @@ This is a platform for Home Assistant that can be used to create "Departure boar
 
 ## Installation
 
-First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get tl2 sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
+First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
 
 Since this is a custom component it needs to manually installed. [Custom Updater](custom_updater.md) can be used to automatically update once new versions gets released. To install copy
 
@@ -25,41 +25,41 @@ sensor:
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  tl2key: YOUR-OPTIONAL-TL2-KEY-HERE
+  ti2key: YOUR-OPTIONAL-TI2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
-     sensor_type: comb
+     sensor_type: departures
      siteid: 4244
      lines: 474, 480C
      direction: 1
      sensor: binary_sensor.test
    - friendly_name: Trafikstatus
-     sensor_type: tl2
+     sensor_type: status
 ```
 ## Configuration variables
-- **ri4key** (*Optional*): Your API key from Trafiklab for the Realtidsinformation 4 API (required for comb sensors)
+- **ri4key** (*Optional*): Your API key from Trafiklab for the Realtidsinformation 4 API (required for departures sensors)
 
-- **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API (required for comb sensors)
+- **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API
 
-- **tl2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for tl2 sensors)
+- **statuskey** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
 
 - **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
 
 - **api_minimization** (*Optional*): Use the api-call-minimization-strategy (default `True`)
 
-- **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `comb` or `tl2`:
+- **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures` or `status`:
   
   
-## Configration variables for COMB sensors
-This sensor type creates a combined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with [hasl-comb-card](hasl-comb-card.md) and outputs data as described in the [sensor description](comb_sensor.md). 
+## Configration variables for departure sensors
+This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
 
- - **sensor_type: `comb`**:  Mandatory configuration for COMB sensor (must be set to `comb`)
+ - **sensor_type: `departures`**:  Mandatory configuration for departures sensor (must be set to `departures`)
  
  - **friendly_name**: Used as display name
 
  - **siteid**: The ID of the bus stop or station you want to monitor.  
 
- - **scan_interval** (*Optional*): Number of minutes between updates, default 5, min 5 and max 60.
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is ON, or if this option is not set, update will be done.
 
@@ -71,25 +71,38 @@ This sensor type creates a combined departure sensor for a specific stop. You ca
 
  - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
-## Configration variables for TL2 sensors
-This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-tl2-card](hasl-tl2-card.md) and outputs data as described in the [sensor description](tl2_sensor.md)
+## Configration variables for status sensors
+This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](STATUS_OBJECT.md)
 
-**- sensor_type: `tl2`**:  mandatory configuration for TL2 sensor and must be set to `tl2`
+**- sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
   
  - **friendly_name**: Used as display name
 
- - **scan_interval** (*Optional*): Number of minutes between updates, default 5, min 5 and max 60.
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
 ## Display of sensor data
-The combination sensor can be used with [hasl-comb-card](hasl-comb-card.md) for displaying departure board type information as in the screenshot below. For the tl2 sensor you can instead use the [hasl-tl2-card](hasl-tl2-card.md) card that displays overall traffic situation for SL.
+The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
-![card](https://user-images.githubusercontent.com/1217994/57677754-e1773980-7627-11e9-81e7-4b991a6e4dc1.png)
+## Automatic Updates with Custom Updater
+
+This component is not part of the official distribution but can be updated with the help of Custom Updater.
+For more information, see [Custom Updater](https://github.com/custom-components/custom_updater/wiki/Installation).
+
+For update check of HASL, add the following to your `configuration.yaml`.
+
+```yaml
+custom_updater:
+  track:
+    - components
+  component_urls:
+    - https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_updater.json
+```
 
 ## API-call restrictions and optimizations
 

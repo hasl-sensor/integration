@@ -1,8 +1,7 @@
-SL Combination Sensor Description
+SL Departures Sensor Object
 ===============================
 
 The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).
-
 There are also a large number of attributes that can help you with filtering or whatever you need:
 
 ```

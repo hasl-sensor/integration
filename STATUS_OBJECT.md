@@ -7,7 +7,7 @@ information.
 
 ```
 ferry_status: Good,
-ferry_icon: mdi:check-bold,
+ferry_icon: mdi:ferry,
 ferry_events: [{
   EventId: 0
   Message: Inga större störningar

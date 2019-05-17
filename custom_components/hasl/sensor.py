@@ -251,7 +251,7 @@ class SLStatusSensor(Entity):
 
         if self._enabled_sensor is None or sensor_state.state is STATE_ON:
 
-            _LOGGER.info("Updating traffic situation for %s...",
+            _LOGGER.info("Starting to update TL2 for %s...",
                          self._name)
 
             # Object used to create our object.
@@ -289,18 +289,30 @@ class SLStatusSensor(Entity):
             if not cacheage or now(self._hass.config.time_zone) \
                     - self._interval > cacheage or not self._minimization:
 
-                _LOGGER.info("Updating cache for %s...", self._name)
+                try:
+                    apidata = self._tl2api.request()
+                    apidata = apidata['ResponseData']['TrafficTypes']
 
-                apidata = self._tl2api.request()
-                apidata = apidata['ResponseData']['TrafficTypes']
+                    self.putCache(self._datakey, apidata)
+                    self._hass.data[DOMAIN][self._datakey] = \
+                        now(self._hass.config.time_zone)
 
-                self.putCache(self._datakey, apidata)
-                self._hass.data[DOMAIN][self._datakey] = \
-                    now(self._hass.config.time_zone)
+                    _LOGGER.info("Updated cache for %s...", self._name)
+
+                except HASL_Error as e:
+                    _LOGGER.error("A communication error occured while"
+                                  "updating TL2 sensor: %s", e.details)
+                    return
+
+                except Exception as e:
+                    _LOGGER.error("A error occured while"
+                                  "updating TL4 API: %s", e)
+                    return
+
             else:
+                apidata = self.getCache(self._datakey)
                 _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
-                apidata = self.getCache(self._datakey)
 
             # Return only the relevant portion of the results.
             for response in apidata:
@@ -328,6 +340,8 @@ class SLStatusSensor(Entity):
                                                                 '%H:%M:%S')
             self._sensordata = newdata
             self._lastupdate = newdata['last_updated']
+
+            _LOGGER.info("TL2 update completed for %s...", self._name)
 
 
 class SLDeparturesSensor(Entity):
@@ -536,31 +550,61 @@ class SLDeparturesSensor(Entity):
     def _update(self):
         """Get the departure board."""
 
+        # If using external sensor, get its value.
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
 
+        # If we dont have external sensor or it is ON then proceed.
         if self._enabled_sensor is None or sensor_state.state \
                 is STATE_ON:
 
-            _LOGGER.info("Updating departures for %s...", self._name)
+            self._update_ri4()
 
-            cacheage = self._hass.data[DOMAIN][self._ri4datakey]
-            if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or not self._minimization:
+            if self._si2key:
+                self._update_si2()
 
-                _LOGGER.info("Updating cache for %s...", self._name)
+            self._lastupdate = now(self._hass.config.time_zone)
 
+    def _update_ri4(self):
+        errorOccured = False
+        _LOGGER.info("Starting to update RI4 for %s...", self._name)
+
+        cacheage = self._hass.data[DOMAIN][self._ri4datakey]
+        if not cacheage or now(self._hass.config.time_zone) \
+                - self._interval > cacheage or not self._minimization:
+
+            try:
                 departuredata = self._ri4api.request()
                 departuredata = departuredata['ResponseData']
 
                 self.putCache(self._ri4datakey, departuredata)
                 self._hass.data[DOMAIN][self._ri4datakey] = \
                     now(self._hass.config.time_zone)
-            else:
-                _LOGGER.info("Reusing data from cache for %s...",
-                             self._name)
+
+                _LOGGER.info("Updated cache for %s...", self._name)
+
+            except HASL_Error as e:
+                _LOGGER.error("A communication error occured while"
+                              "updating SI2 sensor: %s", e.details)
+                errorOccured = True
+
+            except Exception as e:
+                _LOGGER.error("A communication error occured while"
+                              "updating RI4 API: %s", e)
+                errorOccured = True
+
+        else:
+            try:
                 departuredata = self.getCache(self._ri4datakey)
 
+                _LOGGER.info("Reusing data from cache for %s...",
+                             self._name)
+            except Exception as e:
+                _LOGGER.error("A error occured while retreiving"
+                              "cached RI4 sensor data: %s", e)
+                errorOccured = True
+
+        if not errorOccured:
             departures = []
 
             iconswitcher = {
@@ -598,40 +642,64 @@ class SLDeparturesSensor(Entity):
                                     'icon': icon,
                                     })
 
-            self._departure_table = sorted(departures, key=lambda k: k['time'])
+            self._departure_table = sorted(departures,
+                                           key=lambda k: k['time'])
 
-            if self._si2key:
-                _LOGGER.info("Updating deviations for %s...", self._name)
-                cacheage = self._hass.data[DOMAIN][self._si2datakey]
-                if not cacheage or now(self._hass.config.time_zone) \
-                        - self._interval > cacheage or not self._minimization:
+            _LOGGER.info("RI4 update completed for %s...", self._name)
 
-                    _LOGGER.info('Updating cache for %s...', self._name)
+    def _update_si2(self):
+        errorOccured = False
+        _LOGGER.info("Starting to update SI2 for %s...", self._name)
 
-                    deviationdata = self._si2api.request()
-                    deviationdata = deviationdata['ResponseData']
+        cacheage = self._hass.data[DOMAIN][self._si2datakey]
+        if not cacheage or now(self._hass.config.time_zone) \
+                - self._interval > cacheage or not self._minimization:
 
-                    self.putCache(self._si2datakey, deviationdata)
-                    self._hass.data[DOMAIN][self._si2datakey] = \
-                        now(self._hass.config.time_zone)
-                else:
-                    _LOGGER.info("Reusing data from cache for %s...",
-                                 self._name)
-                    deviationdata = self.getCache(self._si2datakey)
+            try:
+                deviationdata = self._si2api.request()
+                deviationdata = deviationdata['ResponseData']
 
-                deviations = []
+                self.putCache(self._si2datakey, deviationdata)
+                self._hass.data[DOMAIN][self._si2datakey] = \
+                    now(self._hass.config.time_zone)
 
-                for (idx, value) in enumerate(deviationdata):
-                    deviations.append({
-                        'updated': value['Updated'],
-                        'title': value['Header'],
-                        'fromDate': value['FromDateTime'],
-                        'toDate': value['UpToDateTime'],
-                        'details': value['Details'],
-                        'sortOrder': value['SortOrder'],
-                        })
+                _LOGGER.info('Updated cache for %s...', self._name)
 
-                    self._deviations_table = \
-                        sorted(deviations, key=lambda k: k['sortOrder'])
+            except HASL_Error as e:
+                _LOGGER.error("A communication error occured while"
+                              "updating SI2 sensor: %s", e.details)
+                errorOccured = True
 
-            self._lastupdate = now(self._hass.config.time_zone)
+            except Exception as e:
+                _LOGGER.error("A error occured while"
+                              "updating SI2 sensor: %s", e)
+                errorOccured = True
+
+        else:
+            try:
+                deviationdata = self.getCache(self._si2datakey)
+
+                _LOGGER.info("Reusing data from cache for %s...",
+                             self._name)
+
+            except Exception as e:
+                _LOGGER.error("A error occured while retreiving"
+                              "cached SI2 sensor: %s", e.details)
+                errorOccured = True
+
+        if not errorOccured:
+            deviations = []
+            for (idx, value) in enumerate(deviationdata):
+                deviations.append({
+                    'updated': value['Updated'],
+                    'title': value['Header'],
+                    'fromDate': value['FromDateTime'],
+                    'toDate': value['UpToDateTime'],
+                    'details': value['Details'],
+                    'sortOrder': value['SortOrder'],
+                    })
+
+            self._deviations_table = \
+                sorted(deviations, key=lambda k: k['sortOrder'])
+
+            _LOGGER.info("SI2 update completed for %s...", self._name)

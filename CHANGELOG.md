@@ -6,12 +6,6 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
 ## [Unreleased]
-- Added max_departures card config variable
-- Added max_deviations card config variable
-- Added compact card config variable
-- Changed the valign of the alert icon
-- Changed icon of the SL boats from ship to ferry
-- Merged [#22](https://github.com/DSorlov/ha-sensor-sl/pull/22) fix for broken name of hasl-comb-card.js 
 - Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
 - Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
 - Fix [#25](https://github.com/DSorlov/ha-sensor-sl/issues/25) stupid bug introduced by DSorlov =)
@@ -19,6 +13,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Branched all display cards to new project [hasl-cards](https://github.com/DSorlov/hasl-cards).
 - Renamed repository from ha-sensor-sl to hasl-platform to conform to new naming.
 - Updated massive amounts of links and documentation
+- Implemented basic error handling as exceptions are now raised from communications library.
 
 ## [2.0.2] (2019-04-30)
 

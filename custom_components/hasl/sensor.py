@@ -88,7 +88,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     sensors = []
 
     if config[CONF_VERSION]:
-        sensors.append(SLVERSensor(hass))
+        sensors.append(SLVersionSensor(hass))
 
     for sensorconf in config[CONF_SENSORS]:
 
@@ -144,7 +144,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     add_devices(sensors)
 
 
-class SLVERSensor(Entity):
+class SLVersionSensor(Entity):
     """Trafic Situation Sensor."""
     def __init__(self, hass):
 
@@ -316,7 +316,8 @@ class SLStatusSensor(Entity):
 
                     for event in response['Events']:
                         event['Status'] = statuses.get(event['StatusIcon'])
-                        event['StatusIcon'] = statusIcons.get(event['StatusIcon'])                      
+                        event['StatusIcon'] = \
+                            statusIcons.get(event['StatusIcon'])
 
                     newdata[statustype + '_events'] = response['Events']
 

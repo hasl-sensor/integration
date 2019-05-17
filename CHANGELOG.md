@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Renamed repository from ha-sensor-sl to hasl-platform to conform to new naming.
 - Updated massive amounts of links and documentation
 - Implemented basic error handling as exceptions are now raised from communications library.
+- Implemented new sensor based on real-time train location api (EXPERIMENTAL!)
 
 ## [2.0.2] (2019-04-30)
 

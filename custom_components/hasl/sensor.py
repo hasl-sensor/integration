@@ -34,6 +34,7 @@ CONF_DIRECTION = 'direction'
 CONF_ENABLED_SENSOR = 'sensor'
 CONF_TIMEWINDOW = 'timewindow'
 CONF_SENSORPROPERTY = 'property'
+CONF_TRAIN_TYPE = 'train_type'
 CONF_TRAFFIC_CLASS = 'traffic_class'
 CONF_VERSION = 'version_sensor'
 CONF_USE_MINIMIZATION = 'api_minimization'
@@ -44,6 +45,8 @@ DEFAULT_TIMEWINDOW = 30
 DEFAULT_DIRECTION = '0'
 DEFAULT_SENSORPROPERTY = 'min'
 DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
+DEFAULT_TRAIN_TYPE = 'PT'
+
 DEFAULT_SENSORTYPE = 'dep'
 DEFAULT_CACHE_FILE = 'haslcache.json'
 
@@ -58,9 +61,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
     vol.Required(CONF_SENSORS, default=[]):
         vol.All(cv.ensure_list, [vol.All({
+
             vol.Required(ATTR_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_SENSOR_TYPE, default=DEFAULT_SENSORTYPE):
-                vol.In(['departures', 'status', 'comb', 'tl2']),
+                vol.In(['departures', 'status', 'trainlocation',
+                        'comb', 'tl2']),
+
             vol.Optional(CONF_ENABLED_SENSOR): cv.string,
             vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_INTERVAL):
                 vol.Any(cv.time_period, cv.positive_timedelta),
@@ -75,6 +81,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
             vol.Optional(CONF_TRAFFIC_CLASS, default=DEFAULT_TRAFFIC_CLASS):
                 cv.string,
+
+            vol.Optional(CONF_TRAIN_TYPE, default=DEFAULT_TRAIN_TYPE):
+                vol.In(['PT', 'RB', 'TVB', 'SB', 'LB',
+                        'SpvC', 'TB1', 'TB2', 'TB3']),
             })]),
 }, extra=vol.ALLOW_EXTRA)
 
@@ -141,6 +151,23 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
                 _LOGGER.error("Sensor %s is missing tl2key attribute",
                               sensorconf[ATTR_FRIENDLY_NAME])
 
+        if sensorconf[CONF_SENSOR_TYPE] == 'trainlocation':
+            train_type = sensorconf.get(CONF_TRAIN_TYPE)
+            if train_type:
+                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
+                sensors.append(SLTrainLocationSensor(
+                    hass,
+                    sensorname,
+                    train_type,
+                    sensorconf.get(CONF_SCAN_INTERVAL),
+                    sensorconf.get(CONF_ENABLED_SENSOR),
+                    ))
+
+                _LOGGER.info("Created train sensor %s...", sensorname)
+            else:
+                _LOGGER.error("Sensor %s is missing train_type attribute",
+                              sensorconf[ATTR_FRIENDLY_NAME])
+
     add_devices(sensors)
 
 
@@ -174,6 +201,67 @@ class SLVersionSensor(Entity):
     def state(self):
         """ Return the state of the sensor."""
         return self._version + "/" + self._py_version
+
+
+class SLTrainLocationSensor(Entity):
+    """Trafic Situation Sensor."""
+    def __init__(self, hass, friendly_name, train_type,
+                 interval, enabled_sensor):
+
+        from hasl import fpapi
+        self._hass = hass
+        self._fpapi = fpapi()
+        self._name = friendly_name
+        self._interval = interval
+        self._enabled_sensor = enabled_sensor
+        self._train_type = train_type
+        self._data = {}
+
+        self.update = Throttle(interval)(self._update)
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def icon(self):
+        """ Return the icon for the frontend."""
+        return None
+
+    @property
+    def device_state_attributes(self):
+        """ Return the sensor attributes."""
+        return {'type': self._train_type, 'data': json.dumps(self._data)}
+
+    @property
+    def state(self):
+        """ Return the state of the sensor."""
+        return self._train_type
+
+    def _update(self):
+
+        if self._enabled_sensor is not None:
+            sensor_state = self._hass.states.get(self._enabled_sensor)
+
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+
+            try:
+                apidata = self._fpapi.request(self._train_type)
+
+            except HASL_Error as e:
+                _LOGGER.error("A communication error occured while"
+                              "updating train location sensor: %s", e.details)
+                return
+
+            except Exception as e:
+                _LOGGER.error("A error occured while"
+                              "updating train location sensor: %s", e)
+                return
+
+        self._data = apidata
+
+        _LOGGER.info("Update completed %s...", self._name)
 
 
 class SLStatusSensor(Entity):

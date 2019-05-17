@@ -4,5 +4,5 @@
   "documentation": "https://github.com/DSorlov/hasl-platform",
   "dependencies": [],
   "codeowners": ["@DSorlov"],
-  "requirements": ["hasl==2.1.0"]
+  "requirements": ["hasl==2.2.0"]
 } 

@@ -266,11 +266,20 @@ class SLStatusSensor(Entity):
                 }
 
             # Icon table used for HomeAssistant.
-            icons = {
-                'EventGood': 'mdi:check-bold',
-                'EventMinor': 'mdi:clock-outline',
-                'EventMajor': 'mdi:skull-crossbones-outline',
-                'EventPlanned': 'mdi:triangle-outline',
+            statusIcons = {
+                'EventGood': 'mdi:check',
+                'EventMinor': 'mdi:clock-alert-outline',
+                'EventMajor': 'mdi:close',
+                'EventPlanned': 'mdi:triangle-outline'
+                }
+
+            trafficTypeIcons = {
+                'ferry': 'mdi:ferry',
+                'bus': 'mdi:bus',
+                'tram': 'mdi:tram',
+                'train': 'mdi:train',
+                'local': 'mdi:train-variant',
+                'metro': 'mdi:subway-variant'
                 }
 
             # If the same API have already made the request in within
@@ -300,15 +309,14 @@ class SLStatusSensor(Entity):
                     statustype = ('ferry' if type == 'fer' else type)
                     newdata[statustype + '_status'] = \
                         statuses.get(response['StatusIcon'])
+                    newdata[statustype + '_status_icon'] = \
+                        statusIcons.get(response['StatusIcon'])
                     newdata[statustype + '_icon'] = \
-                        icons.get(response['StatusIcon'])
+                        trafficTypeIcons.get(statustype)
 
                     for event in response['Events']:
-                        event['StatusIcon'] = icons.get(event['StatusIcon'])
                         event['Status'] = statuses.get(event['StatusIcon'])
-                        if not event['Status']:
-                            event['Status'] = \
-                                statuses.get(response['StatusIcon'])
+                        event['StatusIcon'] = statusIcons.get(event['StatusIcon'])                      
 
                     newdata[statustype + '_events'] = response['Events']
 

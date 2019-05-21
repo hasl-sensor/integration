@@ -84,6 +84,19 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
+## Configration variables for train location sensor (EXPERIMENTAL)
+This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
+
+**- sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`
+  
+ - **friendly_name**: Used as display name
+
+ - **train_type**: Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen)
+
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
+
+ - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+ 
 ## Display of sensor data
 The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
 

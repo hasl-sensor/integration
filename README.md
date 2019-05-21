@@ -1,217 +1,124 @@
 Home Assistant SL Sensor (HASL)
 ===============================
 
-This is a platform for Home Assistant that can be used to create "Departure board" or "Traffic Situation" sensors for buses and trains in Stockholm, Sweden. You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. The supporting library HASL is on PyPi(https://pypi.org/project/hasl/) but you do NOT need to download this manually. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).
+This is a platform for Home Assistant that can be used to create "Departure board" or "Traffic Situation" sensors for buses and trains in Stockholm, Sweden. You have to install it as a custom component and you need to get your own API keys from SL / Trafiklab. This is a fork of fredrikbaberg SL sensor (https://github.com/fredrikbaberg/ha-sensor-sl).
 
-**If you are using pre 0.92 version of Home Assistant you will need to use release 1.0.3 or older from here and follow the instructions in the release files there instead (and there is some known issues with that release). The below information is for 0.92 or later versions of Home Assistant only.**
 
-- First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get tl2 sensors. When you have your API keys, you're ready to add the component to your Home Assistant. Since this is a custom component, you need to add it manually to your config directory.
+>__NOTE__: If you are using pre 0.92 version of Home Assistant you will need to use release 1.0.3 or older from here and follow the instructions in the release files there instead (and there is some known issues with that release). The below information is for 0.92 or later versions of Home Assistant only.
 
-- Create a folder named **custom_components** under your Home Assistant **config** folder. 
+## Installation
 
-- Create a folder named **hasl** under the **custom_components** folder.
+First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want is ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
 
-- Download content from the **custom_components/hasl** folder from here and put it in the **custom_components/hasl** folder in your server.
+Since this is a custom component it needs to manually installed. [Custom Updater](custom_updater.md) can be used to automatically update once new versions gets released. To install copy
 
-- Edit your configuration.yaml file and add the component
+[`hasl/__init__.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/__init__.py) at `<config>/custom_components/hasl/__init__.py`  
+[`hasl/sensor.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/sensor.py) at `<config>/custom_components/hasl/sensor.py`  
+[`hasl/manifest.json`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/manifest.json) at `<config>/custom_components/hasl/manifest.json`
 
+where `<config>` is your Home Assistant configuration directory.
+
+Then add the desired configuration in config. Here is an example of a typical configuration:
+ 
 ```yaml
+sensor:
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  tl2key: YOUR-OPTIONAL-TL2-KEY-HERE
+  ti2key: YOUR-OPTIONAL-TI2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
-     sensor_type: comb
+     sensor_type: departures
      siteid: 4244
      lines: 474, 480C
      direction: 1
      sensor: binary_sensor.test
    - friendly_name: Trafikstatus
-     sensor_type: tl2
+     sensor_type: status
 ```
+## Configuration variables
+- **ri4key** (*Optional*): Your API key from Trafiklab for the Realtidsinformation 4 API (required for departures sensors)
 
+- **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API
 
-**Configuration variables**
+- **statuskey** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
 
-- ri4key: (optional) Your API key from Trafiklab for the Realtidsinformation 4 API (required for comb sensor)
+- **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
 
-- si2key: (optional) Your API key from Trafiklab for the Störningsinformation 2 API (required for comb sensor)
+- **api_minimization** (*Optional*): Use the api-call-minimization-strategy (default `True`)
 
-- tl2key: (optional) Your API key from Trafiklab for the Trafikläget 2 API (required for tl2 sensor)
-
-- sensors: A list of all the sensors to be created. Theese can be of sensor_type 'comb' or 'tl2':
+- **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures` or `status`:
   
-  **- sensor_type: 'comb'**  -- this sensor type creates a combined departure sensor
   
-   - friendly_name: Used as display name
+## Configration variables for departure sensors
+This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
 
-   - siteid: The ID of the bus stop or station you want to monitor.  You can find the ID with some help from another API, **sl-platsuppslag**.  In the example above, site 4244 is Mölnvik. (Console for the API can be found on https://www.trafiklab.se/api/sl-platsuppslag/konsol)
+ - **sensor_type: `departures`**:  Mandatory configuration for departures sensor (must be set to `departures`)
+ 
+ - **friendly_name**: Used as display name
 
-   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+ - **siteid**: The ID of the bus stop or station you want to monitor.  
 
-   - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
 
-   - property: (optional) Which property to report as sensor state ['min'= minutes to departure (default), 'time'= next departure time, 'deviations'= number of active deviations, 'refresh'= if sensor is refreshing or not, 'updated'=when sensor data was last updated]
+ - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is ON, or if this option is not set, update will be done.
 
-   - lines: (optional) A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
+ - **property** (*Optional*): Which property to report as sensor state. Can be one of: `min` minutes to departure (default), `time` next departure time, `deviations` number of active deviations, `refresh` if sensor is refreshing or not, `updated` when sensor data was last updated.
 
-   - direction: (optional) Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
+ - **lines** (*Optional*): A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
 
-   - timewindow: (optionl) The number of minutes to look ahead when requesting the departure board from the api. Default 30, min 5 and max 60.
+ - **direction** (*Optional*): Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
 
-   - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
+ - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
-  **- sensor_type: 'tl2'**  -- this sensor type creates a tl2 sensor
+## Configration variables for status sensors
+This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](STATUS_OBJECT.md)
+
+**- sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
   
-   - friendly_name: Used as display name
+ - **friendly_name**: Used as display name
 
-   - scan_interval: (optional) Number of minutes between updates, default 5, min 5 and max 60.
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
 
-   - sensor: (optional) Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+ - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
-   - traffic_class: (optional) A comma separated list of the types to present in the sensor if not all (metro,train,local,tram,bus,fer)
-   
-**COMB Sensor value**
+ - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
-The sensor value is the number of minutes to the next departure (or if something else is configured that will be used instead).  There are also a large number of attributes that can help you with filtering or whatever you need:
+## Configration variables for train location sensor (EXPERIMENTAL)
+This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
 
-```
-friendly_name: Mölnvik
-unit_of_measurement: min
-icon: mdi:subway
-attribution: Stockholms Lokaltrafik
-last_refresh: 2018-11-16 19:08:40
-next_departure_minutes: 10
-next_departure_time: 19:18:40
-deviation_count: 1
-refresh_enabled: on
-departures: [{
-  line: 474
-  direction: 1
-  departure: 10 min
-  destination: Slussen
-  diff: 10
-  type: Buses
-  icon: mdi:bus
-}]
-deviances: [{
-  updated: 2018-11-16T15:59:40.063+01:00
-  title: Inställd avgång
-  fromDate: 2018-11-16T15:59:40.663
-  toDate: 2018-11-17T00:00:00
-  details: "Mölnvik kl 16:17 till Slussen är inställd pga framkomlighetsproblem - köer."
-  sortOrder: 1
-}]
-```
+**- sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`
+  
+ - **friendly_name**: Used as display name
 
-**TL2 Sensor value**
+ - **train_type**: Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen)
 
-The sensor value is the last update of the sensor.  There are also a number of attributes that can help you with filtering:
-Depending on the settings only the traffic types selected will be availiable. Event sections might or might not contain
-information.
+ - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
 
-```
-ferry_status: Good,
-ferry_icon: mdi:check-bold,
-ferry_events: [{
-  EventId: 0
-  Message: Inga större störningar
-  LineNumbers: null
-  Expanded: false
-  Planned: false
-  SortIndex: 10000
-  TrafficLine: null
-  EventInfoUrl: null
-  Status: null
-  StatusIcon: EventGood
-}]
-bus_status: Good
-bus_icon: mdi:check-bold
-bus_events: []
-tram_status: Good
-tram_icon: mdi:check-bold
-tram_events: []
-local_status: Good
-local_icon: mdi:check-bold
-local_events: []
-train_status: Good
-train_icon: mdi:check-bold
-train_events: []
-metro_status: Good
-metro_icon: mdi:check-bold
-metro_events: []
-attribution: Stockholms Lokaltrafik
-last_updated: 2019-04-30 11:37:19
-friendly_name: SL Trafikstatus
-icon: mdi:train-car
-```
+ - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+ 
+## Display of sensor data
+The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
 
-**API-call restrictions and optimization**
+![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
-The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
-The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
-You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls.
+## Automatic Updates with Custom Updater
 
-**Automatic updates**
+This component is not part of the official distribution but can be updated with the help of Custom Updater.
+For more information, see [Custom Updater](https://github.com/custom-components/custom_updater/wiki/Installation).
 
-For update check of this sensor, add the following to your configuration.yaml. For more information, see [[custom_updater](https://github.com/custom-components/custom_updater/wiki/Installation)]
+For update check of HASL, add the following to your `configuration.yaml`.
 
 ```yaml
 custom_updater:
   track:
     - components
-    - cards
   component_urls:
-    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_updater.json
-  card_urls:
-    - https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_cards.json
+    - https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_updater.json
 ```
 
-**Lovelace card (for Departure Sensor, hasl-comb-card.js)**
+## API-call restrictions and optimizations
 
-To display data using Lovelace, you can try the included card.
-Present departure times from custom component SL-sensor in a card. 
-Thanks to [@dimmanramone](https://github.com/dimmanramone) for pimping the card!
-
-![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
-
-Install it throgh copying the file `www/hasl-comb-card.js` into `config_dir/www/`, and use the following in your ui-lovelace.yaml file:
-```yaml
-resources:
-  - url: /local/hasl-comb-card.js
-    type: js
-```
-and use the card throgh
-```yaml
-cards:
-  - type: "custom:hasl-comb-card"
-    header: false
-    departures: true
-    deviations: true
-    timeleft: false
-    updated: true
-    name: Departures
-    adjust_times: false
-    hide_departed: false
-    language: en-EN
-    entities:
-      - sensor.hasl_name
-```
-- header: Render headers in the such as "line", "destination" and "time"
-
-- departures: Render departure section
-
-- deviations: Render deviation section
-
-- updated: Render the last updated time section
-
-- timeleft: Show as SL real time with minutes instead of time
-
-- adjust_times: Calculate time left adjusted to last update (used in conjunction with timeleft)
-
-- hide_departed: This can hide already departured
-
-- language: The texts will be rendered in this language (sv-SE or en-EN)
-
-- name: If specified it will not render titles per entitiy in the card, but rather have this as the card name. If not speficied it will render each sensors name
+The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
+The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
+You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.

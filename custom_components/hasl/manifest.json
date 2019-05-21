@@ -1,8 +1,8 @@
 {
   "domain": "hasl",
   "name": "SL",
-  "documentation": "https://github.com/DSorlov/ha-sensor-sl",
+  "documentation": "https://github.com/DSorlov/hasl-platform",
   "dependencies": [],
   "codeowners": ["@DSorlov"],
-  "requirements": ["hasl==2.0.0"]
+  "requirements": ["hasl==2.2.0"]
 } 

@@ -1,4 +1,4 @@
-# ha-sensor-sl
+﻿# ha-sensor-sl
 
 Changelog for HomeAssistant SL Sensor (HASL).
 
@@ -7,7 +7,25 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ## [Unreleased]
 
-- Nothing for now
+## [2.1.0] (2019-05-21)
+
+### BREAKING CHANGES
+- `comb` sensor is now `departures`, will remove `comb` in 2.5.0. Please change your config.
+- `tl2` sensor is now `status`, will remove `tl2` in 2.5.0. Please change your config.
+
+### Changed
+- Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
+- Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
+- Fix [#25](https://github.com/DSorlov/ha-sensor-sl/issues/25) stupid bug introduced by DSorlov =)
+- PEP8 Compliance
+- Branched all display cards to new project [hasl-cards](https://github.com/DSorlov/hasl-cards).
+- Renamed repository from ha-sensor-sl to hasl-platform to conform to new naming.
+- Updated massive amounts of links and documentation
+- Many stability improvements and minor bugfixes
+
+### Added
+- Implemented basic error handling as exceptions are now raised from communications library.
+- Implemented new sensor based on real-time train location api (EXPERIMENTAL!)
 
 ## [2.0.2] (2019-04-30)
 
@@ -151,6 +169,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.1.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.3...2.1.0
+[2.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.2...2.0.3
 [2.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.3...2.0.0

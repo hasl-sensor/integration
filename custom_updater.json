@@ -1,15 +1,15 @@
 {
-    "custom_component.hasl.sensor": {
-        "updated_at": "2019-04-30",
-        "version": "2.0.1",
+    "hasl.platform": {
+        "updated_at": "2019-05-21",
+        "version": "2.1.0",
         "local_location": "/custom_components/hasl/__init__.py",
-        "remote_location": "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/hasl/__init__.py",
+        "remote_location": "https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_components/hasl/__init__.py",
         "visit_repo": "https://github.com/DSorlov/ha-sensor-sl",
         "changelog": "https://github.com/DSorlov/ha-sensor-sl/blob/hasl/CHANGELOG.md",
         "resources": [
-	            "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/hasl/sensor.py",
-	            "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/hasl/services.yaml",
-                    "https://raw.githubusercontent.com/DSorlov/ha-sensor-sl/hasl/custom_components/hasl/manifest.json"
+	            "https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_components/hasl/sensor.py",
+	            "https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_components/hasl/services.yaml",
+                    "https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_components/hasl/manifest.json"
         ]
     }
 }

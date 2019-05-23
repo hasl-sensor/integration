@@ -50,7 +50,7 @@ sensor:
 - **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures` or `status`:
   
   
-## Configration variables for departure sensors
+## Configuration variables for departure sensors
 This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
 
  - **sensor_type: `departures`**:  Mandatory configuration for departures sensor (must be set to `departures`)
@@ -71,7 +71,7 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
 
  - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
-## Configration variables for status sensors
+## Configuration variables for status sensors
 This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](STATUS_OBJECT.md)
 
 **- sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
@@ -84,7 +84,7 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
 
  - **traffic_class** (*Optional*): A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`)
 
-## Configration variables for train location sensor (EXPERIMENTAL)
+## Configuration variables for train location sensor (EXPERIMENTAL)
 This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
 
 **- sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`

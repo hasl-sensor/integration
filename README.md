@@ -41,13 +41,13 @@ sensor:
 
 - **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API
 
-- **statuskey** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
+- **ti2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
 
 - **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
 
 - **api_minimization** (*Optional*): Use the api-call-minimization-strategy (default `True`)
 
-- **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures` or `status`:
+- **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures`, `status` or `trainlocation`:
   
   
 ## Configuration variables for departure sensors

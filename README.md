@@ -74,7 +74,7 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
 ## Configration variables for status sensors
 This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](STATUS_OBJECT.md)
 
-**- sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
+ - **sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
   
  - **friendly_name**: Used as display name
 
@@ -87,7 +87,7 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
 ## Configration variables for train location sensor (EXPERIMENTAL)
 This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
 
-**- sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`
+ - **sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`
   
  - **friendly_name**: Used as display name
 

@@ -459,7 +459,7 @@ class SLDeparturesSensor(Entity):
         self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
         self._hass = hass
         self._name = friendly_name
-        self._lines = lines
+        self._lines = lines.split(',')
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
         self._sensorproperty = sensorproperty

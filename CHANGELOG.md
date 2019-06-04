@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
 ## [Unreleased]
+- Nothing right now
+
+## [2.1.1] (2019-06-04)
+
+### Changed
+- Fix [#32] https://github.com/DSorlov/hasl-platform/issues/32 error management fails
+- Fix [#27] https://github.com/DSorlov/hasl-platform/issues/27 implemented filtering on "lines" for departure sensors
 
 ## [2.1.0] (2019-05-21)
 
@@ -169,6 +176,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.1.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.3...2.1.0
 [2.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.2...2.0.3
 [2.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.1...2.0.2

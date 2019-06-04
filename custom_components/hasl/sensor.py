@@ -19,8 +19,10 @@ from homeassistant.helpers.event import (async_track_point_in_utc_time,
                                          track_time_interval)
 from homeassistant.util import Throttle
 from homeassistant.util.dt import now
+from hasl import (haslapi, fpapi, tl2api, ri4api, si2api,
+                  HASL_Error, HASL_API_Error, HASL_HTTP_Error)
 
-__version__ = '2.1.0'
+__version__ = '2.1.1'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 
@@ -175,7 +177,6 @@ class SLVersionSensor(Entity):
     """Trafic Situation Sensor."""
     def __init__(self, hass):
 
-        from hasl import haslapi
         self._hass = hass
         self._haslapi = haslapi()
         self._name = 'HASL Version'
@@ -208,7 +209,6 @@ class SLTrainLocationSensor(Entity):
     def __init__(self, hass, friendly_name, train_type,
                  interval, enabled_sensor):
 
-        from hasl import fpapi
         self._hass = hass
         self._fpapi = fpapi()
         self._name = friendly_name
@@ -270,7 +270,6 @@ class SLStatusSensor(Entity):
                  enabled_sensor, interval, type,
                  minimization):
 
-        from hasl import tl2api
         self._tl2api = tl2api(tl2key)
         self._datakey = 'tl2_' + tl2key
         self._interval = interval
@@ -450,17 +449,17 @@ class SLDeparturesSensor(Entity):
             'update': '',
             }
 
-        # Setup API and stuff needed for internal processing.
-        from hasl import ri4api, si2api
-        self._si2key = si2key
+        if si2key:
+            self._si2key = si2key
+            self._si2api = si2api(si2key, siteid, '')           
+            self._si2datakey = 'si2_' + si2key + '_' + siteid
+
         self._ri4key = ri4key
         self._ri4api = ri4api(ri4key, siteid, 60)
-        self._si2api = si2api(si2key, siteid, '')
         self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
-        self._si2datakey = 'si2_' + si2key + '_' + siteid
         self._hass = hass
         self._name = friendly_name
-        self._lines = lines
+        self._lines = lines.split(',')
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
         self._sensorproperty = sensorproperty

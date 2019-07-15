@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Nothing right now
 
+## [2.1.3] (2019-07-15)
+
+### Changed
+- Fixed beyond stupid typo in upload. Meh.
+
 ## [2.1.2] (2019-07-15)
 
 ### Changed
@@ -183,6 +188,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.1.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.3...2.1.2
 [2.1.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.1...2.1.2
 [2.1.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.3...2.1.0

@@ -22,7 +22,7 @@ from homeassistant.util.dt import now
 from hasl import (haslapi, fpapi, tl2api, ri4api, si2api,
                   HASL_Error, HASL_API_Error, HASL_HTTP_Error)
 
-__version__ = '2.1.2'
+__version__ = '2.1.3'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 

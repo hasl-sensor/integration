@@ -9,7 +9,7 @@ import voluptuous as vol
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util.dt import now
 
-__version__ = '2.1.0'
+__version__ = '2.1.2'
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "hasl"

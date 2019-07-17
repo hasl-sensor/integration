@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Simple service for SL (Storstockholms Lokaltrafik)."""
-
 import datetime
 import json
 import logging
@@ -19,10 +18,11 @@ from homeassistant.helpers.event import (async_track_point_in_utc_time,
                                          track_time_interval)
 from homeassistant.util import Throttle
 from homeassistant.util.dt import now
+
 from hasl import (haslapi, fpapi, tl2api, ri4api, si2api,
                   HASL_Error, HASL_API_Error, HASL_HTTP_Error)
 
-__version__ = '2.1.3'
+__version__ = '2.2.0'
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'hasl'
 
@@ -44,13 +44,13 @@ CONF_USE_MINIMIZATION = 'api_minimization'
 # Default values for configuration.
 DEFAULT_INTERVAL = timedelta(minutes=10)
 DEFAULT_TIMEWINDOW = 30
-DEFAULT_DIRECTION = '0'
+DEFAULT_DIRECTION = 0
 DEFAULT_SENSORPROPERTY = 'min'
-DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
 DEFAULT_TRAIN_TYPE = 'PT'
+DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
 
-DEFAULT_SENSORTYPE = 'dep'
-DEFAULT_CACHE_FILE = 'haslcache.json'
+DEFAULT_SENSORTYPE = 'departures'
+DEFAULT_CACHE_FILE = '.storage/haslcache.json'
 
 # Defining the configuration schema.
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -75,7 +75,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
             vol.Optional(CONF_SITEID): cv.string,
             vol.Optional(CONF_LINES): cv.string,
-            vol.Optional(CONF_DIRECTION, default=DEFAULT_DIRECTION): cv.string,
+            vol.Optional(CONF_DIRECTION, default=DEFAULT_DIRECTION):
+                vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
             vol.Optional(CONF_TIMEWINDOW, default=DEFAULT_TIMEWINDOW):
                 vol.All(vol.Coerce(int), vol.Range(min=0, max=60)),
             vol.Optional(CONF_SENSORPROPERTY, default=DEFAULT_SENSORPROPERTY):
@@ -86,7 +87,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
             vol.Optional(CONF_TRAIN_TYPE, default=DEFAULT_TRAIN_TYPE):
                 vol.In(['PT', 'RB', 'TVB', 'SB', 'LB',
-                        'SpvC', 'TB1', 'TB2', 'TB3']),
+                        'SpvC', 'TB1', 'TB2', 'TB3'])
             })]),
 }, extra=vol.ALLOW_EXTRA)
 
@@ -101,6 +102,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     if config[CONF_VERSION]:
         sensors.append(SLVersionSensor(hass))
+        _LOGGER.info("Created version sensor for HASL")
 
     for sensorconf in config[CONF_SENSORS]:
 
@@ -173,37 +175,6 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     add_devices(sensors)
 
 
-class SLVersionSensor(Entity):
-    """Trafic Situation Sensor."""
-    def __init__(self, hass):
-
-        self._hass = hass
-        self._haslapi = haslapi()
-        self._name = 'HASL Version'
-        self._version = __version__
-        self._py_version = self._haslapi.version()
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def icon(self):
-        """ Return the icon for the frontend."""
-        return None
-
-    @property
-    def device_state_attributes(self):
-        """ Return the sensor attributes."""
-        return {'hasl': self._version, 'pyHasl': self._py_version}
-
-    @property
-    def state(self):
-        """ Return the state of the sensor."""
-        return self._version + "/" + self._py_version
-
-
 class SLTrainLocationSensor(Entity):
     """Trafic Situation Sensor."""
     def __init__(self, hass, friendly_name, train_type,
@@ -250,7 +221,7 @@ class SLTrainLocationSensor(Entity):
                 apidata = self._fpapi.request(self._train_type)
 
             except HASL_Error as e:
-                _LOGGER.error("A communication error occured while"
+                _LOGGER.error("A communication error occured while "
                               "updating train location sensor: %s", e.details)
                 return
 
@@ -262,6 +233,37 @@ class SLTrainLocationSensor(Entity):
         self._data = apidata
 
         _LOGGER.info("Update completed %s...", self._name)
+
+
+class SLVersionSensor(Entity):
+    """HASL Version Sensor."""
+    def __init__(self, hass):
+
+        self._hass = hass
+        self._haslapi = haslapi()
+        self._name = 'HASL Version'
+        self._version = __version__
+        self._py_version = self._haslapi.version()
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def icon(self):
+        """ Return the icon for the frontend."""
+        return None
+
+    @property
+    def device_state_attributes(self):
+        """ Return the sensor attributes."""
+        return {'hasl': self._version, 'pyHasl': self._py_version}
+
+    @property
+    def state(self):
+        """ Return the state of the sensor."""
+        return self._version + "/" + self._py_version
 
 
 class SLStatusSensor(Entity):
@@ -387,12 +389,12 @@ class SLStatusSensor(Entity):
                     _LOGGER.info("Updated cache for %s...", self._name)
 
                 except HASL_Error as e:
-                    _LOGGER.error("A communication error occured while"
+                    _LOGGER.error("A communication error occured while "
                                   "updating TL2 sensor: %s", e.details)
                     return
 
                 except Exception as e:
-                    _LOGGER.error("A error occured while"
+                    _LOGGER.error("A error occured while "
                                   "updating TL4 API: %s", e)
                     return
 
@@ -451,7 +453,7 @@ class SLDeparturesSensor(Entity):
 
         if si2key:
             self._si2key = si2key
-            self._si2api = si2api(si2key, siteid, '')           
+            self._si2api = si2api(si2key, siteid, '')
             self._si2datakey = 'si2_' + si2key + '_' + siteid
 
         self._ri4key = ri4key
@@ -459,7 +461,10 @@ class SLDeparturesSensor(Entity):
         self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
         self._hass = hass
         self._name = friendly_name
-        self._lines = lines.split(',')
+        if lines:
+            self._lines = lines.split(',')
+        else:
+            self._lines = []
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
         self._sensorproperty = sensorproperty
@@ -671,12 +676,12 @@ class SLDeparturesSensor(Entity):
                 _LOGGER.info("Updated cache for %s...", self._name)
 
             except HASL_Error as e:
-                _LOGGER.error("A communication error occured while"
+                _LOGGER.error("A communication error occured while "
                               "updating SI2 sensor: %s", e.details)
                 errorOccured = True
 
             except Exception as e:
-                _LOGGER.error("A communication error occured while"
+                _LOGGER.error("A communication error occured while "
                               "updating RI4 API: %s", e)
                 errorOccured = True
 
@@ -687,7 +692,7 @@ class SLDeparturesSensor(Entity):
                 _LOGGER.info("Reusing data from cache for %s...",
                              self._name)
             except Exception as e:
-                _LOGGER.error("A error occured while retreiving"
+                _LOGGER.error("A error occured while retreiving "
                               "cached RI4 sensor data: %s", e)
                 errorOccured = True
 
@@ -753,12 +758,12 @@ class SLDeparturesSensor(Entity):
                 _LOGGER.info('Updated cache for %s...', self._name)
 
             except HASL_Error as e:
-                _LOGGER.error("A communication error occured while"
+                _LOGGER.error("A communication error occured while "
                               "updating SI2 sensor: %s", e.details)
                 errorOccured = True
 
             except Exception as e:
-                _LOGGER.error("A error occured while"
+                _LOGGER.error("A error occured while "
                               "updating SI2 sensor: %s", e)
                 errorOccured = True
 
@@ -770,7 +775,7 @@ class SLDeparturesSensor(Entity):
                              self._name)
 
             except Exception as e:
-                _LOGGER.error("A error occured while retreiving"
+                _LOGGER.error("A error occured while retreiving "
                               "cached SI2 sensor: %s", e.details)
                 errorOccured = True
 

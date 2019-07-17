@@ -1,9 +1,9 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-default-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/hacs-default-orange.svg)](https://github.com/custom-components/hacs)
 [![ha_version](https://img.shields.io/badge/home%20assistant-0.92%2B-yellow.svg)](https://www.home-assistant.io)
 [![stability-stable](https://img.shields.io/badge/stability-released-lightgrey.svg)](#)
-[![Version](https://img.shields.io/badge/version-2.1.3-green.svg)](#)
+[![version](https://img.shields.io/badge/version-2.1.3-green.svg)](#)
 [![maintained](https://img.shields.io/maintenance/yes/2019.svg)](#)
-[![maintainer](https://img.shields.io/badge/maintainer-Daniel%20Sörlöv%20DSorlov-blue.svg)](https://github.com/DSorlov) 
+[![maintainer](https://img.shields.io/badge/maintainer-daniel%20sörlöv-blue.svg)](https://github.com/DSorlov) 
 
 Home Assistant SL Sensor (HASL)
 ===============================
@@ -118,21 +118,6 @@ This sensor type creates a train location sensor and shows the train locations f
 The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
-
-## Automatic Updates with Custom Updater
-
-This component is not part of the official distribution but can be updated with the help of Custom Updater.
-For more information, see [Custom Updater](https://github.com/custom-components/custom_updater/wiki/Installation).
-
-For update check of HASL, add the following to your `configuration.yaml`.
-
-```yaml
-custom_updater:
-  track:
-    - components
-  component_urls:
-    - https://raw.githubusercontent.com/DSorlov/hasl-platform/hasl/custom_updater.json
-```
 
 ## API-call restrictions and optimizations
 

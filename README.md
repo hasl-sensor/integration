@@ -26,7 +26,7 @@ sensor:
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  ti2key: YOUR-OPTIONAL-TI2-KEY-HERE
+  tl2key: YOUR-OPTIONAL-TI2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
      sensor_type: departures

@@ -722,6 +722,7 @@ class SLDeparturesSensor(Entity):
                     destination = value['Destination'] or ''
                     linenumber = value['LineNumber'] or ''
                     expected = value['ExpectedDateTime'] or ''
+                    groupofline = value['GroupOfLine'] or ''
                     icon = iconswitcher.get(traffictype, 'mdi:train-car')
                     if int(self._direction) == 0 or int(direction) \
                             == int(self._direction):
@@ -737,6 +738,7 @@ class SLDeparturesSensor(Entity):
                                     'time': diff,
                                     'expected': expected,
                                     'type': traffictype,
+                                    'groupofline': groupofline,
                                     'icon': icon,
                                     })
 

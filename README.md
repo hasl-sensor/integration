@@ -26,7 +26,7 @@ sensor:
 - platform: hasl
   ri4key: YOUR-RI4-KEY-HERE
   si2key: YOUR-SI2-KEY-HERE
-  ti2key: YOUR-OPTIONAL-TI2-KEY-HERE
+  tl2key: YOUR-OPTIONAL-TI2-KEY-HERE
   sensors:
    - friendly_name: Mölnvik
      sensor_type: departures
@@ -58,7 +58,7 @@ where `<config>` is your Home Assistant configuration directory.
 
 - **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API
 
-- **ti2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
+- **tl2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
 
 - **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
 

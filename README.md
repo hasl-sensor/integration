@@ -31,9 +31,8 @@ sensor:
    - friendly_name: Mölnvik
      sensor_type: departures
      siteid: 4244
-     lines: 474, 480C
+     lines: ['474', '480C']
      direction: 1
-     sensor: binary_sensor.test
    - friendly_name: Trafikstatus
      sensor_type: status
 ```
@@ -58,7 +57,7 @@ where `<config>` is your Home Assistant configuration directory.
 
 - **si2key** (*Optional*): Your API key from Trafiklab for the Störningsinformation 2 API
 
-- **ti2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
+- **tl2key** (*Optional*): Your API key from Trafiklab for the Trafikläget 2 API (required for status sensors)
 
 - **version_sensor** (*Optional*): Add a sensor showing component versions (default `False`)
 
@@ -76,15 +75,15 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
 
  - **siteid**: The ID of the bus stop or station you want to monitor.  
 
- - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
+ - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is ON, or if this option is not set, update will be done.
 
  - **property** (*Optional*): Which property to report as sensor state. Can be one of: `min` minutes to departure (default), `time` next departure time, `deviations` number of active deviations, `refresh` if sensor is refreshing or not, `updated` when sensor data was last updated.
 
- - **lines** (*Optional*): A comma separated list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 17, 18 and 19 will be included.
+ - **lines** (*Optional*): An array list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 474 and 480C will be included.
 
- - **direction** (*Optional*): Unless your site id happens to be the end of the line, buses and trains goes in both directions.  You can enter **1** or **2**.  If omitted, both directions are included. 
+ - **direction** (*Optional*): Unless your site id happens to be the end of the line, buses and trains goes in both directions. You can enter **1** or **2** (default is **0** which represents both directions). 
 
  - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
@@ -95,7 +94,7 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
   
  - **friendly_name**: Used as display name
 
- - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
+ - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
 
@@ -110,7 +109,7 @@ This sensor type creates a train location sensor and shows the train locations f
 
  - **train_type**: Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen)
 
- - **scan_interval** (*Optional*): Time between updates. You can specify `00:01:00` or `60` for update every minute.
+ - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
  

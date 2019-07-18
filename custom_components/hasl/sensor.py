@@ -41,13 +41,17 @@ CONF_TRAFFIC_CLASS = 'traffic_class'
 CONF_VERSION = 'version_sensor'
 CONF_USE_MINIMIZATION = 'api_minimization'
 
+LIST_SENSOR_TYPES = ['departures', 'status', 'trainlocation', 'comb', 'tl2']
+LIST_SENSOR_PROPERTIES = ['min', 'time', 'deviations', 'refresh', 'updated']
+LIST_TRAIN_TYPES = ['PT', 'RB', 'TVB', 'SB', 'LB', 'SpvC', 'TB1', 'TB2', 'TB3']
+
 # Default values for configuration.
 DEFAULT_INTERVAL = timedelta(minutes=10)
 DEFAULT_TIMEWINDOW = 30
 DEFAULT_DIRECTION = 0
 DEFAULT_SENSORPROPERTY = 'min'
 DEFAULT_TRAIN_TYPE = 'PT'
-DEFAULT_TRAFFIC_CLASS = 'metro,train,local,tram,bus,fer'
+DEFAULT_TRAFFIC_CLASS = ['metro','train','local','tram','bus','fer']
 
 DEFAULT_SENSORTYPE = 'departures'
 DEFAULT_CACHE_FILE = '.storage/haslcache.json'
@@ -65,29 +69,34 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         vol.All(cv.ensure_list, [vol.All({
 
             vol.Required(ATTR_FRIENDLY_NAME): cv.string,
+            
             vol.Required(CONF_SENSOR_TYPE, default=DEFAULT_SENSORTYPE):
-                vol.In(['departures', 'status', 'trainlocation',
-                        'comb', 'tl2']),
-
+                vol.In(LIST_SENSOR_TYPES),
+                        
             vol.Optional(CONF_ENABLED_SENSOR): cv.string,
+            
             vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_INTERVAL):
                 vol.Any(cv.time_period, cv.positive_timedelta),
-
+                
             vol.Optional(CONF_SITEID): cv.string,
-            vol.Optional(CONF_LINES): cv.string,
+            
+            vol.Optional(CONF_LINES, default=[]):
+                vol.All(cv.ensure_list, [cv.string]),
+            
             vol.Optional(CONF_DIRECTION, default=DEFAULT_DIRECTION):
                 vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+                
             vol.Optional(CONF_TIMEWINDOW, default=DEFAULT_TIMEWINDOW):
                 vol.All(vol.Coerce(int), vol.Range(min=0, max=60)),
+                
             vol.Optional(CONF_SENSORPROPERTY, default=DEFAULT_SENSORPROPERTY):
-                vol.In(['min', 'time', 'deviations', 'refresh', 'updated']),
-
+                vol.In(LIST_SENSOR_PROPERTIES),
+                
             vol.Optional(CONF_TRAFFIC_CLASS, default=DEFAULT_TRAFFIC_CLASS):
-                cv.string,
-
+                vol.All(cv.ensure_list, [vol.In(DEFAULT_TRAFFIC_CLASS)]),
+          
             vol.Optional(CONF_TRAIN_TYPE, default=DEFAULT_TRAIN_TYPE):
-                vol.In(['PT', 'RB', 'TVB', 'SB', 'LB',
-                        'SpvC', 'TB1', 'TB2', 'TB3'])
+                vol.In(LIST_TRAIN_TYPES)
             })]),
 }, extra=vol.ALLOW_EXTRA)
 
@@ -461,10 +470,7 @@ class SLDeparturesSensor(Entity):
         self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
         self._hass = hass
         self._name = friendly_name
-        if lines:
-            self._lines = lines.split(',')
-        else:
-            self._lines = []
+        self._lines = lines
         self._siteid = siteid
         self._enabled_sensor = enabled_sensor
         self._sensorproperty = sensorproperty

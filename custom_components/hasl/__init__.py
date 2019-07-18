@@ -30,7 +30,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 
 def setup(hass, config):
-    """Setup our communication platform."""   
+    """Setup our communication platform."""
 
     try:
         _pu1api = pu1api(config[DOMAIN][CONF_PU1_KEY])
@@ -41,7 +41,6 @@ def setup(hass, config):
         _tp3api = tp3api(config[DOMAIN][CONF_TP3_KEY])
     except:
         _tp3api = tp3api('')
-
 
     def clear_cache(call):
         for sensor in hass.data[DOMAIN]:
@@ -55,29 +54,28 @@ def setup(hass, config):
 
     def find_location(call):
         search_string = call.data.get('search_string')
-        
+
         return _pu1api.request(search_string)
 
     def find_trip_id(call):
         origin = call.data.get('org')
         destination = call.data.get('dest')
-        
-        return _tp3api.request(origin,destination,'','','','')
+
+        return _tp3api.request(origin, destination, '', '', '', '')
 
     def find_trip_pos(call):
         olat = call.data.get('orig_lat')
         olon = call.data.get('orig_long')
         dlat = call.data.get('dest_lat')
         dlon = call.data.get('dest_long')
-        
-        return _tp3api.request('','',olat,olon,dlat,dlon)
 
+        return _tp3api.request('', '', olat, olon, dlat, dlon)
 
     # track_time_interval(hass, FUNC, INTERVALL).
     hass.services.register(DOMAIN, 'clear_cache', clear_cache)
     hass.services.register(DOMAIN, 'find_location', find_location)
     hass.services.register(DOMAIN, 'find_trip_id', find_trip_id)
     hass.services.register(DOMAIN, 'find_trip_pos', find_trip_pos)
-    
+
     # Return boolean to indicate that initialization was successfully.
     return True

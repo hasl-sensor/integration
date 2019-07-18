@@ -8,10 +8,24 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Nothing right now
 
+## [2.2.0] (2019-07-18)
+
+### BREAKING CHANGES
+- config entrys have been changed to a true string array and should now be specified according to `lines: ['123X','124']`
+
+### Changed
+- Fix [#36](https://github.com/DSorlov/hasl-platform/issues/36) platform not found
+- Fix [#37](https://github.com/DSorlov/hasl-platform/issues/37) lines in 2.1.3
+- Moved the cache file from config dir into the .storage folder
+- Fixed documentation error (said TI2KEY instead of TL2KEY)
+
+### Added
+- Added services Platsupplslag and Reseplaneraren as services (preview, no docs yet) 
+
 ## [2.1.3] (2019-07-15)
 
 ### Changed
-- Fixed beyond stupid typo in upload. Meh.
+- Replaced custom updater with [HACS](https://custom-components.github.io/hacs/)
 
 ## [2.1.2] (2019-07-15)
 
@@ -188,6 +202,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.2.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.0...2.1.3
 [2.1.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.3...2.1.2
 [2.1.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.1...2.1.2
 [2.1.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.0...2.1.1

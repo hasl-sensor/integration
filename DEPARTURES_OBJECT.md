@@ -21,6 +21,7 @@ departures: [{
   destination: Slussen
   diff: 10
   type: Buses
+  groupofline: blåbuss
   icon: mdi:bus
 }]
 deviances: [{

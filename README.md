@@ -3,7 +3,8 @@
 [![stability-stable](https://img.shields.io/badge/stability-released-lightgrey.svg)](#)
 [![version](https://img.shields.io/badge/version-2.2.0-green.svg)](#)
 [![maintained](https://img.shields.io/maintenance/yes/2019.svg)](#)
-[![maintainer](https://img.shields.io/badge/maintainer-daniel%20sörlöv-blue.svg)](https://github.com/DSorlov) 
+[![maintainer](https://img.shields.io/badge/maintainer-daniel%20sörlöv-blue.svg)](https://github.com/DSorlov)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Home Assistant SL Sensor (HASL)
 ===============================
@@ -20,7 +21,7 @@ This is a custom component so not installed by default in your Home Assistant in
 By using HACS you will also make sure that any new versions are installed by default and as simple as the install itself.
 
 After you added the integration then add the desired configuration in config. Here is an example of a typical configuration:
- 
+
 ```yaml
 sensor:
 - platform: hasl
@@ -46,8 +47,8 @@ Note that HASL will not automatically update as newer versions are released so y
 
 Please copy files:
 
-[`hasl/__init__.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/__init__.py) to `<config>/custom_components/hasl/__init__.py`  
-[`hasl/sensor.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/sensor.py) to `<config>/custom_components/hasl/sensor.py`  
+[`hasl/__init__.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/__init__.py) to `<config>/custom_components/hasl/__init__.py`
+[`hasl/sensor.py`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/sensor.py) to `<config>/custom_components/hasl/sensor.py`
 [`hasl/manifest.json`](https://github.com/DSorlov/ha-sensor-sl/blob/hasl/custom_components/hasl/manifest.json) to `<config>/custom_components/hasl/manifest.json`
 
 where `<config>` is your Home Assistant configuration directory.
@@ -64,16 +65,16 @@ where `<config>` is your Home Assistant configuration directory.
 - **api_minimization** (*Optional*): Use the api-call-minimization-strategy (default `True`)
 
 - **sensors**: A list of all the sensors to be created. Theese can be of sensor_type `departures`, `status` or `trainlocation`:
-  
-  
+
+
 ## Configuration variables for departure sensors
-This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
+This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md).
 
  - **sensor_type: `departures`**:  Mandatory configuration for departures sensor (must be set to `departures`)
- 
+
  - **friendly_name**: Used as display name
 
- - **siteid**: The ID of the bus stop or station you want to monitor.  
+ - **siteid**: The ID of the bus stop or station you want to monitor.
 
  - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
 
@@ -83,7 +84,7 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
 
  - **lines** (*Optional*): An array list of line numbers that you are interested in. Most likely, you only want info on the bus that you usually ride.  If omitted, all lines at the specified site id will be included.  In the example above, lines 474 and 480C will be included.
 
- - **direction** (*Optional*): Unless your site id happens to be the end of the line, buses and trains goes in both directions. You can enter **1** or **2** (default is **0** which represents both directions). 
+ - **direction** (*Optional*): Unless your site id happens to be the end of the line, buses and trains goes in both directions. You can enter **1** or **2** (default is **0** which represents both directions).
 
  - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
@@ -91,7 +92,7 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
 This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . and outputs data as described in the [sensor description](STATUS_OBJECT.md)
 
  - **sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
-  
+
  - **friendly_name**: Used as display name
 
  - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
@@ -104,7 +105,7 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
 This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
 
  - **sensor_type: `trainlocation`**:  mandatory configuration for train location sensor and must be set to `trainlocation`
-  
+
  - **friendly_name**: Used as display name
 
  - **train_type**: Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen)
@@ -112,7 +113,7 @@ This sensor type creates a train location sensor and shows the train locations f
  - **scan_interval** (*Optional*): Timespan between updates. You can specify `00:01:00` or `60` for update every minute.
 
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
- 
+
 ## Display of sensor data
 The sensors can be used with multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
 

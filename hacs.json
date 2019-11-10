@@ -1,0 +1,7 @@
+{
+    "name": "Home Assistant SL Sensor (HASL)",
+    "content_in_root": false,
+    "render_readme": false,
+    "homeassistant": "0.92",
+    "zip_release": false
+}

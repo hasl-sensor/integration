@@ -67,7 +67,7 @@ where `<config>` is your Home Assistant configuration directory.
   
   
 ## Configuration variables for departure sensors
-This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
+This sensor type creates a departuresined departure sensor for a specific stop. You can find the ID with some help from another API , ["SL Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag/konsol)).  In the example above, site 4244 is Mölnvik. This sensor can be used with hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) and outputs data as described in the [sensor description](DEPARTURES_OBJECT.md). 
 
  - **sensor_type: `departures`**:  Mandatory configuration for departures sensor (must be set to `departures`)
  
@@ -88,7 +88,7 @@ This sensor type creates a departuresined departure sensor for a specific stop. 
  - **timewindow** (*Optional*): The number of minutes to look ahead when requesting the departure board from the api. Default 60, minimum is 5 and maximum is 60.
 
 ## Configuration variables for status sensors
-This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with [hasl-cards](https://github.com/DSorlov/hasl-cards). and outputs data as described in the [sensor description](STATUS_OBJECT.md)
+This sensor type creates a Traffic Situation sensor and shows the all-up trafic situation in the public transportation system. This sensor can be used with hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . and outputs data as described in the [sensor description](STATUS_OBJECT.md)
 
  - **sensor_type: `status`**:  mandatory configuration for status sensor and must be set to `status`
   
@@ -114,7 +114,7 @@ This sensor type creates a train location sensor and shows the train locations f
  - **sensor** (*Optional*): Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
  
 ## Display of sensor data
-The sensors can be used with multiple cards in [hasl-cards](https://github.com/DSorlov/hasl-cards). There are several cards for different sensors and presentation options for each sensor type.
+The sensors can be used with multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 

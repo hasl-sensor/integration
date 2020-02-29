@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Nothing right now
 
-## [2.2.1] (2019-11-10)
+## [2.2.1] (2020-03-01)
 
 ### Changed
 - PR [#44](https://github.com/DSorlov/hasl-platform/pull/44) [#49](https://github.com/DSorlov/hasl-platform/pull/49) Fixed bug where no departures were returned if no lines specified [@Ziqqo](https://github.com/Ziqqo) [@lindell](https://github.com/lindell)

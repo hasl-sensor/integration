@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Nothing right now
 
+## [2.2.2] (2020-03-01)
+
+### Changed
+- Release with right branch
+
 ## [2.2.1] (2020-03-01)
 
 ### Changed
@@ -208,7 +213,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error code.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/master...DSorlov:dev
+[2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
 [2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0
 [2.2.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.0...2.1.3
 [2.1.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.3...2.1.2

@@ -82,17 +82,6 @@ This sensor type creates a Traffic Situation sensor and shows the all-up trafic 
 |**sensor**| optional | Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done. |
 |**traffic_class**| optional | A comma separated list of the types to present in the sensor if not all (`metro`,`train`,`local`,`tram`,`bus`,`fer`) |
 
-## Configuration variables for train location sensor (EXPERIMENTAL)
-This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
-
-| Name | Required? | Description |
-|------|-----------|-------------|
-|**sensor_type** | yes | mandatory configuration for train location sensor and must be set to `trainlocation` |
-|**friendly_name**| optional | Used as display name|
-|**train_type**| yes | Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen) |
-|**scan_interval**| optional | Timespan between updates. You can specify `00:01:00` or `60` for update every minute.|
-|**sensor** | optional | Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
-
 ## Display of sensor data
 The sensors can be used with multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
 
@@ -103,3 +92,40 @@ The sensors can be used with multiple cards in hasl-cards ([departure-card](http
 The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
 The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
 You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.
+
+## Experimental and upcomming features
+
+So far there is very limited support for other api-functions except what is listed above. However there are some experimentation going on with future functionalities of the platform and this code. Nothing that is decided or ready, but the features may be used as-is for now to experiment and see what can be done. Also, if you extend the code please submit a PR so it can be furthered.
+
+If you have any suggestions do not forget to add them to the issue tracker to be included in HASL 3.0, please use the enhancement label to add your request. [Go do it now!](https://github.com/DSorlov/hasl-platform/issues/new).
+
+To use this stuff you should know your way around advanced customization of your Home Assistant enviroment, but for now three parts exists:
+
+### Train location sensor
+This sensor type creates a train location sensor and shows the train locations for subway, and surface trains. This sensor is EXPERIMENTAL and NOT SUPPORTED yet. Outputs json object to be parsed by frontend, but no specific card exists yet. Subject to change.
+
+| Name | Required? | Description |
+|------|-----------|-------------|
+|**sensor_type** | yes | mandatory configuration for train location sensor and must be set to `trainlocation` |
+|**friendly_name**| optional | Used as display name|
+|**train_type**| yes | Which train type should this sensor monitor. Choose one of `PT` (pendeltåg),`RB` (roslagsbanan),`TVB` (tvärbanan),`SB` (saltsjöbanan),`LB` (lidingöbanan),`SpvC` (spårväg city),`TB1` (gröna linjen),`TB2` (röda linjen),`TB3` (blåa linjen) |
+|**scan_interval**| optional | Timespan between updates. You can specify `00:01:00` or `60` for update every minute.|
+|**sensor** | optional | Specify the name of a binary_sensor to determine if this sensor should be updated. If sensor is 'on', or if this option is not set, update will be done.
+
+
+### Platsuppslag
+(Requires PU1-API-Key) The PU1 or [Platsuppslag](https://www.trafiklab.se/api/sl-platsuppslag) API can be used to get the codes for stops needed for configuration as described above. It may also be used to do advanced typeahead searches. There is no GUI provided but there is a services exposed under services: `hasl.find_location`. It requires one argument as a string `search_string` that contains the place to be looked up. Returns the raw api response for now.
+
+Configuration.yaml
+```yaml
+hasl:
+  pu1key: YOUR-PU1-KEY-HERE
+```
+### Reseplaneraren 3.1
+(Requires TP3-API-Key) The TP3 or [Reseplaneraren3.1](https://www.trafiklab.se/api/sl-reseplanerare-31) lets you search for routes, prices and current times in the real-time and planned schedule for the stockholm traffic. This could be used to have a dashboard for the current route to work or something similar. There is no GUI provided but there is two services exposed under services: `hasl.find_trip_id` which accepts a stop id from SL as integers `orig` and `dest` and then returns the raw api response. The second service `hasl.find_trip_loc` instead accepts a logitude and latitude in `orig_lat`, `orig_lon`, `dest_lat` and `dest_lon` and also returns raw response.
+
+Configuration.yaml
+```yaml
+hasl:
+  tp3key: YOUR-TP3-KEY-HERE
+```

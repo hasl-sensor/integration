@@ -1,7 +1,7 @@
 [![hacs_badge](https://img.shields.io/badge/hacs-default-orange.svg)](https://github.com/custom-components/hacs)
 [![ha_version](https://img.shields.io/badge/home%20assistant-0.92%2B-yellow.svg)](https://www.home-assistant.io)
 [![stability-stable](https://img.shields.io/badge/stability-released-lightgrey.svg)](#)
-[![version](https://img.shields.io/badge/version-2.2.1-green.svg)](#)
+[![version](https://img.shields.io/badge/version-2.2.2-green.svg)](#)
 [![maintained](https://img.shields.io/maintenance/yes/2020.svg)](#)
 [![maintainer](https://img.shields.io/badge/maintainer-daniel%20sörlöv-blue.svg)](https://github.com/DSorlov)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

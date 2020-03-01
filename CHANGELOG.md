@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 - Nothing right now
 
+## [2.2.1] (2020-03-01)
+
+### Changed
+- PR [#44](https://github.com/DSorlov/hasl-platform/pull/44) [#49](https://github.com/DSorlov/hasl-platform/pull/49) Fixed bug where no departures were returned if no lines specified [@Ziqqo](https://github.com/Ziqqo) [@lindell](https://github.com/lindell)
+- PR [#49](https://github.com/DSorlov/hasl-platform/pull/49) Minutes from expected time [@lindell](https://github.com/lindell)
+- Updated HACS configuration
+
 ## [2.2.0] (2019-07-18)
 
 ### BREAKING CHANGES
@@ -20,7 +27,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Fixed documentation error (said TI2KEY instead of TL2KEY)
 
 ### Added
-- Added services Platsupplslag and Reseplaneraren as services (preview, no docs yet) 
+- Added services Platsupplslag and Reseplaneraren as services (preview, no docs yet)
 
 ## [2.1.3] (2019-07-15)
 
@@ -47,7 +54,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - `tl2` sensor is now `status`, will remove `tl2` in 2.5.0. Please change your config.
 
 ### Changed
-- Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working 
+- Fix [#23](https://github.com/DSorlov/ha-sensor-sl/issues/23) timewindow not working
 - Fix [#24](https://github.com/DSorlov/ha-sensor-sl/issues/24) default scan_interval documentation bug
 - Fix [#25](https://github.com/DSorlov/ha-sensor-sl/issues/25) stupid bug introduced by DSorlov =)
 - PEP8 Compliance
@@ -188,7 +195,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [0.0.3] (2018-09-30)
 
 ### Changed
-- Only log errors once 
+- Only log errors once
 
 ## [0.0.2] (2018-09-29)
 
@@ -202,6 +209,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
 [Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/hasl...DSorlov:dev
+[2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0
 [2.2.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.0...2.1.3
 [2.1.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.3...2.1.2
 [2.1.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.1...2.1.2

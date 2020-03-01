@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 from datetime import timedelta
+import math
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -516,20 +517,21 @@ class SLDeparturesSensor(Entity):
 
         # If the sensor should return minutes to next departure.
         if self._sensorproperty is 'min':
-            if not self._departure_table:
+            next_departure = self.nextDeparture()
+            if not next_departure:
                 return '-'
-            return self._departure_table[0]['time']
+
+            delta = next_departure['expected'] - datetime.datetime.now()
+            expected_minutes = math.floor(delta.total_seconds() / 60)
+            return expected_minutes
 
         # If the sensor should return the time at which next departure occurs.
         if self._sensorproperty is 'time':
-            if not self._departure_table:
+            next_departure = self.nextDeparture()
+            if not next_departure:
                 return '-'
-            expected = self._departure_table[0]['expected'] or '-'
-            if expected is not '-':
-                expected = \
-                    datetime.datetime.strptime(self._nextdeparture_expected,
-                                               '%Y-%m-%dT%H:%M:%S')
-                expected = expected.strftime('%H:%M:%S')
+
+            expected = next_departure['expected'].strftime('%H:%M:%S')
             return expected
 
         # If the sensor should return the number of deviations.
@@ -558,14 +560,12 @@ class SLDeparturesSensor(Entity):
         val = {}
 
         # Format the next exptected time.
-        if self._departure_table:
-            expected_time = self._departure_table[0]['expected'] or '-'
-            expected_minutes = self._departure_table[0]['time'] or '-'
-            if expected_time is not '-':
-                expected_time = \
-                    datetime.datetime.strptime(expected_time,
-                                               '%Y-%m-%dT%H:%M:%S')
-                expected_time = expected_time.strftime('%H:%M:%S')
+        next_departure = self.nextDeparture()
+        if next_departure:
+            expected_time = next_departure['expected']
+            delta = expected_time - datetime.datetime.now()
+            expected_minutes = math.floor(delta.total_seconds() / 60)
+            expected_time = expected_time.strftime('%H:%M:%S')
         else:
             expected_time = '-'
             expected_minutes = '-'
@@ -620,6 +620,16 @@ class SLDeparturesSensor(Entity):
         except Exception:
             _LOGGER.warning("Failed to parse departure time (%s) ", t)
         return 0
+
+    def nextDeparture(self):
+        if not self._departure_table:
+            return None
+
+        now = datetime.datetime.now()
+        for departure in self._departure_table:
+            if departure['expected'] > now:
+                return departure
+        return None
 
     def getCache(self, key):
         try:
@@ -726,7 +736,7 @@ class SLDeparturesSensor(Entity):
                     icon = iconswitcher.get(traffictype, 'mdi:train-car')
                     if int(self._direction) == 0 or int(direction) \
                             == int(self._direction):
-                        if self._lines is None or linenumber \
+                        if len(self._lines) == 0 or linenumber \
                                 in self._lines:
                             diff = self.parseDepartureTime(displaytime)
                             if diff < self._timewindow:
@@ -736,7 +746,9 @@ class SLDeparturesSensor(Entity):
                                     'departure': displaytime,
                                     'destination': destination,
                                     'time': diff,
-                                    'expected': expected,
+                                    'expected': datetime.datetime.strptime(
+                                        expected, '%Y-%m-%dT%H:%M:%S'
+                                    ),
                                     'type': traffictype,
                                     'groupofline': groupofline,
                                     'icon': icon,

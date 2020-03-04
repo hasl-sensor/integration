@@ -736,7 +736,7 @@ class SLDeparturesSensor(Entity):
                     icon = iconswitcher.get(traffictype, 'mdi:train-car')
                     if int(self._direction) == 0 or int(direction) \
                             == int(self._direction):
-                        if len(self._lines) == 0 or linenumber \
+                        if self._lines == [] or linenumber \
                                 in self._lines:
                             diff = self.parseDepartureTime(displaytime)
                             if diff < self._timewindow:

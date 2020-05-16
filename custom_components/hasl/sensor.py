@@ -41,12 +41,15 @@ from .const import (
     CONF_RI4_KEY,
     CONF_SI2_KEY,
     CONF_SITE_ID,
+    CONF_SENSOR,
     CONF_INTEGRATION_TYPE,
     CONF_INTEGRATION_ID,
     CONF_DEVIATION_LINES,
     CONF_DEVIATION_STOPS,
     CONF_DEVIATION_LINE,
-    CONF_DEVIATION_STOP
+    CONF_DEVIATION_STOP,
+    STATE_OFF,
+    STATE_ON
 )
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
@@ -191,7 +194,10 @@ class HASLDepartureSensor(HASLDevice):
     def state(self):
         """Return the state of the sensor."""
         sensorproperty = self._config.options[CONF_SENSOR_PROPERTY]
-        
+
+        if self._sensordata == []:
+            return 'Unknown'
+            
         if sensorproperty is 'min':
             next_departure = self.nextDeparture()
             if not next_departure:
@@ -247,6 +253,9 @@ class HASLDepartureSensor(HASLDevice):
         # Initialize the state attributes.
         val = {}
 
+        if self._sensordata == []:
+            return val
+
         # Format the next exptected time.
         next_departure = self.nextDeparture()
         if next_departure:
@@ -273,7 +282,7 @@ class HASLDepartureSensor(HASLDevice):
 
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
-        else
+        else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
@@ -325,7 +334,10 @@ class HASLDeviationSensor(HASLDevice):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return len(self._sensordata["data"])
+        if self._sensordata == []:
+            return 'Unknown'
+        else:
+            return len(self._sensordata["data"])
 
     @property
     def icon(self):
@@ -342,6 +354,9 @@ class HASLDeviationSensor(HASLDevice):
         """ Return the sensor attributes."""
         val = {}
         
+        if self._sensordata == []:
+            return val        
+        
         # Check if sensor is currently updating or not.
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
@@ -353,7 +368,7 @@ class HASLDeviationSensor(HASLDevice):
         
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
-        else
+        else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
@@ -383,8 +398,7 @@ class HASLTrainLocationSensor(HASLDevice):
         if worker.system.status.background_task:
             return
 
-        newdata = worker.data.fp[self._traintype]
-        self._sensordata = newdata
+        self._sensordata = worker.data.fp[self._traintype]
         
         return
 
@@ -401,7 +415,10 @@ class HASLTrainLocationSensor(HASLDevice):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return len(self._sensordata["data"])
+        if self._sensordata == []:
+            return 'Unknown'
+        else:
+            return len(self._sensordata["data"])
 
     @property
     def icon(self):
@@ -417,18 +434,22 @@ class HASLTrainLocationSensor(HASLDevice):
     def device_state_attributes(self):
         val = {}
         
-        # Check if sensor is currently updating or not.
-        if self._enabled_sensor is not None:
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-
-        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-            val['refresh_enabled'] = STATE_ON
-        else:
-            val['refresh_enabled'] = STATE_OFF
+        if self._sensordata == []:
+            return val
         
+        # Check if sensor is currently updating or not.
+        if not self._enabled_sensor == "":
+            sensor_state = self._hass.states.get(self._enabled_sensor)
+            if sensor_state.state is STATE_ON:
+                val['refresh_enabled'] = STATE_ON
+            else:
+                val['refresh_enabled'] = STATE_OFF            
+        else:
+            val['refresh_enabled'] = STATE_ON
+               
         if self._sensordata["api_result"] == "Success":
-            val['api_result'] = "Ok"
-        else
+            val['api_result'] = "Success"
+        else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
@@ -458,8 +479,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         if worker.system.status.background_task:
             return
 
-        newdata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]
-        self._sensordata = newdata
+        self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]
         
         return
 
@@ -476,7 +496,10 @@ class HASLTrafficStatusSensor(HASLDevice):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._sensordata["last_updated"]
+        if self._sensordata == []:
+            return 'Unknown'
+        else:
+            return self._sensordata["last_updated"]
 
     @property
     def icon(self):
@@ -492,6 +515,9 @@ class HASLTrafficStatusSensor(HASLDevice):
     def device_state_attributes(self):
         val = {}
         
+        if self._sensordata == []:
+            return val
+             
         # Check if sensor is currently updating or not.
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
@@ -503,7 +529,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
-        else
+        else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.

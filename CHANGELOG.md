@@ -27,6 +27,8 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - A common in-memory structure for all data is now done using a worker holding data for all instances instead of writing to disk
 - Updated hacs.json to be more detailed
 - Added info.md for HACS
+- Service for dumping the cache to disk have been implemented
+- Fixed lots of bugs related to data not beeing available yet (async)
 
 ### Still todo (major tasks)
 - Re-implement TIMEWINDOW in departure sensor (dsorlov have started)
@@ -41,7 +43,6 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Re-implement the Platsuppslag Service as a separate integration type
 - Re-implement the Reseplaneraren Service as a separate integration type
 - Re-implement over-reboot cache?
-- Implement services to dump the in-memory database and to clear everything
 - Implement much more events where needed, right now very limited and mostly to handle start and load
 
 ## [2.2.3] (2020-03-04)

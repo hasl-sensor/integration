@@ -1,5 +1,6 @@
 """SL Platform"""
 import logging
+import json
 from homeassistant import config_entries
 from homeassistant.helpers import discovery
 from homeassistant.const import __version__ as HAVERSION
@@ -79,13 +80,21 @@ async def startup_wrapper_for_yaml():
         async_call_later(worker.hass, 900, startup_wrapper_for_yaml())
         return
     worker.system.disabled = False
+
+def dump_cache(caller):
+    """Add sensor."""
+    worker = get_worker()
+
+    jsonFile = open(worker.hass.config.path('hasl_data_dump.json'), "w")
+    jsonFile.write(json.dumps(worker.data.dump()))
+    jsonFile.close()
+    
     
 def add_services():
     """Add sensor."""
     worker = get_worker()
 
-    #hass.services.register(DOMAIN, 'clear_cache', clear_cache)
-    #hass.services.register(DOMAIN, 'dump_cache', dump_cache)
+    worker.hass.services.register(DOMAIN, 'dump_cache', dump_cache)
     
     
 def add_sensor():

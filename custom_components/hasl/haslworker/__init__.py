@@ -21,13 +21,13 @@ from integrationhelper import Logger
 from queueman import QueueManager
 
 
-class HaslStatus:
+class HaslStatus(object):
     """System Status."""
     startup = True
     background_task = False
 
 
-class HaslSystem:
+class HaslSystem(object):
     """System info."""
     status = HaslStatus()
     config_type = None
@@ -35,7 +35,7 @@ class HaslSystem:
     ha_version = None
     disabled = False
 
-class SLAPIHolder:
+class SLAPIHolder(object):
     tl2 = {}
     si2 = {}
     ri4 = {}
@@ -43,7 +43,18 @@ class SLAPIHolder:
     ri4keys = {}
     fp = {}
     
-class HaslWorker:
+    def dump(self):
+        return {
+            'si2keys': self.si2keys,
+            'ri4keys': self.ri4keys,
+            'tl2': self.tl2,
+            'si2': self.si2,
+            'ri4': self.ri4,
+            'fp': self.fp
+        }
+
+    
+class HaslWorker(object):
     """HaslWorker."""
 
     logger = Logger("hasl")

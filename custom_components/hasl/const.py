@@ -1,6 +1,8 @@
 """ SL Platform Constants """
 from homeassistant.const import (
-    CONF_NAME
+    CONF_NAME,
+    STATE_ON,
+    STATE_OFF
 )
 
 DOMAIN = "hasl"

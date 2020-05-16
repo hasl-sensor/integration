@@ -252,7 +252,7 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Log error code.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/hasl/integration/compare/master...hasl:dev
+[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...hasl-v3-dev
 [2.2.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3...2.2.2
 [2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
 [2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0

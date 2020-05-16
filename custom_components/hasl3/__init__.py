@@ -5,7 +5,7 @@ from homeassistant import config_entries
 from homeassistant.helpers import discovery
 from homeassistant.const import __version__ as HAVERSION
 from homeassistant.const import EVENT_HOMEASSISTANT_START
-from custom_components.hasl.haslworker.configuration import Configuration
+from custom_components.hasl3.haslworker.configuration import Configuration
 from homeassistant.exceptions import ConfigEntryNotReady, ServiceNotFound
 from homeassistant.helpers.event import async_call_later
 

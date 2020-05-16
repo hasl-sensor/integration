@@ -6,8 +6,8 @@ import datetime
 from datetime import timedelta
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.util.dt import now
-from custom_components.hasl.haslworker.exceptions import HaslException
-from custom_components.hasl.slapi import (
+from custom_components.hasl3.haslworker.exceptions import HaslException
+from custom_components.hasl3.slapi import (
     slapi,
     slapi_fp,
     slapi_tl2,

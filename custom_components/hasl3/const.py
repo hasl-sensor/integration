@@ -5,7 +5,7 @@ from homeassistant.const import (
     STATE_OFF
 )
 
-DOMAIN = "hasl"
+DOMAIN = "hasl3"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "3.0.0"
 

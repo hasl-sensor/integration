@@ -3,7 +3,7 @@ worker = []
 
 def get_worker():
     if not worker:
-        from custom_components.hasl.haslworker import HaslWorker
+        from custom_components.hasl3.haslworker import HaslWorker
 
         worker.append(HaslWorker())
 

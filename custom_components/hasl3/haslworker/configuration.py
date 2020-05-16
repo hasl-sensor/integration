@@ -1,7 +1,7 @@
 """HACS Configuration."""
 import attr
 from integrationhelper import Logger
-from custom_components.hasl.haslworker.exceptions import HaslException
+from custom_components.hasl3.haslworker.exceptions import HaslException
 
 
 @attr.s(auto_attribs=True)

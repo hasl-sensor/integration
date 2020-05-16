@@ -11,6 +11,7 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 
 ### Changed (summarized)
 - Moving into the new organization on github and renaming to integration
+- Changed domain from hasl to hasl3
 - Removed dependency on external hasl-communication-library and replaced by internal slapi dependency instead
 - Using httpx async in slapi library
 - Added GUI configuration for the integration

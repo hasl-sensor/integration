@@ -2,12 +2,11 @@
   "codeowners": [
 	"@DSorlov"
   ],
-  "domain": "hasl",
+  "domain": "hasl3",
   "name": "SL Sensor (HASLv3)",
   "documentation": "https://hasl.sorlov.com",
   "dependencies": [],
   "config_flow": true,
-  "homeassistant": "0.92.0",
   "requirements": [
     "integrationhelper==0.2.2",
 	"httpx==0.12.1",

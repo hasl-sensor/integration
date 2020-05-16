@@ -1,9 +1,16 @@
 {
+  "codeowners": [
+	"@DSorlov"
+  ],
   "domain": "hasl",
-  "name": "Home Assistant SL Sensor (HASL)",
-  "documentation": "https://github.com/DSorlov/hasl-platform",
+  "name": "SL Sensor (HASLv3)",
+  "documentation": "https://hasl.sorlov.com",
   "dependencies": [],
-  "codeowners": ["@DSorlov"],
-  "requirements": ["hasl==2.3.1"],
-  "homeassistant": "0.92.0"
-} 
+  "config_flow": true,
+  "homeassistant": "0.92.0",
+  "requirements": [
+    "integrationhelper==0.2.2",
+	"httpx==0.12.1",
+    "queueman==0.5"
+  ]
+}

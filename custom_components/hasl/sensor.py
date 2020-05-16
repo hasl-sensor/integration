@@ -1,501 +1,186 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-"""Simple service for SL (Storstockholms Lokaltrafik)."""
-import datetime
-import json
+""" SL Platform Sensor """
 import logging
-from datetime import timedelta
-import math
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
-from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import (ATTR_FRIENDLY_NAME, CONF_SCAN_INTERVAL,
-                                 CONF_SENSOR_TYPE, CONF_SENSORS, STATE_OFF,
-                                 STATE_ON)
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import (async_track_point_in_utc_time,
-                                         async_track_utc_time_change,
-                                         track_time_interval)
-from homeassistant.util import Throttle
+from homeassistant.core import HomeAssistant, State
 from homeassistant.util.dt import now
+from .haslworker import HaslWorker as worker
+from .globals import get_worker
 
-from hasl import (haslapi, fpapi, tl2api, ri4api, si2api,
-                  HASL_Error, HASL_API_Error, HASL_HTTP_Error)
+from .slapi import (
+    slapi,
+    slapi_fp,
+    slapi_tl2,
+    slapi_ri4,
+    slapi_si2,
+    SLAPI_Error,
+    SLAPI_API_Error,
+    SLAPI_HTTP_Error
+)
+from .slapi.const import (
+    __version__ as slapi_version
+)
 
-__version__ = '2.2.0'
-_LOGGER = logging.getLogger(__name__)
-DOMAIN = 'hasl'
+from .const import (
+    DOMAIN,
+    VERSION,
+    SENSOR_STANDARD,
+    SENSOR_STATUS,
+    SENSOR_VEHICLE_LOCATION,
+    SENSOR_DEVIATION,
+    CONF_FP_PT,
+    CONF_FP_RB,
+    CONF_FP_TVB,
+    CONF_FP_SB,
+    CONF_FP_LB,
+    CONF_FP_SPVC,
+    CONF_FP_TB1,
+    CONF_FP_TB2,
+    CONF_FP_TB3,       
+    CONF_TL2_KEY,
+    CONF_RI4_KEY,
+    CONF_SI2_KEY,
+    CONF_SITE_ID,
+    CONF_INTEGRATION_TYPE,
+    CONF_INTEGRATION_ID,
+    CONF_DEVIATION_LINES,
+    CONF_DEVIATION_STOPS,
+    CONF_DEVIATION_LINE,
+    CONF_DEVIATION_STOP
+)
 
-# Keys used in the configuration.
-CONF_RI4_KEY = 'ri4key'
-CONF_SI2_KEY = 'si2key'
-CONF_TL2_KEY = 'tl2key'
-CONF_SITEID = 'siteid'
-CONF_LINES = 'lines'
-CONF_DIRECTION = 'direction'
-CONF_ENABLED_SENSOR = 'sensor'
-CONF_TIMEWINDOW = 'timewindow'
-CONF_SENSORPROPERTY = 'property'
-CONF_TRAIN_TYPE = 'train_type'
-CONF_TRAFFIC_CLASS = 'traffic_class'
-CONF_VERSION = 'version_sensor'
-CONF_USE_MINIMIZATION = 'api_minimization'
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    async_add_entities(await setup_hasl_sensor(hass,config))
 
-LIST_SENSOR_TYPES = ['departures', 'status', 'trainlocation', 'comb', 'tl2']
-LIST_SENSOR_PROPERTIES = ['min', 'time', 'deviations', 'refresh', 'updated']
-LIST_TRAIN_TYPES = ['PT', 'RB', 'TVB', 'SB', 'LB', 'SpvC', 'TB1', 'TB2', 'TB3']
+async def async_setup_entry(hass, config_entry, async_add_devices):
+    async_add_devices(await setup_hasl_sensor(hass, config_entry))
 
-# Default values for configuration.
-DEFAULT_INTERVAL = timedelta(minutes=10)
-DEFAULT_TIMEWINDOW = 30
-DEFAULT_DIRECTION = 0
-DEFAULT_SENSORPROPERTY = 'min'
-DEFAULT_TRAIN_TYPE = 'PT'
-DEFAULT_TRAFFIC_CLASS = ['metro', 'train', 'local', 'tram', 'bus', 'fer']
-
-DEFAULT_SENSORTYPE = 'departures'
-DEFAULT_CACHE_FILE = '.storage/haslcache.json'
-
-# Defining the configuration schema.
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    # API Keys
-    vol.Optional(CONF_RI4_KEY): cv.string,
-    vol.Optional(CONF_SI2_KEY): cv.string,
-    vol.Optional(CONF_TL2_KEY): cv.string,
-    vol.Optional(CONF_VERSION, default=False): cv.boolean,
-    vol.Optional(CONF_USE_MINIMIZATION, default=True): cv.boolean,
-
-    vol.Required(CONF_SENSORS, default=[]):
-        vol.All(cv.ensure_list, [vol.All({
-
-            vol.Required(ATTR_FRIENDLY_NAME): cv.string,
-
-            vol.Required(CONF_SENSOR_TYPE, default=DEFAULT_SENSORTYPE):
-                vol.In(LIST_SENSOR_TYPES),
-
-            vol.Optional(CONF_ENABLED_SENSOR): cv.string,
-
-            vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_INTERVAL):
-                vol.Any(cv.time_period, cv.positive_timedelta),
-
-            vol.Optional(CONF_SITEID): cv.string,
-
-            vol.Optional(CONF_LINES, default=[]):
-                vol.All(cv.ensure_list, [cv.string]),
-
-            vol.Optional(CONF_DIRECTION, default=DEFAULT_DIRECTION):
-                vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
-
-            vol.Optional(CONF_TIMEWINDOW, default=DEFAULT_TIMEWINDOW):
-                vol.All(vol.Coerce(int), vol.Range(min=0, max=60)),
-
-            vol.Optional(CONF_SENSORPROPERTY, default=DEFAULT_SENSORPROPERTY):
-                vol.In(LIST_SENSOR_PROPERTIES),
-
-            vol.Optional(CONF_TRAFFIC_CLASS, default=DEFAULT_TRAFFIC_CLASS):
-                vol.All(cv.ensure_list, [vol.In(DEFAULT_TRAFFIC_CLASS)]),
-
-            vol.Optional(CONF_TRAIN_TYPE, default=DEFAULT_TRAIN_TYPE):
-                vol.In(LIST_TRAIN_TYPES)
-            })]),
-}, extra=vol.ALLOW_EXTRA)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Setup the sensors."""
-
-    if not hass.data.get(DOMAIN):
-        hass.data[DOMAIN] = {}
-
+async def setup_hasl_sensor(hass,config):
+    """Setup sensor platform."""
     sensors = []
+    worker = get_worker()
+   
+    #try:
 
-    if config[CONF_VERSION]:
-        sensors.append(SLVersionSensor(hass))
-        _LOGGER.info("Created version sensor for HASL")
+    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STANDARD:
+        if CONF_RI4_KEY in config.options and CONF_SITE_ID in config.options:
+            await worker.assert_ri4(config.options[CONF_RI4_KEY],config.options[CONF_SITE_ID])
+            sensors.append(HASLDepartureSensor(config,stopstalle))
+        await worker.process_ri4();
 
-    for sensorconf in config[CONF_SENSORS]:
+    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_DEVIATION:
+        if CONF_SI2_KEY in config.options:
+            for deviationid in ','.join(set(config.options[CONF_DEVIATION_LINES].split(','))).split(','):
+                await worker.assert_si2_line(config.options[CONF_SI2_KEY],deviationid)
+                sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_LINE,deviationid))
+            for deviationid in ','.join(set(config.options[CONF_DEVIATION_STOPS].split(','))).split(','):
+                await worker.assert_si2_stop(config.options[CONF_SI2_KEY],deviationid)
+                sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_STOP,deviationid))
+        await worker.process_si2()
+        
+    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
+        if CONF_TL2_KEY in config.options:
+            await worker.assert_tl2(config.options[CONF_TL2_KEY])
+            sensors.append(HASLTrafficStatusSensor(hass,config))
+        await worker.process_tl2()
 
-        if sensorconf[CONF_SENSOR_TYPE] == 'departures' or \
-           sensorconf[CONF_SENSOR_TYPE] == 'comb':
+    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
+        if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
+            await worker.assert_fp("PT")
+            sensors.append(HASLTrainLocationSensor(hass,config,'PT'))
+        if CONF_FP_RB in config.options and config.options[CONF_FP_RB]:
+            await worker.assert_fp("RB")
+            sensors.append(HASLTrainLocationSensor(hass,config,'RB'))
+        if CONF_FP_TVB in config.options and config.options[CONF_FP_TVB]:
+            await worker.assert_fp("TVB")
+            sensors.append(HASLTrainLocationSensor(hass,config,'TVB'))
+        if CONF_FP_SB in config.options and config.options[CONF_FP_SB]:
+            await worker.assert_fp("SB")
+            sensors.append(HASLTrainLocationSensor(hass,config,'SB'))
+        if CONF_FP_LB in config.options and config.options[CONF_FP_LB]:
+            await worker.assert_fp("LB")
+            sensors.append(HASLTrainLocationSensor(hass,config,'LB'))
+        if CONF_FP_SPVC in config.options and config.options[CONF_FP_SPVC]:
+            await worker.assert_fp("SpvC")
+            sensors.append(HASLTrainLocationSensor(hass,config,'SpvC'))
+        if CONF_FP_TB1 in config.options and config.options[CONF_FP_TB1]:
+            await worker.assert_fp("TB1")
+            sensors.append(HASLTrainLocationSensor(hass,config,'TB1'))
+        if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
+            await worker.assert_fp("TB2")
+            sensors.append(HASLTrainLocationSensor(hass,config,'TB2'))
+        if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
+            await worker.assert_fp("TB3")
+            sensors.append(HASLTrainLocationSensor(hass,config,'TB3'))
+        await worker.process_fp();
 
-            sitekey = sensorconf.get(CONF_SITEID)
-            si2key = config.get(CONF_SI2_KEY)
-            ri4key = config.get(CONF_RI4_KEY)
-            if sitekey and ri4key:
-                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
-                sensors.append(SLDeparturesSensor(
-                    hass,
-                    si2key,
-                    ri4key,
-                    sitekey,
-                    sensorconf.get(CONF_LINES),
-                    sensorname,
-                    sensorconf.get(CONF_ENABLED_SENSOR),
-                    sensorconf.get(CONF_SCAN_INTERVAL),
-                    sensorconf.get(CONF_DIRECTION),
-                    sensorconf.get(CONF_TIMEWINDOW),
-                    sensorconf.get(CONF_SENSORPROPERTY),
-                    config.get(CONF_USE_MINIMIZATION)
-                    ))
+    #except:
+    #    return
 
-                _LOGGER.info("Created departures sensor %s...", sensorname)
-            else:
-                _LOGGER.error("Sensor %s is missing site, si2key or ri4key",
-                              sensorconf[ATTR_FRIENDLY_NAME])
-
-        if sensorconf[CONF_SENSOR_TYPE] == 'status' or \
-           sensorconf[CONF_SENSOR_TYPE] == 'tl2':
-
-            tl2key = config.get(CONF_TL2_KEY)
-            if tl2key:
-                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
-                sensors.append(SLStatusSensor(
-                    hass,
-                    tl2key,
-                    sensorname,
-                    sensorconf.get(CONF_ENABLED_SENSOR),
-                    sensorconf.get(CONF_SCAN_INTERVAL),
-                    sensorconf.get(CONF_TRAFFIC_CLASS),
-                    config.get(CONF_USE_MINIMIZATION)
-                    ))
-
-                _LOGGER.info("Created status sensor %s...", sensorname)
-            else:
-                _LOGGER.error("Sensor %s is missing tl2key attribute",
-                              sensorconf[ATTR_FRIENDLY_NAME])
-
-        if sensorconf[CONF_SENSOR_TYPE] == 'trainlocation':
-            train_type = sensorconf.get(CONF_TRAIN_TYPE)
-            if train_type:
-                sensorname = sensorconf[ATTR_FRIENDLY_NAME]
-                sensors.append(SLTrainLocationSensor(
-                    hass,
-                    sensorname,
-                    train_type,
-                    sensorconf.get(CONF_SCAN_INTERVAL),
-                    sensorconf.get(CONF_ENABLED_SENSOR),
-                    ))
-
-                _LOGGER.info("Created train sensor %s...", sensorname)
-            else:
-                _LOGGER.error("Sensor %s is missing train_type attribute",
-                              sensorconf[ATTR_FRIENDLY_NAME])
-
-    add_devices(sensors)
-
-
-class SLTrainLocationSensor(Entity):
-    """Trafic Situation Sensor."""
-    def __init__(self, hass, friendly_name, train_type,
-                 interval, enabled_sensor):
-
-        self._hass = hass
-        self._fpapi = fpapi()
-        self._name = friendly_name
-        self._interval = interval
-        self._enabled_sensor = enabled_sensor
-        self._train_type = train_type
-        self._data = {}
-
-        self.update = Throttle(interval)(self._update)
-
+    return sensors
+    
+class HASLDevice(Entity):
+    """HASL Device class."""
     @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
+    def device_info(self):
+        """Return device information about HASL Device."""
+        return {
+            "identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-{self._config.data[CONF_INTEGRATION_ID]}")},
+            "name": f"SL {self._config.data[CONF_INTEGRATION_TYPE]} Device",
+            "manufacturer": "hasl.sorlov.com",
+            "model": f"slapi-v{slapi_version}",
+            "sw_version": VERSION,
+        }
+        
+class HASLDepartureSensor(HASLDevice):
+    """HASL Departure Sensor class."""
 
-    @property
-    def icon(self):
-        """ Return the icon for the frontend."""
-        return None
-
-    @property
-    def device_state_attributes(self):
-        """ Return the sensor attributes."""
-        return {'type': self._train_type, 'data': json.dumps(self._data)}
-
-    @property
-    def state(self):
-        """ Return the state of the sensor."""
-        return self._train_type
-
-    def _update(self):
-
-        if self._enabled_sensor is not None:
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-
-        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-
-            try:
-                apidata = self._fpapi.request(self._train_type)
-
-            except HASL_Error as e:
-                _LOGGER.error("A communication error occured while "
-                              "updating train location sensor: %s", e.details)
-                return
-
-            except Exception as e:
-                _LOGGER.error("A error occured while"
-                              "updating train location sensor: %s", e)
-                return
-
-        self._data = apidata
-
-        _LOGGER.info("Update completed %s...", self._name)
-
-
-class SLVersionSensor(Entity):
-    """HASL Version Sensor."""
-    def __init__(self, hass):
-
-        self._hass = hass
-        self._haslapi = haslapi()
-        self._name = 'HASL Version'
-        self._version = __version__
-        self._py_version = self._haslapi.version()
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def icon(self):
-        """ Return the icon for the frontend."""
-        return None
-
-    @property
-    def device_state_attributes(self):
-        """ Return the sensor attributes."""
-        return {'hasl': self._version, 'pyHasl': self._py_version}
-
-    @property
-    def state(self):
-        """ Return the state of the sensor."""
-        return self._version + "/" + self._py_version
-
-
-class SLStatusSensor(Entity):
-    """Trafic Situation Sensor."""
-    def __init__(self, hass, tl2key, friendly_name,
-                 enabled_sensor, interval, type,
-                 minimization):
-
-        self._tl2api = tl2api(tl2key)
-        self._datakey = 'tl2_' + tl2key
-        self._interval = interval
-        self._hass = hass
-        self._name = friendly_name
-        self._enabled_sensor = enabled_sensor
-        self._type = type
-        self._sensordata = []
-        self._lastupdate = '-'
-        self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
-        self._minimization = minimization
-
-        if not hass.data[DOMAIN].get(self._datakey):
-            hass.data[DOMAIN][self._datakey] = ''
-
-        self.update = Throttle(interval)(self._update)
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def icon(self):
-        """ Return the icon for the frontend."""
-        return 'mdi:train-car'
-
-    @property
-    def device_state_attributes(self):
-        """ Return the sensor attributes."""
-        return self._sensordata
-
-    @property
-    def state(self):
-        """ Return the state of the sensor."""
-        return self._lastupdate
-
-    def getCache(self, key):
-        try:
-            jsonFile = open(self._cachefile, 'r')
-            data = json.load(jsonFile)
-            jsonFile.close()
-
-            return data.get(key)
-        except:
-            return {}
-
-    def putCache(self, key, value):
-        try:
-            jsonFile = open(self._cachefile, 'r')
-            data = json.load(jsonFile)
-            jsonFile.close()
-
-            data[key] = value
-        except:
-            data = {'' + key + '': value}
-
-        jsonFile = open(self._cachefile, 'w')
-        jsonFile.write(json.dumps(data))
-        jsonFile.close()
-
-    def _update(self):
-
-        if self._enabled_sensor is not None:
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-
-        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-
-            _LOGGER.info("Starting to update TL2 for %s...",
-                         self._name)
-
-            # Object used to create our object.
-            newdata = {}
-
-            # Use some nice translations for the statuses etc.
-            statuses = {
-                'EventGood': 'Good',
-                'EventMinor': 'Minor',
-                'EventMajor': 'Closed',
-                'EventPlanned': 'Planned',
-                }
-
-            # Icon table used for HomeAssistant.
-            statusIcons = {
-                'EventGood': 'mdi:check',
-                'EventMinor': 'mdi:clock-alert-outline',
-                'EventMajor': 'mdi:close',
-                'EventPlanned': 'mdi:triangle-outline'
-                }
-
-            trafficTypeIcons = {
-                'ferry': 'mdi:ferry',
-                'bus': 'mdi:bus',
-                'tram': 'mdi:tram',
-                'train': 'mdi:train',
-                'local': 'mdi:train-variant',
-                'metro': 'mdi:subway-variant'
-                }
-
-            # If the same API have already made the request in within
-            # the specified interval then use that data instead of
-            # requesting it again and spare some innocent credits from dying.
-            cacheage = self._hass.data[DOMAIN][self._datakey]
-            if not cacheage or now(self._hass.config.time_zone) \
-                    - self._interval > cacheage or not self._minimization:
-
-                try:
-                    apidata = self._tl2api.request()
-                    apidata = apidata['ResponseData']['TrafficTypes']
-
-                    self.putCache(self._datakey, apidata)
-                    self._hass.data[DOMAIN][self._datakey] = \
-                        now(self._hass.config.time_zone)
-
-                    _LOGGER.info("Updated cache for %s...", self._name)
-
-                except HASL_Error as e:
-                    _LOGGER.error("A communication error occured while "
-                                  "updating TL2 sensor: %s", e.details)
-                    return
-
-                except Exception as e:
-                    _LOGGER.error("A error occured while "
-                                  "updating TL4 API: %s", e)
-                    return
-
-            else:
-                apidata = self.getCache(self._datakey)
-                _LOGGER.info("Reusing data from cache for %s...",
-                             self._name)
-
-            # Return only the relevant portion of the results.
-            for response in apidata:
-                type = response['Type']
-                if self._type is None or type in self._type:
-                    statustype = ('ferry' if type == 'fer' else type)
-                    newdata[statustype + '_status'] = \
-                        statuses.get(response['StatusIcon'])
-                    newdata[statustype + '_status_icon'] = \
-                        statusIcons.get(response['StatusIcon'])
-                    newdata[statustype + '_icon'] = \
-                        trafficTypeIcons.get(statustype)
-
-                    for event in response['Events']:
-                        event['Status'] = statuses.get(event['StatusIcon'])
-                        event['StatusIcon'] = \
-                            statusIcons.get(event['StatusIcon'])
-
-                    newdata[statustype + '_events'] = response['Events']
-
-            # Attribution and update sensor data.
-            newdata['attribution'] = "Stockholms Lokaltrafik"
-            newdata['last_updated'] = \
-                self._hass.data[DOMAIN][self._datakey].strftime('%Y-%m-%d' +
-                                                                '%H:%M:%S')
-            self._sensordata = newdata
-            self._lastupdate = newdata['last_updated']
-
-            _LOGGER.info("TL2 update completed for %s...", self._name)
-
-
-class SLDeparturesSensor(Entity):
-    """Departure board for one SL site."""
-
-    def __init__(self, hass, si2key, ri4key, siteid,
-                 lines, friendly_name, enabled_sensor,
-                 interval, direction, timewindow, sensorproperty,
-                 minimization):
-        """Initialize"""
-
-        # The table of resulttypes and the corresponding units of measure.
+    def __init__(self, config, siteid):
+        """Initialize."""
+        
         unit_table = {
             'min': 'min',
             'time': '',
             'deviations': '',
-            'refresh': '',
-            'update': '',
-            }
-
-        if si2key:
-            self._si2key = si2key
-            self._si2api = si2api(si2key, siteid, '')
-            self._si2datakey = 'si2_' + si2key + '_' + siteid
-
-        self._ri4key = ri4key
-        self._ri4api = ri4api(ri4key, siteid, 60)
-        self._ri4datakey = 'ri2_' + ri4key + '_' + siteid
-        self._hass = hass
-        self._name = friendly_name
-        self._lines = lines
+            'updated': '',
+        }
+    
+        self._name = f"SL Departure Sensor {self._stop}"
+        self._config = config
+        self._lines = config.options[CONF_LINES]
         self._siteid = siteid
-        self._enabled_sensor = enabled_sensor
-        self._sensorproperty = sensorproperty
-        self._departure_table = []
-        self._deviations_table = []
-        self._direction = direction
-        self._timewindow = timewindow
+        self._enabled_sensor = config.options[CONF_SENSOR]
+        self._sensorproperty = config.options[CONF_SENSOR_PROPERTY]
+        self._direction = config.options[CONF_DIRECTION]
+        self._timewindow = config.options[CONF_TIMEWINDOW]
         self._nextdeparture_minutes = '0'
         self._nextdeparture_expected = '-'
         self._lastupdate = '-'
-        self._interval = interval
-        self._unit_of_measure = unit_table.get(self._sensorproperty, 'min')
-        self._cachefile = hass.config.path(DEFAULT_CACHE_FILE)
-        self._minimization = minimization
+        self._unit_of_measure = unit_table.get(self._config.options[CONF_SENSOR_PROPERTY], 'min')
+        self._sensordata = None
+        
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
 
-        if not hass.data[DOMAIN].get(self._ri4datakey):
-            hass.data[DOMAIN][self._ri4datakey] = ''
+        if worker.system.status.background_task:
+            return
 
-        if self._si2key:
-            if not hass.data[DOMAIN].get(self._si2datakey):
-                hass.data[DOMAIN][self._si2datakey] = ''
+        self._sensordata = worker.data.ri4[self._stop]
+        
+        if worker.data.si2[f"stop_{self._stop}"]:
+            self._sensordata["deviations"] = worker.data.si2[f"stop_{self._stop}"]["data"]
+        else:
+            self._sensordata["deviations"] = []
+               
+        self._last_updated = self._sensordata["last_updated"]
+        
+        return
 
-        # Setup updating of the sensor.
-        self.update = Throttle(interval)(self._update)
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"sl_stop_{self._stop}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):
@@ -503,20 +188,11 @@ class SLDeparturesSensor(Entity):
         return self._name
 
     @property
-    def icon(self):
-        """ Return the icon for the frontend."""
-
-        if self._deviations_table:
-            return 'mdi:bus-alert'
-
-        return 'mdi:bus'
-
-    @property
     def state(self):
-        """ Return number of minutes to the next departure """
-
-        # If the sensor should return minutes to next departure.
-        if self._sensorproperty is 'min':
+        """Return the state of the sensor."""
+        sensorproperty = self._config.options[CONF_SENSOR_PROPERTY]
+        
+        if sensorproperty is 'min':
             next_departure = self.nextDeparture()
             if not next_departure:
                 return '-'
@@ -526,7 +202,7 @@ class SLDeparturesSensor(Entity):
             return expected_minutes
 
         # If the sensor should return the time at which next departure occurs.
-        if self._sensorproperty is 'time':
+        if sensorproperty is 'time':
             next_departure = self.nextDeparture()
             if not next_departure:
                 return '-'
@@ -535,22 +211,34 @@ class SLDeparturesSensor(Entity):
             return expected
 
         # If the sensor should return the number of deviations.
-        if self._sensorproperty is 'deviations':
-            return len(self._deviations_table)
+        if sensorproperty is 'deviations':
+            return len(self._sensordata["deviations"])
 
-        # If the sensor should return if it is updating or not.
-        if self._sensorproperty is 'refresh':
-            if self._enabled_sensor is None or sensor_state.state is STATE_ON:
-                return STATE_ON
-            return STATE_OFF
-
-        if self._sensorproperty is 'updated':
-            if self._lastupdate is '-':
-                return '-'
-            return refresh.strftime('%Y-%m-%d %H:%M:%S')
-
+        if sensorproperty is 'updated':
+            return self._sensordata["last_updated"]
+            
         # Failsafe
         return '-'
+        
+    def nextDeparture(self):
+        if not self._sensordata:
+            return None
+
+        now = datetime.datetime.now()
+        for departure in self._sensordata["data"]:
+            if departure['expected'] > now:
+                return departure
+        return None        
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:train"
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return self._unit_of_measure
 
     @property
     def device_state_attributes(self):
@@ -570,11 +258,6 @@ class SLDeparturesSensor(Entity):
             expected_time = '-'
             expected_minutes = '-'
 
-        # Format the last refresh time.
-        refresh = self._lastupdate
-        if self._lastupdate is not '-':
-            refresh = refresh.strftime('%Y-%m-%d %H:%M:%S')
-
         # Setup the unit of measure.
         if self._unit_of_measure is not '':
             val['unit_of_measurement'] = self._unit_of_measure
@@ -588,230 +271,245 @@ class SLDeparturesSensor(Entity):
         else:
             val['refresh_enabled'] = STATE_OFF
 
+        if self._sensordata["api_result"] == "Success":
+            val['api_result'] = "Ok"
+        else
+            val['api_result'] = self._sensordata["api_error"]
+
         # Set values of the sensor.
-        val['attribution'] = 'Stockholms Lokaltrafik'
-        val['departures'] = self._departure_table
-        val['deviations'] = self._deviations_table
-        val['last_refresh'] = refresh
+        val['attribution'] = self._sensordata["attribution"]
+        val['departures'] = self._sensordata["data"]
+        val['deviations'] = self._sensordata["deviations"]
+        val['last_refresh'] = self._sensordata["last_updated"]
         val['next_departure_minutes'] = expected_minutes
         val['next_departure_time'] = expected_time
-        val['deviation_count'] = len(self._deviations_table)
+        val['deviation_count'] = len(self._sensordata["deviations"])
 
-        return val
+        return val  
+        
+class HASLDeviationSensor(HASLDevice):
+    """HASL Deviation Sensor class."""
 
-    def parseDepartureTime(self, t):
-        """ weird time formats from the API,
-        do some quick and dirty conversions. """
+    def __init__(self, config, deviationtype, deviationkey):
+        """Initialize."""
+        self._config = config
+        self._deviationkey = deviationkey
+        self._deviationtype = deviationtype
+        self._enabled_sensor = config.options[CONF_SENSOR]
+        self._name = f"SL {self._deviationtype.capitalize()} Deviation Sensor {self._stop}"
+        self._sensordata = []
+        self._enabled_sensor
+        
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
 
-        try:
-            if t == 'Nu':
-                return 0
-            s = t.split()
-            if len(s) > 1 and s[1] == 'min':
-                return int(s[0])
-            s = t.split(':')
-            if len(s) > 1:
-                rightnow = now(self._hass.config.time_zone)
-                min = int(s[0]) * 60 + int(s[1]) - (rightnow.hour * 60 +
-                                                    rightnow.minute)
-                if min < 0:
-                    min = min + 1440
-                return min
-        except Exception:
-            _LOGGER.warning("Failed to parse departure time (%s) ", t)
-        return 0
+        if worker.system.status.background_task:
+            return
 
-    def nextDeparture(self):
-        if not self._departure_table:
-            return None
+        newdata = worker.data.si2[f"{self._devationtype}_{self._deviationkey}"]
+        self._sensordata = newdata
+        
+        return
 
-        now = datetime.datetime.now()
-        for departure in self._departure_table:
-            if departure['expected'] > now:
-                return departure
-        return None
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"sl_deviation_{self._deviationtype}_{self._deviationkey}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
 
-    def getCache(self, key):
-        try:
-            jsonFile = open(self._cachefile, 'r')
-            data = json.load(jsonFile)
-            jsonFile.close()
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
 
-            return data.get(key)
-        except:
-            return {}
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return len(self._sensordata["data"])
 
-    def putCache(self, key, value):
-        try:
-            jsonFile = open(self._cachefile, 'r')
-            data = json.load(jsonFile)
-            jsonFile.close()
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:train"
 
-            data[key] = value
-        except:
-            data = {'' + key + '': value}
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return ""
 
-        jsonFile = open(self._cachefile, 'w')
-        jsonFile.write(json.dumps(data))
-        jsonFile.close()
-
-    def _update(self):
-        """Get the departure board."""
-
-        # If using external sensor, get its value.
+    @property
+    def device_state_attributes(self):
+        """ Return the sensor attributes."""
+        val = {}
+        
+        # Check if sensor is currently updating or not.
         if self._enabled_sensor is not None:
             sensor_state = self._hass.states.get(self._enabled_sensor)
 
-        # If we dont have external sensor or it is ON then proceed.
-        if self._enabled_sensor is None or sensor_state.state \
-                is STATE_ON:
-
-            self._update_ri4()
-
-            if self._si2key:
-                self._update_si2()
-
-            self._lastupdate = now(self._hass.config.time_zone)
-
-    def _update_ri4(self):
-        errorOccured = False
-        _LOGGER.info("Starting to update RI4 for %s...", self._name)
-
-        cacheage = self._hass.data[DOMAIN][self._ri4datakey]
-        if not cacheage or now(self._hass.config.time_zone) \
-                - self._interval > cacheage or not self._minimization:
-
-            try:
-                departuredata = self._ri4api.request()
-                departuredata = departuredata['ResponseData']
-
-                self.putCache(self._ri4datakey, departuredata)
-                self._hass.data[DOMAIN][self._ri4datakey] = \
-                    now(self._hass.config.time_zone)
-
-                _LOGGER.info("Updated cache for %s...", self._name)
-
-            except HASL_Error as e:
-                _LOGGER.error("A communication error occured while "
-                              "updating SI2 sensor: %s", e.details)
-                errorOccured = True
-
-            except Exception as e:
-                _LOGGER.error("A communication error occured while "
-                              "updating RI4 API: %s", e)
-                errorOccured = True
-
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+            val['refresh_enabled'] = STATE_ON
         else:
-            try:
-                departuredata = self.getCache(self._ri4datakey)
+            val['refresh_enabled'] = STATE_OFF
+        
+        if self._sensordata["api_result"] == "Success":
+            val['api_result'] = "Ok"
+        else
+            val['api_result'] = self._sensordata["api_error"]
 
-                _LOGGER.info("Reusing data from cache for %s...",
-                             self._name)
-            except Exception as e:
-                _LOGGER.error("A error occured while retreiving "
-                              "cached RI4 sensor data: %s", e)
-                errorOccured = True
+        # Set values of the sensor.
+        val['attribution'] = self._sensordata["attribution"]
+        val['deviations'] = self._sensordata["data"]
+        val['last_refresh'] = self._sensordata["last_updated"]
+        val['deviation_count'] = len(self._sensordata["data"])
+        
+        return val           
+        
+class HASLTrainLocationSensor(HASLDevice):
+    """HASL Train Location Sensor class."""
 
-        if not errorOccured:
-            departures = []
+    def __init__(self, hass, config, traintype):
+        """Initialize."""
+        self._hass = hass
+        self._config = config
+        self._traintype = traintype
+        self._enabled_sensor = config.options[CONF_SENSOR]
+        self._name = f"SL {self._traintype} Location Sensor"
+        self._sensordata = []
 
-            iconswitcher = {
-                'Buses': 'mdi:bus',
-                'Trams': 'mdi:tram',
-                'Ships': 'mdi:ferry',
-                'Metros': 'mdi:subway-variant',
-                'Trains': 'mdi:train',
-                }
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
 
-            for (i, traffictype) in enumerate(['Metros', 'Buses', 'Trains',
-                                               'Trams', 'Ships']):
+        if worker.system.status.background_task:
+            return
 
-                for (idx, value) in enumerate(departuredata[traffictype]):
-                    direction = value['JourneyDirection'] or 0
-                    displaytime = value['DisplayTime'] or ''
-                    destination = value['Destination'] or ''
-                    linenumber = value['LineNumber'] or ''
-                    expected = value['ExpectedDateTime'] or ''
-                    groupofline = value['GroupOfLine'] or ''
-                    icon = iconswitcher.get(traffictype, 'mdi:train-car')
-                    if int(self._direction) == 0 or int(direction) \
-                            == int(self._direction):
-                        if self._lines == [] or linenumber \
-                                in self._lines:
-                            diff = self.parseDepartureTime(displaytime)
-                            if diff < self._timewindow:
-                                departures.append({
-                                    'line': linenumber,
-                                    'direction': direction,
-                                    'departure': displaytime,
-                                    'destination': destination,
-                                    'time': diff,
-                                    'expected': datetime.datetime.strptime(
-                                        expected, '%Y-%m-%dT%H:%M:%S'
-                                    ),
-                                    'type': traffictype,
-                                    'groupofline': groupofline,
-                                    'icon': icon,
-                                    })
+        newdata = worker.data.fp[self._traintype]
+        self._sensordata = newdata
+        
+        return
 
-            self._departure_table = sorted(departures,
-                                           key=lambda k: k['time'])
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"sl_fl_{self._traintype}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
 
-            _LOGGER.info("RI4 update completed for %s...", self._name)
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
 
-    def _update_si2(self):
-        errorOccured = False
-        _LOGGER.info("Starting to update SI2 for %s...", self._name)
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return len(self._sensordata["data"])
 
-        cacheage = self._hass.data[DOMAIN][self._si2datakey]
-        if not cacheage or now(self._hass.config.time_zone) \
-                - self._interval > cacheage or not self._minimization:
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:train"
 
-            try:
-                deviationdata = self._si2api.request()
-                deviationdata = deviationdata['ResponseData']
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return ""
 
-                self.putCache(self._si2datakey, deviationdata)
-                self._hass.data[DOMAIN][self._si2datakey] = \
-                    now(self._hass.config.time_zone)
+    @property
+    def device_state_attributes(self):
+        val = {}
+        
+        # Check if sensor is currently updating or not.
+        if self._enabled_sensor is not None:
+            sensor_state = self._hass.states.get(self._enabled_sensor)
 
-                _LOGGER.info('Updated cache for %s...', self._name)
-
-            except HASL_Error as e:
-                _LOGGER.error("A communication error occured while "
-                              "updating SI2 sensor: %s", e.details)
-                errorOccured = True
-
-            except Exception as e:
-                _LOGGER.error("A error occured while "
-                              "updating SI2 sensor: %s", e)
-                errorOccured = True
-
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+            val['refresh_enabled'] = STATE_ON
         else:
-            try:
-                deviationdata = self.getCache(self._si2datakey)
+            val['refresh_enabled'] = STATE_OFF
+        
+        if self._sensordata["api_result"] == "Success":
+            val['api_result'] = "Ok"
+        else
+            val['api_result'] = self._sensordata["api_error"]
 
-                _LOGGER.info("Reusing data from cache for %s...",
-                             self._name)
+        # Set values of the sensor.
+        val['attribution'] = self._sensordata["attribution"]
+        val['data'] = self._sensordata["data"]
+        val['last_refresh'] = self._sensordata["last_updated"]
+        val['vehicle_count'] = len(self._sensordata["data"])
+        
+        return val           
+     
 
-            except Exception as e:
-                _LOGGER.error("A error occured while retreiving "
-                              "cached SI2 sensor: %s", e.details)
-                errorOccured = True
+class HASLTrafficStatusSensor(HASLDevice):
+    """HASL Traffic Status Sensor class."""
 
-        if not errorOccured:
-            deviations = []
-            for (idx, value) in enumerate(deviationdata):
-                deviations.append({
-                    'updated': value['Updated'],
-                    'title': value['Header'],
-                    'fromDate': value['FromDateTime'],
-                    'toDate': value['UpToDateTime'],
-                    'details': value['Details'],
-                    'sortOrder': value['SortOrder'],
-                    })
+    def __init__(self, hass, config):
+        """Initialize."""
+        self._hass = hass
+        self._config = config
+        self._enabled_sensor = config.options[CONF_SENSOR]
+        self._name = f"SL Traffic Status Sensor"
+        self._sensordata = []
 
-            self._deviations_table = \
-                sorted(deviations, key=lambda k: k['sortOrder'])
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
 
-            _LOGGER.info("SI2 update completed for %s...", self._name)
+        if worker.system.status.background_task:
+            return
+
+        newdata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]
+        self._sensordata = newdata
+        
+        return
+
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"sl_traffic_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._sensordata["last_updated"]
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:train-car"
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return ""
+
+    @property
+    def device_state_attributes(self):
+        val = {}
+        
+        # Check if sensor is currently updating or not.
+        if self._enabled_sensor is not None:
+            sensor_state = self._hass.states.get(self._enabled_sensor)
+
+        if self._enabled_sensor is None or sensor_state.state is STATE_ON:
+            val['refresh_enabled'] = STATE_ON
+        else:
+            val['refresh_enabled'] = STATE_OFF
+        
+        if self._sensordata["api_result"] == "Success":
+            val['api_result'] = "Ok"
+        else
+            val['api_result'] = self._sensordata["api_error"]
+
+        # Set values of the sensor.
+        val['attribution'] = self._sensordata["attribution"]
+        val['data'] = self._sensordata["data"]
+        val['last_refresh'] = self._sensordata["last_updated"]
+
+        return val
+        

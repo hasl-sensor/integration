@@ -1,5 +1,5 @@
 {
-    "name": "Home Assistant SL Sensor (HASL)",
+    "name": "Home Assistant SL Sensor (HASLv3)",
     "content_in_root": false,
     "render_readme": false,
     "homeassistant": "0.92",

@@ -6,7 +6,41 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
 ## [Unreleased]
-- Nothing right now
+
+Generally stuff is really broken right now and I'm working on lots of stuff all over the code.
+
+### Changed (summarized)
+- Moving into the new organization on github and renaming to integration
+- Removed dependency on external hasl-communication-library and replaced by internal slapi dependency instead
+- Using httpx async in slapi library
+- Added GUI configuration for the integration
+- Metadata added to the home assistant wheels repo, PR[#48](https://github.com/home-assistant/wheels-custom-integrations/pull/48)
+- Icons added to the home assistant brands repo, PR[#1606](https://github.com/home-assistant/brands/pull/1606)
+- Changed the unique naming of all enteties generated to be truly unique and stay the same over time
+- Allow use of multiple API-keys for different sensors using multiple integrations
+- Enforce time based caching between all integrations to reduce wear on the API-keys
+- Workers to handle updates etc are now run on one minute intervalls using call-backs to be friendlier on hass
+- Sensors are "just" retreiving data from the workers instead of directly interfacing the apis.
+- Devices are now created for each integration to be used for future automation etc
+- Departures entity is now providing Deviation data only if a Deviation integration is configured with the same stops/lines to decrease complexity but maintaining compability both with new and old architechture.
+- Deviation sensors are now availiable as separate entites/sensors if needed and are leveraged by the Departures sensors if they exist.
+- A common in-memory structure for all data is now done using a worker holding data for all instances instead of writing to disk
+
+### Still todo (major tasks)
+- Re-implement TIMEWINDOW in departure sensor (dsorlov have started)
+- Re-implement STATE_SENSOR in departure sensor (dsorlov have started)
+- Re-implement STATE_SENSOR in train location sensor (dsorlov have started)
+- Re-implement STATE_SENSOR in deviation sensor (dsorlov have started)
+- Re-implement STATE_SENSOR in status sensor (dsorlov have started)
+- Re-implement SCAN_INTERVAL in departure sensor (dsorlov have started)
+- Re-implement SCAN_INTERVAL in train location sensor
+- Re-implement SCAN_INTERVAL in deviation sensor
+- Re-implement SCAN_INTERVAL in status sensor
+- Re-implement the Platsuppslag Service as a separate integration type
+- Re-implement the Reseplaneraren Service as a separate integration type
+- Re-implement over-reboot cache?
+- Implement services to dump the in-memory database and to clear everything
+- Implement much more events where needed, right now very limited and mostly to handle start and load
 
 ## [2.2.3] (2020-03-04)
 
@@ -218,7 +252,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error code.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/master...DSorlov:dev
+[Unreleased]: https://github.com/hasl/integration/compare/master...hasl:dev
 [2.2.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3...2.2.2
 [2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
 [2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0

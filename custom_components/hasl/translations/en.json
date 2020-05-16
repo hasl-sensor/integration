@@ -1,0 +1,50 @@
+{
+    "config": {
+        "title": "SL Sensor",
+        "step": {
+            "user": {
+                "title": "SL Sensor",
+                "description": "Enter a friendly name for your HASL integration to get started.",
+                "data": {
+                    "name": "Device friendly name",
+                    "sensortype": "Which kind of sensor?"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "SL Sensor",
+                "description": "Change HASL parameters. More info on https://hasl.sorlov.com",
+                "data": {
+                    "debug": "Enable debug logging",
+					"scan_interval": "How many minutes between refresh",
+					"sensor": "Only update if this binary sensor is True (empty=always update)",
+
+                    "ri4key": "Realtidsinformation 4 API Key",
+                    "siteid": "Location ID",
+					"direction": "Direction",
+					"property": "Sensor primary property",
+					"timewindow": "How long into the future (5-60 min)",
+
+                    "si2key": "Störningsinformation 2 API Key",
+					"lines": "Lines (comma separated list)",
+					"stops": "Location IDs (comma separated list)",
+
+                    "tl2key": "Trafikläget 2 API Key",
+					
+                    "fppt": "Commuter Trains",
+                    "fprb": "Roslagsbanan",
+                    "fptvb": "Tvärbanan",
+                    "fplb": "Lidingöbanen",
+                    "fpsb": "Saltsjöbanan",
+                    "fpspvc": "Spårväg City",
+                    "fptb1": "Gröna Linjen",
+                    "fptb2": "Röda linjen",
+                    "fptb3": "Blåa linjen"
+				}
+            }
+        }
+    }
+}

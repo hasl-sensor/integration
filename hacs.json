@@ -1,7 +1,10 @@
 {
     "name": "Home Assistant SL Sensor (HASLv3)",
     "content_in_root": false,
+	"country": "SE",
     "render_readme": false,
     "homeassistant": "0.92",
-    "zip_release": false
+    "zip_release": false,
+	"domains": ["sensor"],
+	"iot_class": "cloud_poll"
 }

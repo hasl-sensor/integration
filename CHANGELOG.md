@@ -25,6 +25,8 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Departures entity is now providing Deviation data only if a Deviation integration is configured with the same stops/lines to decrease complexity but maintaining compability both with new and old architechture.
 - Deviation sensors are now availiable as separate entites/sensors if needed and are leveraged by the Departures sensors if they exist.
 - A common in-memory structure for all data is now done using a worker holding data for all instances instead of writing to disk
+- Updated hacs.json to be more detailed
+- Added info.md for HACS
 
 ### Still todo (major tasks)
 - Re-implement TIMEWINDOW in departure sensor (dsorlov have started)

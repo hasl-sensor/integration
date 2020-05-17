@@ -10,6 +10,7 @@
   "requirements": [
     "integrationhelper==0.2.2",
 	"httpx==0.12.1",
-    "queueman==0.5"
+    "queueman==0.5",
+	"jsonpickle==1.4.1"
   ]
 }

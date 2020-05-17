@@ -30,6 +30,11 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Service for dumping the cache to disk have been implemented
 - Fixed lots of bugs related to data not beeing available yet (async issues)
 - Generic extensible queing system built in
+- Services for location lookup and trip planning implemented
+- Traffic status now is one sensor per traffic type to make it simpler to display status
+- All sensortypes works and returns some kind of data if configured with valid data
+- Added dependency on jsonpickle as the builtin json serialiser kind of sucks
+- Added hass reference to all sensors for consitancy (even if they have it via worker object, perhaps could be cleaned later?)
 
 ## [2.2.3] (2020-03-04)
 

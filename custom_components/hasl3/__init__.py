@@ -1,6 +1,8 @@
 """SL Platform"""
 import logging
 import json
+import time
+import jsonpickle
 from homeassistant import config_entries
 from homeassistant.helpers import discovery
 from homeassistant.const import __version__ as HAVERSION
@@ -16,6 +18,15 @@ from .const import (
     DOMAIN_DATA,
     VERSION,
     STARTUP_MESSAGE
+)
+
+from .slapi import (
+    slapi,
+    slapi_tp3,
+    slapi_pu1,
+    SLAPI_Error,
+    SLAPI_API_Error,
+    SLAPI_HTTP_Error
 )
 
 async def async_setup(hass, config):
@@ -81,20 +92,58 @@ async def startup_wrapper_for_yaml():
         return
     worker.system.disabled = False
 
-def dump_cache(caller):
+async def dump_cache(caller):
     """Add sensor."""
     worker = get_worker()
 
-    jsonFile = open(worker.hass.config.path('hasl_data_dump.json'), "w")
-    jsonFile.write(json.dumps(worker.data.dump()))
-    jsonFile.close()
+    timestring = time.strftime("%Y%m%d%H%M%S")
+    outputfile = worker.hass.config.path(f"hasl_data_{timestring}.json")
     
+    jsonFile = open(outputfile, "w")
+    jsonFile.write(jsonpickle.dumps(worker.data.dump(), unpicklable=False))
+    jsonFile.close()
+    return outputfile
+
+async def get_cache(caller):
+    """Add sensor."""
+    worker = get_worker()
+
+    return json.dumps(jsonpickle.dumps(worker.data.dump(), unpicklable=False))
+
+async def find_location(call):
+    search_string = call.data.get('search_string')
+    api_key = call.data.get('api_key')
+
+    pu1api = slapi_tp3(api_key)
+    return await pu1api.request(search_string)
+
+async def find_trip_id(call):
+    origin = call.data.get('org')
+    destination = call.data.get('dest')
+    api_key = call.data.get('api_key')
+
+    tp3api = slapi_tp3(api_key)
+    return await tp3api.request(origin, destination, '', '', '', '')
+
+async def find_trip_pos(call):
+    olat = call.data.get('orig_lat')
+    olon = call.data.get('orig_long')
+    dlat = call.data.get('dest_lat')
+    dlon = call.data.get('dest_long')
+    api_key = call.data.get('api_key')
+
+    tp3api = slapi_tp3(api_key)
+    return await tp3api.request('', '', olat, olon, dlat, dlon)    
     
 def add_services():
     """Add sensor."""
     worker = get_worker()
 
     worker.hass.services.register(DOMAIN, 'dump_cache', dump_cache)
+    worker.hass.services.register(DOMAIN, 'get_cache', get_cache)
+    worker.hass.services.register(DOMAIN, 'find_location', find_location)
+    worker.hass.services.register(DOMAIN, 'find_trip_pos', find_trip_pos)
+    worker.hass.services.register(DOMAIN, 'find_trip_id', find_trip_id)
     
     
 def add_sensor():

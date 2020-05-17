@@ -2,6 +2,8 @@
 import json
 import uuid
 import datetime
+import time
+import jsonpickle
 
 from datetime import timedelta
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
@@ -17,6 +19,7 @@ from custom_components.hasl3.slapi import (
     SLAPI_API_Error,
     SLAPI_HTTP_Error
 )
+
 from integrationhelper import Logger
 from queueman import QueueManager
 
@@ -70,6 +73,13 @@ class HaslWorker(object):
     def init(hass):
         """Return a initialized HaslWorker object."""
         return HaslWorker()
+        
+    def debugdump(self, data):
+        timestring = time.strftime("%Y%m%d%H%M%S")
+        outputfile = self.hass.config.path(f"hasl_debug_{timestring}.json")
+        jsonFile = open(outputfile, "w")
+        jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
+        jsonFile.close()
 
     async def startup_tasks(self):
         """Tasks tha are started after startup."""
@@ -138,10 +148,10 @@ class HaslWorker(object):
             self.data.fp[traintype] = newdata
 
     async def assert_si2_stop(self, key, stop):
-        await assert_si2(key,f"stop_{stop}",CONF_DEVIATION_STOPS,stop)
+        await self.assert_si2(key,f"stop_{stop}","stops",stop)
 
     async def assert_si2_line(self, key, line):
-        await assert_si2(key,f"line_{line}",CONF_DEVIATION_LINES,line)
+        await self.assert_si2(key,f"line_{line}","lines",line)
 
     async def assert_si2(self, key, datakey, listkey, listvalue):   
         if not key in self.data.si2keys:
@@ -152,9 +162,9 @@ class HaslWorker(object):
             }
             
         if self.data.si2keys[key][listkey]=="":
-            self.data.si2keys[key][listkey] = f"{self.data.si2keys[key][listkey]},{listvalue}"
-        else:
             self.data.si2keys[key][listkey] = listvalue
+        else:
+            self.data.si2keys[key][listkey] = f"{self.data.si2keys[key][listkey]},{listvalue}"
             
         if not datakey in self.data.si2:
             self.data.si2[datakey] = {
@@ -170,12 +180,12 @@ class HaslWorker(object):
         for si2key in self.data.si2keys:
             si2data = self.data.si2keys[si2key]
             api = slapi_si2(si2key, 60)
-            for stop in ','.join(set(si2data[CONF_DEVIATION_STOPS].split(','))).split(','):
+            for stop in ','.join(set(si2data["stops"].split(','))).split(','):
                 newdata = self.data.si2[f"stop_{stop}"]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
 
                 #try
-                deviationdata = self._si2api.request()
+                deviationdata = await api.request(stop,'')
                 deviationdata = deviationdata['ResponseData']   
 
                 deviations = []
@@ -200,12 +210,12 @@ class HaslWorker(object):
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"stop_{stop}"] = newdata
                 
-            for line in ','.join(set(si2data[CONF_DEVIATION_LINES].split(','))).split(','):
+            for line in ','.join(set(si2data["lines"].split(','))).split(','):
                 newdata = self.data.si2[f"line_{line}"]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
 
                 #try
-                deviationdata = self._si2api.request()
+                deviationdata = await api.request('',line)
                 deviationdata = deviationdata['ResponseData']   
 
                 deviations = []
@@ -233,17 +243,18 @@ class HaslWorker(object):
         return
 
     async def assert_ri4(self, key, stop):
+        stopkey = str(stop)
     
         if not key in self.data.ri4keys:
             self.data.ri4keys[key] = {
                 "api_key": key,
-                "stops": stop
+                "stops": stopkey
             }
         else:
-            self.data.ri4keys[key]["stops"] = f"{self.data.ri4keys[key]['stops']},{stop}"
+            self.data.ri4keys[key]["stops"] = f"{self.data.ri4keys[key]['stops']},{stopkey}"
             
         if not stop in self.data.ri4:
-            self.data.ri4[stop] = {
+            self.data.ri4[stopkey] = {
                 "api_type": "slapi-ri4",
                 "api_lastrun": now().strftime('%Y-%m-%d %H:%M:%S'),
                 "api_result": "Pending"
@@ -365,44 +376,36 @@ class HaslWorker(object):
                 'EventPlanned': 'mdi:triangle-outline'
             }
 
-            trafficTypeIcons = {
-                'ferry': 'mdi:ferry',
-                'bus': 'mdi:bus',
-                'tram': 'mdi:tram',
-                'train': 'mdi:train',
-                'local': 'mdi:train-variant',
-                'metro': 'mdi:subway-variant'
-            }            
-
-            try:         
+            #try:         
         
-                api = slapi_tl2(tl2key)
-                apidata = await api.request()
-                apidata = apidata['ResponseData']['TrafficTypes']    
+            api = slapi_tl2(tl2key)
+            apidata = await api.request()
+            apidata = apidata['ResponseData']['TrafficTypes']    
 
-                for response in apidata:
-                    statustype = ('ferry' if response['Type'] == 'fer' else response['Type'])
-                    newdata[statustype + '_status'] = \
-                        statuses.get(response['StatusIcon'])
-                    newdata[statustype + '_status_icon'] = \
-                        statusIcons.get(response['StatusIcon'])
-                    newdata[statustype + '_icon'] = \
-                        trafficTypeIcons.get(statustype)
+            responselist = {}
+            for response in apidata:
+                statustype = ('ferry' if response['Type'] == 'fer' else response['Type'])
 
-                    for event in response['Events']:
-                        event['Status'] = statuses.get(event['StatusIcon'])
-                        event['StatusIcon'] = \
-                            statusIcons.get(event['StatusIcon'])
+                for event in response['Events']:
+                    event['Status'] = statuses.get(event['StatusIcon'])
+                    event['StatusIcon'] = \
+                        statusIcons.get(event['StatusIcon'])
+                
+                responsedata = {
+                    'status': statuses.get(response['StatusIcon']),
+                    'status_icon': statusIcons.get(response['StatusIcon']),
+                    'events': response['Events']
+                }
+                responselist[statustype] = responsedata
 
-                    newdata[statustype + '_events'] = response['Events']
-
-                # Attribution and update sensor data.
-                newdata['attribution'] = "Stockholms Lokaltrafik"
-                newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                newdata['api_result'] = "Success"
-            except Exception as e:
-                newdata['api_result'] = "Error"
-                newdata['api_error'] = str(e)
+            # Attribution and update sensor data.
+            newdata['data'] = responselist
+            newdata['attribution'] = "Stockholms Lokaltrafik"
+            newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
+            newdata['api_result'] = "Success"
+            #except Exception as e:
+            #    newdata['api_result'] = "Error"
+            #   newdata['api_error'] = str(e)
             
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.tl2[tl2key] = newdata

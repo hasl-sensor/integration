@@ -1,38 +1,46 @@
 # Describes the format for available hasl services
 
 dump_cache:
-  description: Dumps all downloaded an cached data to './hasl_data_dump.jump' overwriting any existing file
+  description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created
+
+get_cache:
+  description: Returns all data downloaded and cached in the HASL worker for manual processing
 
 find_location:
   description: Searches for a SL location id using a freetext string
   fields:
+    api_key:
+      description: The Platsuppslag 1 API key to use for the query
     search_string:
       description: Enter the location to find id
       example: 'Slussen'
 
 find_trip_id:
-   description: Search for a trip between two places using either SL orgigin and destination locations
-   fields:
-     org:
-       description: The origin for the trip
-       example: 4243
-     dest:
-       description: The destination for the trip
-       example: 2412
+  description: Search for a trip between two places using either SL orgigin and destination locations
+  fields:
+    api_key:
+      description: The Reseplaneraren 3.1 API key to use for the query
+    org:
+      description: The origin for the trip
+      example: 4243
+    dest:
+      description: The destination for the trip
+      example: 2412
 
 find_trip_pos:
-   description: Search for a trip between two placings using longitude and latitude
-   fields:
-     orig_lat:
-       description: The origin location for the trip
-       example: '20.20'
-     orig_long:
-       description: The origin location for the trip
-       example: '10.20'
-     dest_lat:
-       description: The destination location for the trip
-       example: '20.20'
-     dest_long:
-       description: The destination location for the trip
-       example: '10.20'
-       
+  description: Search for a trip between two placings using longitude and latitude
+  fields:
+    api_key:
+      description: The Reseplaneraren 3.1 API key to use for the query
+    orig_lat:
+      description: The origin location for the trip
+      example: '20.20'
+    orig_long:
+      description: The origin location for the trip
+      example: '10.20'
+    dest_lat:
+      description: The destination location for the trip
+      example: '20.20'
+    dest_long:
+      description: The destination location for the trip
+      example: '10.20'

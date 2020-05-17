@@ -33,6 +33,7 @@
 					"stops": "Location IDs (comma separated list)",
 
                     "tl2key": "Trafikläget 2 API Key",
+					"analog": "Create sensors instead of binary_sensors (not recomended)",
 					
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",

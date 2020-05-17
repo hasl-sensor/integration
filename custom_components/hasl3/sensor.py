@@ -32,6 +32,7 @@ from .const import (
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     SENSOR_DEVIATION,
+    CONF_ANALOG_SENSORS,
     CONF_FP_PT,
     CONF_FP_RB,
     CONF_FP_TVB,
@@ -90,12 +91,14 @@ async def setup_hasl_sensor(hass,config):
         await worker.process_si2()
         
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
-        if CONF_TL2_KEY in config.options:
-            await worker.assert_tl2(config.options[CONF_TL2_KEY])
-            for sensortype in ["metro","train","local","tram","bus","ferry"]:
-                sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
-        await worker.process_tl2()
-
+        if config.options[CONF_ANALOG_SENSORS]:
+            if CONF_TL2_KEY in config.options:
+                await worker.assert_tl2(config.options[CONF_TL2_KEY])
+                for sensortype in ["metro","train","local","tram","bus","ferry"]:
+                    sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
+            await worker.process_tl2()
+        
+        
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
         if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
             await worker.assert_fp("PT")
@@ -136,10 +139,11 @@ class HASLDevice(Entity):
     @property
     def device_info(self):
         """Return device information about HASL Device."""
+        #Keep this for now if reverting to a per integration device but cannot see why we would do that
+        #"identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-{self._config.data[CONF_INTEGRATION_ID]}")},
+        #"name": f"SL {self._config.data[CONF_INTEGRATION_TYPE]} Device",
         return {
-            #"identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-{self._config.data[CONF_INTEGRATION_ID]}")},
             "identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-6a618956-520c-41d2-9a10-6d7e7353c7f5")},
-            #"name": f"SL {self._config.data[CONF_INTEGRATION_TYPE]} Device",
             "name": f"SL API Communications Device",
             "manufacturer": "hasl.sorlov.com",
             "model": f"slapi-v{slapi_version}",
@@ -195,7 +199,7 @@ class HASLDepartureSensor(HASLDevice):
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
-        return f"sl_stop_{self._siteid}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
+        return f"sl-stop-{self._siteid}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):
@@ -338,7 +342,7 @@ class HASLDeviationSensor(HASLDevice):
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
-        return f"sl_deviation_{self._deviationtype}_{self._deviationkey}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
+        return f"sl-deviation-{self._deviationtype}-{self._deviationkey}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):
@@ -421,7 +425,7 @@ class HASLTrainLocationSensor(HASLDevice):
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
-        return f"sl_fl_{self._traintype}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
+        return f"sl-fl-{self._traintype}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):
@@ -503,7 +507,7 @@ class HASLTrafficStatusSensor(HASLDevice):
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
-        return f"sl_{self._sensortype}_sensor_{self._config.data[CONF_INTEGRATION_ID]}"
+        return f"sl-{self._sensortype}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):

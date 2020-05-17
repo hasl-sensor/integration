@@ -5,6 +5,6 @@
     "render_readme": false,
     "homeassistant": "0.92",
     "zip_release": false,
-	"domains": ["sensor"],
+	"domains": ["sensor","binary_sensor"],
 	"iot_class": "cloud_poll"
 }

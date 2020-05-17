@@ -27,6 +27,7 @@ from .const import (
     CONF_SENSOR_PROPERTY_LIST,
     CONF_SCAN_INTERVAL,
     CONF_TIMEWINDOW,
+    CONF_ANALOG_SENSORS,
     DEFAULT_INTEGRATION_TYPE,
     DEFAULT_SENSOR_PROPERTY,
     DEFAULT_DIRECTION,
@@ -62,12 +63,12 @@ def standard_config_option_schema(options: dict = {}) -> dict:
     return {
         vol.Required(CONF_RI4_KEY, default=options.get(CONF_RI4_KEY)): str,
         vol.Required(CONF_SITE_ID, default=options.get(CONF_SITE_ID)): int,
-        vol.Optional(CONF_LINES, default=options.get(CONF_LINES)): str,
-        vol.Optional(CONF_DIRECTION, default=options.get(CONF_DIRECTION)): vol.In(CONF_DIRECTION_LIST),
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Required(CONF_SENSOR_PROPERTY, default=options.get(CONF_SENSOR_PROPERTY)): vol.In(CONF_SENSOR_PROPERTY_LIST),
         vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
         vol.Required(CONF_TIMEWINDOW, default=options.get(CONF_TIMEWINDOW)): int,
+        vol.Optional(CONF_LINES, default=options.get(CONF_LINES)): str,
+        vol.Optional(CONF_DIRECTION, default=options.get(CONF_DIRECTION)): vol.In(CONF_DIRECTION_LIST),
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Optional(CONF_DEBUG, default=options.get(CONF_DEBUG)): bool
     }
 
@@ -86,9 +87,10 @@ def deviation_config_option_schema(options: dict = {}) -> dict:
 def status_config_option_schema(options: dict = {}) -> dict:
     """Status sensor options."""
     if not options:
-        options = {CONF_SENSOR: "", CONF_TL2_KEY: "", CONF_DEBUG: False}
+        options = {CONF_SENSOR: "", CONF_TL2_KEY: "", CONF_DEBUG: False, CONF_ANALOG_SENSORS: False}
     return {
         vol.Required(CONF_TL2_KEY, default=options.get(CONF_TL2_KEY)): str,
+        vol.Optional(CONF_ANALOG_SENSORS, default=options.get(CONF_ANALOG_SENSORS)): bool,
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Optional(CONF_DEBUG, default=options.get(CONF_DEBUG)): bool
     }
@@ -98,7 +100,6 @@ def trainlocation_config_option_schema(options: dict = {}) -> dict:
     if not options:
         options = {CONF_SENSOR: "", CONF_FP_PT: False, CONF_FP_RB: False, CONF_FP_TVB: False, CONF_FP_SB: False, CONF_FP_LB: False, CONF_FP_SPVC: False, CONF_FP_TB1: False, CONF_FP_TB2: False, CONF_FP_TB3: False, CONF_DEBUG: False}
     return {
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Optional(CONF_FP_PT, default=options.get(CONF_FP_PT)): bool,
         vol.Optional(CONF_FP_RB, default=options.get(CONF_FP_RB)): bool,
         vol.Optional(CONF_FP_TVB, default=options.get(CONF_FP_TVB)): bool,
@@ -108,5 +109,6 @@ def trainlocation_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(CONF_FP_TB1, default=options.get(CONF_FP_TB1)): bool,
         vol.Optional(CONF_FP_TB2, default=options.get(CONF_FP_TB2)): bool,
         vol.Optional(CONF_FP_TB3, default=options.get(CONF_FP_TB3)): bool,
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Optional(CONF_DEBUG, default=options.get(CONF_DEBUG)): bool
     }

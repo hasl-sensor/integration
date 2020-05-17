@@ -157,10 +157,20 @@ def add_sensor():
                     worker.hass, "sensor", DOMAIN, {}, worker.configuration.config
                 )
             )
+            worker.hass.async_create_task(
+                discovery.async_load_platform(
+                    worker.hass, "binary_sensor", DOMAIN, {}, worker.configuration.config
+                )
+            )
         else:
             worker.hass.async_add_job(
                 worker.hass.config_entries.async_forward_entry_setup(
                     worker.configuration.config_entry, "sensor"
+                )
+            )
+            worker.hass.async_add_job(
+                worker.hass.config_entries.async_forward_entry_setup(
+                    worker.configuration.config_entry, "binary_sensor"
                 )
             )
     except ValueError:

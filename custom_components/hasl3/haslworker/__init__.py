@@ -7,6 +7,7 @@ import jsonpickle
 
 from datetime import timedelta
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
+from homeassistant.helpers.dispatcher import dispatcher_send
 from homeassistant.util.dt import now
 from custom_components.hasl3.haslworker.exceptions import HaslException
 from custom_components.hasl3.slapi import (
@@ -406,6 +407,7 @@ class HaslWorker(object):
             #except Exception as e:
             #    newdata['api_result'] = "Error"
             #   newdata['api_error'] = str(e)
+            dispatcher_send(self.hass, "tl2_data_update")
             
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.tl2[tl2key] = newdata

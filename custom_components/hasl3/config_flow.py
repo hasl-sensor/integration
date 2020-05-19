@@ -13,6 +13,7 @@ from .const import (
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     SENSOR_DEVIATION,
+    SENSOR_ROUTE,
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE
 )
@@ -22,7 +23,8 @@ from .config_schema import (
     standard_config_option_schema,
     status_config_option_schema,
     vehiclelocation_config_option_schema,
-    deviation_config_option_schema
+    deviation_config_option_schema,
+    route_config_option_schema
 )
 from .globals import get_worker
 
@@ -105,5 +107,7 @@ class HaslOptionsFlowHandler(config_entries.OptionsFlow):
                 schema = vehiclelocation_config_option_schema(self.config_entry.options)
             if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:            
                 schema = deviation_config_option_schema(self.config_entry.options)
+            if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:            
+                schema = route_config_option_schema(self.config_entry.options)
 
         return self.async_show_form(step_id="user", data_schema=vol.Schema(schema))

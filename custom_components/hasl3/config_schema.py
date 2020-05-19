@@ -7,6 +7,7 @@ from .const import (
     CONF_RI4_KEY,
     CONF_SI2_KEY,
     CONF_TL2_KEY,
+    CONF_RP3_KEY,
     CONF_SITE_ID,
     CONF_DEBUG,
     CONF_FP_PT,
@@ -35,7 +36,9 @@ from .const import (
     DEFAULT_TIMEWINDOW,
     CONF_DEVIATION_STOPS,
     CONF_DEVIATION_LINES,
-    CONF_DIRECTION_LIST
+    CONF_DIRECTION_LIST,
+    CONF_DESTINATION,
+    CONF_SOURCE
 )
 
 def hasl_base_config_schema(config: dict = {}, config_flow: bool = False) -> dict:
@@ -115,3 +118,17 @@ def vehiclelocation_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
         vol.Optional(CONF_DEBUG, default=options.get(CONF_DEBUG)): bool
     }
+    
+def route_config_option_schema(options: dict = {}) -> dict:
+    """Deviation sensor options."""
+    if not options:
+        options = {CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL, CONF_SENSOR: "", CONF_RP3_KEY: "", CONF_SOURCE: "", CONF_DESTINATION: "", CONF_DEBUG: False}
+    return {
+        vol.Required(CONF_RP3_KEY, default=options.get(CONF_RP3_KEY)): str,
+        vol.Required(CONF_SOURCE, default=options.get(CONF_SOURCE)): str,
+        vol.Required(CONF_DESTINATION, default=options.get(CONF_DESTINATION)): str,
+        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
+        vol.Optional(CONF_DEBUG, default=options.get(CONF_DEBUG)): bool
+    }
+    

@@ -32,6 +32,7 @@ from .const import (
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     SENSOR_DEVIATION,
+    SENSOR_ROUTE,
     CONF_ANALOG_SENSORS,
     CONF_FP_PT,
     CONF_FP_RB,
@@ -45,8 +46,10 @@ from .const import (
     CONF_TL2_KEY,
     CONF_RI4_KEY,
     CONF_SI2_KEY,
+    CONF_RP3_KEY,
     CONF_SITE_ID,
     CONF_SENSOR,
+    CONF_TRIPS,
     CONF_LINES,
     CONF_INTEGRATION_TYPE,
     CONF_INTEGRATION_ID,
@@ -58,6 +61,8 @@ from .const import (
     CONF_DIRECTION,
     CONF_TIMEWINDOW,
     CONF_SCAN_INTERVAL,
+    CONF_SOURCE,
+    CONF_DESTINATION,
     STATE_OFF,
     STATE_ON
 )
@@ -90,6 +95,12 @@ async def setup_hasl_sensor(hass,config):
                 await worker.assert_si2_stop(config.options[CONF_SI2_KEY],deviationid)
                 sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_STOP,deviationid))
         await worker.process_si2()
+
+    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_ROUTE:
+        if CONF_RP3_KEY in config.options:            
+            await worker.assert_rp3(config.options[CONF_RP3_KEY],config.options[CONF_SOURCE],config.options[CONF_DESTINATION])
+            sensors.append(HASLRouteSensor(hass,config,f"{config.options[CONF_SOURCE]}-{config.options[CONF_DESTINATION]}"))
+        await worker.process_rp3()
         
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
         if config.options[CONF_ANALOG_SENSORS]:
@@ -98,7 +109,6 @@ async def setup_hasl_sensor(hass,config):
                 for sensortype in ["metro","train","local","tram","bus","ferry"]:
                     sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
             await worker.process_tl2()
-        
         
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
         if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
@@ -150,6 +160,97 @@ class HASLDevice(Entity):
             "model": f"slapi-v{slapi_version}",
             "sw_version": VERSION,
         }
+        
+class HASLRouteSensor(HASLDevice):
+    """HASL Train Location Sensor class."""
+
+    def __init__(self, hass, config, trip):
+        """Initialize."""
+        self._hass = hass
+        self._config = config
+        self._enabled_sensor = config.options[CONF_SENSOR]
+        self._trip = trip
+        self._name = f"SL {self._trip} Route Sensor"
+        self._sensordata = []
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
+
+        if worker.system.status.background_task:
+            return
+
+        if worker.data.rp3[self._trip]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.rp3[self._trip]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_rp3()
+
+        self._sensordata = worker.data.rp3[self._trip]
+        
+        return
+
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"sl-route-{self._trip}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        if self._sensordata == []:
+            return 'Unknown'
+        else:
+            return len(self._sensordata["trips"])
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:train"
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return ""
+
+    @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+
+    @property
+    def device_state_attributes(self):
+        worker = get_worker()
+        val = {}
+        
+        if self._sensordata == []:
+            return val
+                      
+        if self._sensordata["api_result"] == "Success":
+            val['api_result'] = "Success"
+        else:
+            val['api_result'] = self._sensordata["api_error"]
+
+        # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['attribution'] = self._sensordata["attribution"]
+        val['trips'] = self._sensordata["trips"]
+        val['transfers'] = self._sensordata["transfers"]
+        val['price'] = self._sensordata["price"]
+        val['time'] = self._sensordata["time"]
+        val['duration'] = self._sensordata["duration"]
+        val['first_leg'] = self._sensordata["first_leg"]
+        val['last_refresh'] = self._sensordata["last_updated"]
+        val['trip_count'] = len(self._sensordata["trips"])
+        
+        return val                  
+        
         
 class HASLDepartureSensor(HASLDevice):
     """HASL Departure Sensor class."""

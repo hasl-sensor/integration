@@ -35,6 +35,10 @@
                     "tl2key": "Trafikläget 2 API Key",
 					"analog": "Create sensors instead of binary_sensors (not recomended)",
 					
+                    "rp3key": "Reseplaneraren 3.1 API Key",
+                    "from": "Travel From (Location ID)",
+					"to": "Travel Destination (Location ID)",
+
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",
                     "fptvb": "Tvärbanan",

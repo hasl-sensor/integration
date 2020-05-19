@@ -1,6 +1,7 @@
 """HASL Worker Process that knows it all"""
 import json
 import uuid
+import isodate
 from datetime import datetime
 import time
 import jsonpickle
@@ -16,6 +17,7 @@ from custom_components.hasl3.slapi import (
     slapi_tl2,
     slapi_ri4,
     slapi_si2,
+    slapi_rp3,
     SLAPI_Error,
     SLAPI_API_Error,
     SLAPI_HTTP_Error
@@ -43,6 +45,8 @@ class SLAPIHolder(object):
     tl2 = {}
     si2 = {}
     ri4 = {}
+    rp3 = {}
+    rp3keys = {}
     si2keys = {}
     ri4keys = {}
     fp = {}
@@ -115,6 +119,105 @@ class HaslWorker(object):
         self.system.status.background_task = False
 
         self.hass.bus.async_fire("hasl/status", {})
+
+    async def assert_rp3(self, key, source, destination):
+        listvalue = f"{source}-{destination}"
+        if not key in self.data.rp3keys:
+            self.data.rp3keys[key] = {
+                "api_key": key,
+                "trips": ""
+            }
+            
+        currentvalue = self.data.rp3keys[key]['trips']    
+        if currentvalue=="":
+            self.data.rp3keys[key]["trips"] = listvalue
+        else:
+            self.data.rp3keys[key]["trips"] = f"{currentvalue},{listvalue}"
+
+        if not listvalue in self.data.rp3:
+            self.data.rp3[listvalue] = {
+                "api_type": "slapi-si2",
+                "api_lastrun": '1970-01-01 01:01:01',
+                "api_result": "Pending",
+                "trips": []
+            }
+
+        return
+        
+        
+    async def process_rp3(self):
+    
+        for rp3key in self.data.rp3keys:
+            rp3data = self.data.rp3keys[rp3key]
+            api = slapi_rp3(rp3key)
+            for tripname in ','.join(set(rp3data["trips"].split(','))).split(','):
+                newdata = self.data.rp3[tripname]
+                positions = tripname.split('-')
+                
+                #try:
+                apidata = await api.request(positions[0], positions[1], '', '', '', '')                             
+                newdata['trips'] = []
+                
+                #Parse every trip
+                for trip in apidata["Trip"]:
+                    newtrip = {
+                        'fares': [],
+                        'legs': []
+                    }
+                                
+                    # Loop all fares and add
+                    for fare in trip['TariffResult']['fareSetItem'][0]['fareItem']:
+                        newfare = {}
+                        newfare['name'] = fare['name']
+                        newfare['desc'] = fare['desc']
+                        newfare['price'] = int(fare['price'])/100
+                        newtrip['fares'].append(newfare)
+                    
+                    # Add legs to trips
+                    for leg in trip['LegList']['Leg']:
+                        newleg = {}
+                        #Walking is done by humans. And robots. Robots are scary.
+                        if leg["type"]=="WALK":
+                            newleg['name'] = leg['name']
+                            newleg['line'] = 'Walk'
+                            newleg['direction'] = 'Walk'
+                            newleg['category'] = 'WALK'
+                        else:
+                            newleg['name'] = leg['Product']['name']
+                            newleg['line'] = leg['Product']['line']                            
+                            newleg['direction'] = leg['direction']
+                            newleg['category'] = leg['category']
+                        newleg['from'] = leg['Origin']['name']
+                        newleg['to'] = leg['Destination']['name']
+                        newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"                        
+                        newtrip['legs'].append(newleg)
+                        
+                    #Make some shortcuts for data    
+                    newtrip['first_leg'] = newtrip['legs'][0]['name']
+                    newtrip['time'] = newtrip['legs'][0]['time']
+                    newtrip['price'] = newtrip['fares'][0]['price']
+                    newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
+                    newtrip['transfers'] = trip['transferCount']
+                    newdata['trips'].append(newtrip)
+                
+                #Add shortcuts to info in the first trip if it exists
+                newdata['transfers'] = newdata['trips'][0]['transfers'] or 0
+                newdata['price'] = newdata['trips'][0]['price'] or ''
+                newdata['time'] = newdata['trips'][0]['time'] or ''
+                newdata['duration'] = newdata['trips'][0]['duration'] or ''
+                newdata['first_leg'] = newdata['trips'][0]['first_leg'] or ''
+                
+                newdata['attribution'] = "Stockholms Lokaltrafik"
+                newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
+                newdata['api_result'] = "Success"
+                #except Exception as e:
+                #    newdata['api_result'] = "Error"
+                #    newdata['api_error'] = str(e)
+            
+                newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
+                self.data.rp3[tripname] = newdata
+
+
 
     async def assert_fp(self, traintype):
         if not traintype in self.data.fp:

@@ -10,7 +10,7 @@ from .const import (
     TL2_URL,
     RI4_URL,
     PU1_URL,
-    TP3_URL,
+    RP3_URL,
     USER_AGENT
 )
 
@@ -117,13 +117,13 @@ class slapi_pu1(slapi):
         return await self._get(PU1_URL.format(self._api_token, searchstring))
 
 
-class slapi_tp3(slapi):
+class slapi_rp3(slapi):
     def __init__(self, api_token, timeout=None):
         super().__init__(timeout)
         self._api_token = api_token
 
     async def request(self, origin, destination, orgLat, orgLong, destLat, destLong):
-        return await self._get(TP3_URL.format(self._api_token, origin, destination,
+        return await self._get(RP3_URL.format(self._api_token, origin, destination,
                                         orgLat, orgLong, destLat, destLong))
 
 

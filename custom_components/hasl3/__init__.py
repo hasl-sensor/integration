@@ -22,7 +22,7 @@ from .const import (
 
 from .slapi import (
     slapi,
-    slapi_tp3,
+    slapi_rp3,
     slapi_pu1,
     SLAPI_Error,
     SLAPI_API_Error,
@@ -122,8 +122,8 @@ async def find_trip_id(call):
     destination = call.data.get('dest')
     api_key = call.data.get('api_key')
 
-    tp3api = slapi_tp3(api_key)
-    return await tp3api.request(origin, destination, '', '', '', '')
+    tp3api = slapi_rp3(api_key)
+    return await rp3api.request(origin, destination, '', '', '', '')
 
 async def find_trip_pos(call):
     olat = call.data.get('orig_lat')
@@ -132,8 +132,8 @@ async def find_trip_pos(call):
     dlon = call.data.get('dest_long')
     api_key = call.data.get('api_key')
 
-    tp3api = slapi_tp3(api_key)
-    return await tp3api.request('', '', olat, olon, dlat, dlon)    
+    tp3api = slapi_rp3(api_key)
+    return await rp3api.request('', '', olat, olon, dlat, dlon)    
     
 def add_services():
     """Add sensor."""

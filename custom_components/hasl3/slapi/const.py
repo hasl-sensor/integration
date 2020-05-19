@@ -11,7 +11,7 @@ RI4_URL = TRAFIKLAB_URL + 'realtimedeparturesV4.json?key={}&siteid={}' \
                           '&timeWindow={}'
 PU1_URL = TRAFIKLAB_URL + 'typeahead.json?key={}&searchstring={}' \
                           '&stationsonly=False&maxresults=25'
-TP3_URL = TRAFIKLAB_URL + 'TravelplannerV3_1/trip.json?key={}&originExtId={}' \
+RP3_URL = TRAFIKLAB_URL + 'TravelplannerV3_1/trip.json?key={}&originExtId={}' \
                           '&destExtId={}&originCoordLat={}' \
                           '&originCoordLong={}&destCoordLat={}' \
                           '&destCoordLong={}'

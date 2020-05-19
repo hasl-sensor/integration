@@ -1,7 +1,7 @@
 """HASL Worker Process that knows it all"""
 import json
 import uuid
-import datetime
+from datetime import datetime
 import time
 import jsonpickle
 
@@ -81,6 +81,21 @@ class HaslWorker(object):
         jsonFile = open(outputfile, "w")
         jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
         jsonFile.close()
+        
+    def getminutesdiff(self, d1, d2):
+        d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
+        d2 = datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
+        return abs((d2 - d1).seconds)    
+
+    def checksensorstate(self, sensor,state,default=True):
+        if not sensor is None and not sensor == "":
+            sensor_state = self.hass.states.get(sensor)
+            if sensor_state.state is state:
+                return True
+            else:
+                return False
+        else:
+            return default
 
     async def startup_tasks(self):
         """Tasks tha are started after startup."""
@@ -93,26 +108,6 @@ class HaslWorker(object):
             )
         )
         
-        self.recuring_tasks.append(
-            async_track_time_interval(
-                self.hass, self.process_tl2, timedelta(minutes=1)
-            )
-        )
-        self.recuring_tasks.append(
-            async_track_time_interval(
-                self.hass, self.process_ri4, timedelta(minutes=1)
-            )
-        )
-        self.recuring_tasks.append(
-            async_track_time_interval(
-                self.hass, self.process_si2, timedelta(minutes=1)
-            )
-        )
-        self.recuring_tasks.append(
-            async_track_time_interval(
-                self.hass, self.process_fp, timedelta(minutes=1)
-            )
-        )        
         self.hass.bus.async_fire("hasl/reload", {"force": True})
         await self.prosess_queue()
 
@@ -125,7 +120,7 @@ class HaslWorker(object):
         if not traintype in self.data.fp:
             self.data.fp[traintype] = {
                 "api_type": "slapi-fp1",
-                "api_lastrun": now().strftime('%Y-%m-%d %H:%M:%S'),
+                "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
         return
@@ -170,7 +165,7 @@ class HaslWorker(object):
         if not datakey in self.data.si2:
             self.data.si2[datakey] = {
                 "api_type": "slapi-si2",
-                "api_lastrun": now().strftime('%Y-%m-%d %H:%M:%S'),
+                "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
             
@@ -257,7 +252,7 @@ class HaslWorker(object):
         if not stop in self.data.ri4:
             self.data.ri4[stopkey] = {
                 "api_type": "slapi-ri4",
-                "api_lastrun": now().strftime('%Y-%m-%d %H:%M:%S'),
+                "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
             
@@ -351,7 +346,7 @@ class HaslWorker(object):
         if not key in self.data.tl2:
             self.data.tl2[key] = {
                 "api_type": "slapi-tl2",
-                "api_lastrun": now().strftime('%Y-%m-%d %H:%M:%S'),
+                "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
         return

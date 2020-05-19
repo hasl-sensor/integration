@@ -19,7 +19,7 @@
                 "description": "Change HASL parameters. More info on https://hasl.sorlov.com",
                 "data": {
                     "debug": "Enable debug logging",
-					"scan_interval": "How many minutes between refresh",
+					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
                     "ri4key": "Realtidsinformation 4 API Key",

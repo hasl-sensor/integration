@@ -21,7 +21,7 @@ from .config_schema import (
     hasl_base_config_schema,
     standard_config_option_schema,
     status_config_option_schema,
-    trainlocation_config_option_schema,
+    vehiclelocation_config_option_schema,
     deviation_config_option_schema
 )
 from .globals import get_worker
@@ -102,7 +102,7 @@ class HaslOptionsFlowHandler(config_entries.OptionsFlow):
             if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:            
                 schema = status_config_option_schema(self.config_entry.options)
             if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:            
-                schema = trainlocation_config_option_schema(self.config_entry.options)
+                schema = vehiclelocation_config_option_schema(self.config_entry.options)
             if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:            
                 schema = deviation_config_option_schema(self.config_entry.options)
 

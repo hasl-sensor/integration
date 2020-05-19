@@ -57,6 +57,7 @@ from .const import (
     CONF_SENSOR_PROPERTY,
     CONF_DIRECTION,
     CONF_TIMEWINDOW,
+    CONF_SCAN_INTERVAL,
     STATE_OFF,
     STATE_ON
 )
@@ -102,31 +103,31 @@ async def setup_hasl_sensor(hass,config):
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
         if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
             await worker.assert_fp("PT")
-            sensors.append(HASLTrainLocationSensor(hass,config,'PT'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'PT'))
         if CONF_FP_RB in config.options and config.options[CONF_FP_RB]:
             await worker.assert_fp("RB")
-            sensors.append(HASLTrainLocationSensor(hass,config,'RB'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'RB'))
         if CONF_FP_TVB in config.options and config.options[CONF_FP_TVB]:
             await worker.assert_fp("TVB")
-            sensors.append(HASLTrainLocationSensor(hass,config,'TVB'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'TVB'))
         if CONF_FP_SB in config.options and config.options[CONF_FP_SB]:
             await worker.assert_fp("SB")
-            sensors.append(HASLTrainLocationSensor(hass,config,'SB'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'SB'))
         if CONF_FP_LB in config.options and config.options[CONF_FP_LB]:
             await worker.assert_fp("LB")
-            sensors.append(HASLTrainLocationSensor(hass,config,'LB'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'LB'))
         if CONF_FP_SPVC in config.options and config.options[CONF_FP_SPVC]:
             await worker.assert_fp("SpvC")
-            sensors.append(HASLTrainLocationSensor(hass,config,'SpvC'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'SpvC'))
         if CONF_FP_TB1 in config.options and config.options[CONF_FP_TB1]:
             await worker.assert_fp("TB1")
-            sensors.append(HASLTrainLocationSensor(hass,config,'TB1'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'TB1'))
         if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
             await worker.assert_fp("TB2")
-            sensors.append(HASLTrainLocationSensor(hass,config,'TB2'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'TB2'))
         if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
             await worker.assert_fp("TB3")
-            sensors.append(HASLTrainLocationSensor(hass,config,'TB3'))
+            sensors.append(HASLVehicleLocationSensor(hass,config,'TB3'))
         await worker.process_fp();
 
     #except:
@@ -177,6 +178,7 @@ class HASLDepartureSensor(HASLDevice):
         self._lastupdate = '-'
         self._unit_of_measure = unit_table.get(self._config.options[CONF_SENSOR_PROPERTY], 'min')
         self._sensordata = None
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
         
     async def async_update(self):
         """Update the sensor."""
@@ -184,6 +186,11 @@ class HASLDepartureSensor(HASLDevice):
 
         if worker.system.status.background_task:
             return
+
+        if worker.data.ri4[self._siteid]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_ri4()
 
         self._sensordata = worker.data.ri4[self._siteid]
         
@@ -263,10 +270,16 @@ class HASLDepartureSensor(HASLDevice):
         return self._unit_of_measure
 
     @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+
+    @property
     def device_state_attributes(self):
         """ Return the sensor attributes ."""
 
         # Initialize the state attributes.
+        worker = get_worker()
         val = {}
 
         if self._sensordata == [] or self._sensordata is None:
@@ -287,22 +300,14 @@ class HASLDepartureSensor(HASLDevice):
         if self._unit_of_measure is not '':
             val['unit_of_measurement'] = self._unit_of_measure
 
-        # Check if sensor is currently updating or not.
-        if not self._enabled_sensor == "":
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-            if sensor_state.state is STATE_ON:
-                val['refresh_enabled'] = STATE_ON
-            else:
-                val['refresh_enabled'] = STATE_OFF            
-        else:
-            val['refresh_enabled'] = STATE_ON
-
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
         else:
             val['api_result'] = self._sensordata["api_error"]
             
         # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['departures'] = self._sensordata["data"]
         val['deviations'] = self._sensordata["deviations"]
@@ -326,6 +331,7 @@ class HASLDeviationSensor(HASLDevice):
         self._name = f"SL {self._deviationtype.capitalize()} Deviation Sensor {self._deviationkey}"
         self._sensordata = []
         self._enabled_sensor
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
         
     async def async_update(self):
         """Update the sensor."""
@@ -334,8 +340,13 @@ class HASLDeviationSensor(HASLDevice):
         if worker.system.status.background_task:
             return
 
-        newdata = worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]
-        self._sensordata = newdata
+
+        if worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_si2()
+                    
+        self._sensordata = worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]
         
         return
 
@@ -368,30 +379,27 @@ class HASLDeviationSensor(HASLDevice):
         return ""
 
     @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+
+    @property
     def device_state_attributes(self):
         """ Return the sensor attributes."""
+        worker = get_worker()
         val = {}
         
         if self._sensordata == []:
             return val        
-        
-        # Check if sensor is currently updating or not.
-        if not self._enabled_sensor == "":
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-            if sensor_state.state is STATE_ON:
-                val['refresh_enabled'] = STATE_ON
-            else:
-                val['refresh_enabled'] = STATE_OFF            
-        else:
-            val['refresh_enabled'] = STATE_ON
-
-        
+                
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
         else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['deviations'] = self._sensordata["data"]
         val['last_refresh'] = self._sensordata["last_updated"]
@@ -399,17 +407,18 @@ class HASLDeviationSensor(HASLDevice):
         
         return val           
         
-class HASLTrainLocationSensor(HASLDevice):
+class HASLVehicleLocationSensor(HASLDevice):
     """HASL Train Location Sensor class."""
 
-    def __init__(self, hass, config, traintype):
+    def __init__(self, hass, config, vehicletype):
         """Initialize."""
         self._hass = hass
         self._config = config
-        self._traintype = traintype
+        self._vehicletype = vehicletype
         self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._traintype} Location Sensor"
+        self._name = f"SL {self._vehicletype} Location Sensor"
         self._sensordata = []
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
 
     async def async_update(self):
         """Update the sensor."""
@@ -418,14 +427,19 @@ class HASLTrainLocationSensor(HASLDevice):
         if worker.system.status.background_task:
             return
 
-        self._sensordata = worker.data.fp[self._traintype]
+        if worker.data.fp[self._vehicletype]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_fp()
+
+        self._sensordata = worker.data.fp[self._vehicletype]
         
         return
 
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
-        return f"sl-fl-{self._traintype}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
+        return f"sl-fl-{self._vehicletype}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
 
     @property
     def name(self):
@@ -451,28 +465,26 @@ class HASLTrainLocationSensor(HASLDevice):
         return ""
 
     @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+
+    @property
     def device_state_attributes(self):
+        worker = get_worker()
         val = {}
         
         if self._sensordata == []:
             return val
-        
-        # Check if sensor is currently updating or not.
-        if not self._enabled_sensor == "":
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-            if sensor_state.state is STATE_ON:
-                val['refresh_enabled'] = STATE_ON
-            else:
-                val['refresh_enabled'] = STATE_OFF            
-        else:
-            val['refresh_enabled'] = STATE_ON
-               
+                      
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Success"
         else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['data'] = self._sensordata["data"]
         val['last_refresh'] = self._sensordata["last_updated"]
@@ -492,6 +504,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         self._enabled_sensor = config.options[CONF_SENSOR]
         self._name = f"SL {self._sensortype.capitalize()} Status Sensor"
         self._sensordata = []
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
 
     async def async_update(self):
         """Update the sensor."""
@@ -500,6 +513,11 @@ class HASLTrafficStatusSensor(HASLDevice):
         if worker.system.status.background_task:
             return
 
+        if worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_tl2()
+                    
         self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]
         
         return
@@ -541,29 +559,26 @@ class HASLTrafficStatusSensor(HASLDevice):
         return ""
 
     @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+        
+    @property
     def device_state_attributes(self):
+        worker = get_worker()
         val = {}
         
         if self._sensordata == []:
             return val
-             
-        # Check if sensor is currently updating or not.
-        if not self._enabled_sensor == "":
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-            if sensor_state.state is STATE_ON:
-                val['refresh_enabled'] = STATE_ON
-            else:
-                val['refresh_enabled'] = STATE_OFF            
-        else:
-            val['refresh_enabled'] = STATE_ON
-
-        
+                    
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
         else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]
         val['events'] = self._sensordata["data"][self._sensortype]["events"]        

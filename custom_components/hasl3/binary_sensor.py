@@ -6,7 +6,6 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.util.dt import now
 from .haslworker import HaslWorker as worker
 from .globals import get_worker
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .slapi import (
     slapi,
@@ -76,17 +75,21 @@ class HASLTrafficProblemSensor(HASLDevice):
         self._enabled_sensor = config.options[CONF_SENSOR]
         self._name = f"SL {self._sensortype.capitalize()} Problem Sensor"
         self._sensordata = []
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
 
-    async def async_added_to_hass(self):
-        """Register update signal handler."""
-        async def async_update_state():
-            """Update sensor state."""
-            await self.async_update_ha_state(True)
-            
-        async_dispatcher_connect(self.hass,"tl2_data_update", async_update_state)
+    async def async_update(self):
+        """Update the sensor."""
+        worker = get_worker()
 
-    def update(self):
-         self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]       
+        if worker.system.status.background_task:
+            return
+
+        if worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
+            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await worker.process_tl2()
+
+        self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]       
 
     @property
     def name(self):
@@ -96,8 +99,8 @@ class HASLTrafficProblemSensor(HASLDevice):
     @property
     def should_poll(self):
         """No polling needed."""
-        return False
-        
+        return True
+               
     @property
     def unique_id(self):
         return f"sl-{self._sensortype}-status-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
@@ -143,30 +146,27 @@ class HASLTrafficProblemSensor(HASLDevice):
         return "problem"
 
     @property
+    def scan_interval(self):
+        """Return the unique id."""
+        return self._scan_interval
+
+    @property
     def device_state_attributes(self):
         """Attributes."""
+        worker = get_worker()
         val = {}
         
         if self._sensordata == []:
             return val
              
-        # Check if sensor is currently updating or not.
-        if not self._enabled_sensor == "":
-            sensor_state = self._hass.states.get(self._enabled_sensor)
-            if sensor_state.state is STATE_ON:
-                val['refresh_enabled'] = STATE_ON
-            else:
-                val['refresh_enabled'] = STATE_OFF            
-        else:
-            val['refresh_enabled'] = STATE_ON
-
-        
         if self._sensordata["api_result"] == "Success":
             val['api_result'] = "Ok"
         else:
             val['api_result'] = self._sensordata["api_error"]
 
         # Set values of the sensor.
+        val['scan_interval'] = self._scan_interval
+        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['status_text'] = self._sensordata["data"][self._sensortype]["status"]
         val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]

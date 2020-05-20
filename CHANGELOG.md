@@ -6,7 +6,35 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
 ## [Unreleased]
-- Nothing right now
+
+Generally stuff is really broken right now and I'm working on lots of stuff all over the code.
+
+### Changed (summarized)
+- Moving into the new organization on github and renaming to integration
+- Changed domain from hasl to hasl3
+- Removed dependency on external hasl-communication-library and replaced by internal slapi dependency instead
+- Using httpx async in slapi library
+- Added GUI configuration for the integration
+- Metadata added to the home assistant wheels repo, PR [#48](https://github.com/home-assistant/wheels-custom-integrations/pull/48) and [#57](https://github.com/home-assistant/wheels-custom-integrations/pull/57)
+- Icons added to the home assistant brands repo, PR [#1606](https://github.com/home-assistant/brands/pull/1606) and [#1626](https://github.com/home-assistant/brands/pull/1626)
+- Changed the unique naming of all enteties generated to be truly unique and stay the same over time
+- Allow use of multiple API-keys for different sensors using multiple integrations
+- Enforce time based caching between all integrations to reduce wear on the API-keys
+- Workers to handle updates etc are now run on one minute intervalls using call-backs to be friendlier on hass
+- Sensors are "just" retreiving data from the workers data instead of directly interfacing the apis.
+- Devices are now created for each integration to be used for future automation etc
+- Departures entity is now providing Deviation data only if a Deviation integration is configured with the same stops/lines to decrease complexity but maintaining compability both with new and old architechture.
+- Deviation sensors are now availiable as separate entites/sensors if needed and are leveraged by the Departures sensors if they exist.
+- A common in-memory structure for all data is now done using a worker holding data for all instances instead of writing to disk
+- Updated hacs.json and info.md to be updated for v3
+- Service for dumping the cache to disk have been implemented
+- Fixed lots of bugs related to data not beeing available yet (async issues)
+- Generic extensible queing system built in
+- Services for location lookup and trip planning implemented
+- Traffic status now is one sensor per traffic type to make it simpler to display status
+- All sensortypes works and returns some kind of data if configured with valid data
+- Added dependency on jsonpickle as the builtin json serialiser kind of sucks
+- Added hass reference to all sensors for consitancy (even if they have it via worker object, perhaps could be cleaned later?)
 
 ## [2.2.3] (2020-03-04)
 
@@ -218,7 +246,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Log error code.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/DSorlov/ha-sensor-sl/compare/master...DSorlov:dev
+[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...dev
 [2.2.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3...2.2.2
 [2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
 [2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0

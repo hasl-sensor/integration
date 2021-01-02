@@ -1,9 +1,9 @@
 [![hacs_badge](https://img.shields.io/badge/hacs-default-orange.svg)](https://github.com/custom-components/hacs)
 [![ha_version](https://img.shields.io/badge/home%20assistant-0.92%2B-yellow.svg)](https://www.home-assistant.io)
-[![stability-alpha](https://img.shields.io/badge/stability-alpha-lightgrey.svg)](#)
-[![version](https://img.shields.io/badge/version-3.0.0-red.svg)](#)
-[![maintained](https://img.shields.io/maintenance/yes/2020.svg)](#)
-[![maintainer](https://img.shields.io/badge/maintainer-daniel%20sörlöv-blue.svg)](https://github.com/DSorlov)
+![stability-alpha](https://img.shields.io/badge/stability-alpha-lightgrey.svg)
+![version](https://img.shields.io/badge/version-3.0.0-red.svg)
+![maintained](https://img.shields.io/maintenance/yes/2021.svg)
+[![maintainer](https://img.shields.io/badge/maintainer-dsorlov-blue.svg)](https://github.com/DSorlov)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Home Assistant SL Sensor (HASLv3)

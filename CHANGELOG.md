@@ -35,6 +35,7 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - All sensortypes works and returns some kind of data if configured with valid data
 - Added dependency on jsonpickle as the builtin json serialiser kind of sucks
 - Added hass reference to all sensors for consitancy (even if they have it via worker object, perhaps could be cleaned later?)
+- Added version field to manifest
 
 ## [2.2.3] (2020-03-04)
 

@@ -7,6 +7,7 @@
   "documentation": "https://hasl.sorlov.com",
   "dependencies": [],
   "config_flow": true,
+  "version": "3.0.0",
   "requirements": [
     "integrationhelper==0.2.2",
 	"httpx==0.12.1",

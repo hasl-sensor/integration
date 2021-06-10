@@ -1,9 +1,9 @@
 {
-    "name": "SL Sensor (HASL)",
+    "name": "SL Integration (HASLv3)",
     "content_in_root": false,
 	"country": "SE",
     "render_readme": false,
-    "homeassistant": "0.92",
+    "homeassistant": "0.98",
     "zip_release": false,
 	"domains": ["sensor","binary_sensor"],
 	"iot_class": "cloud_poll"

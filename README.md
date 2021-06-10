@@ -1,22 +1,32 @@
-[![hacs_badge](https://img.shields.io/badge/hacs-default-orange.svg)](https://github.com/custom-components/hacs)
-[![ha_version](https://img.shields.io/badge/home%20assistant-0.92%2B-yellow.svg)](https://www.home-assistant.io)
-![stability-alpha](https://img.shields.io/badge/stability-alpha-lightgrey.svg)
-![version](https://img.shields.io/badge/version-3.0.0-beta.0-red.svg)
 ![maintained](https://img.shields.io/maintenance/yes/2021.svg)
+[![hacs_badge](https://img.shields.io/badge/hacs-default-green.svg)](https://github.com/custom-components/hacs)
+[![ha_version](https://img.shields.io/badge/home%20assistant-0.98%2B-green.svg)](https://www.home-assistant.io)
+![version](https://img.shields.io/badge/version-3.0.0.beta0-lightgrey.svg)
+![stability-alpha](https://img.shields.io/badge/stability-beta-lightgrey.svg)
 [![maintainer](https://img.shields.io/badge/maintainer-dsorlov-blue.svg)](https://github.com/DSorlov)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Home Assistant SL Sensor (HASLv3)
-=================================
+Home Assistant SL Integration (HASLv3)
+======================================
 
-This is a integration to provide multiple sensors for Stockholms Lokaltrafik in Stockholm, Sweden.
-It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing.
+This is a integration to provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing.
 
-Right now HASLv3 is only supported to install manually as it is still in development and not considered stable. In the future it will be installed via HACS just as HASL. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)).
-
-Currently this integration is going into some major overhauling. This branch is for now mostly unusable if dont like death-trap like adventures. Consider it experimental and be prepared for errors, key exhaustion, and much more.
+Right now HASLv3 is only supported as beta install as it is still in development. In the future it will be installed via HACS default just as HASL. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)).
 
 Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 it will be available once done at the same location, until then this page serves as documentation.
+
+## Install using HACS
+
+Remember: This is a temporary procedure while we are running in beta.
+
+Go to HACS in your local Home Assistant install.
+Click yourself into the `Integrations`-section.
+At the right-most corner you will find three vertical dots, click them and then `Custom repositories`.
+
+Respository URL is https://github.com/hasl-sensor/integration
+Category is `Integration`
+
+You can now find HASLv3 in your integrations section in HACS.
 
 ## Legacy version will soon die but not yet..
 

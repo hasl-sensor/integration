@@ -1,7 +1,6 @@
 import logging
 import jsonpickle
 import time
-import json
 import asyncio
 
 from datetime import datetime
@@ -46,7 +45,7 @@ async def async_setup(hass, config):
 
         try:
             jsonFile = open(outputfile, "w")
-            jsonFile.write(jsonpickle.dumps(worker.data.dump(), unpicklable=False))
+            jsonFile.write(jsonpickle.dumps(worker.data.dump(), 4, unpicklable=False))
             jsonFile.close()
             serviceLogger.debug("[dump_cache] Completed")
             hass.bus.fire(f"{DOMAIN}_response", {"source": "dump_cache", "state": "success", "result": outputfile})
@@ -61,7 +60,7 @@ async def async_setup(hass, config):
         serviceLogger.debug("[get_cache] Entered")
 
         try:
-            dataDump = worker.data.dump()
+            dataDump = jsonpickle.dump(worker.data.dump(), 4, unpicklable=False)
             serviceLogger.debug("[dump_cache] Completed")
             hass.bus.fire(f"{DOMAIN}_response", {"source": "get_cache", "state": "success", "result": dataDump})
             return True

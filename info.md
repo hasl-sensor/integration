@@ -1,5 +1,5 @@
-Home Assistant SL Sensor (HASL)
-===============================
+Home Assistant SL Integration (HASLv3)
+======================================
 
 This is an integration that provides multiple sensors for Stockholms
 Lokaltrafik in Stockholm, Sweden. It provides intelligent sensors for

@@ -1,9 +1,9 @@
 """Provide info to system health."""
+import sys
 import logging
 
 from homeassistant.components import system_health
 from homeassistant.core import HomeAssistant, callback
-from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
 
@@ -15,35 +15,24 @@ from .const import (
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 
-def total_size(o, handlers={}, verbose=False):
-    dict_handler = lambda d: chain.from_iterable(d.items())
-    all_handlers = {tuple: iter,
-                    list: iter,
-                    deque: iter,
-                    dict: dict_handler,
-                    set: iter,
-                    frozenset: iter,
-                   }
-    all_handlers.update(handlers) # user handlers take precedence
-    seen = set()                  # track which object id's have already been seen
-    default_size = getsizeof(0)   # estimate sizeof object without __sizeof__
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
 
-    def sizeof(o):
-        if id(o) in seen: # do not double count the same object
-            return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
-
-        if verbose:
-            print(s, type(o), repr(o), file=stderr)
-
-        for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
-                break
-        return s
-
-    return sizeof(o)
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
 
 @callback
 def async_register(
@@ -71,7 +60,7 @@ async def system_health_info(hass):
             "Core Version": HASL_VERSION,
             "Slapi Version": SLAPI_VERSION,
             "Instances": worker.instances.count(),
-            "Database Size": f"{total_size(worker.data)} bytes",
+            "Database Size": f"{get_size(worker.data)} bytes",
             "Startup in progress": worker.status.startup_in_progress,
             "Running tasks": worker.status.running_background_tasks
         }

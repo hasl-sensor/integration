@@ -1,6 +1,6 @@
 ﻿# ha-sensor-sl
 
-Changelog for HomeAssistant SL Sensor (HASL).
+Changelog for HomeAssistant SL Sensor (HASLv3).
 
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->

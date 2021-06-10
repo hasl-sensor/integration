@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 ## [Unreleased]
 
 Generally stuff is really broken right now and I'm working on lots of stuff all over the code.
+Forked from 2.2.3 but changes from later versions are implemented as needed.
 
 ### Changed (summarized)
 - Moving into the new organization on github and renaming to integration
@@ -34,8 +35,26 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Traffic status now is one sensor per traffic type to make it simpler to display status
 - All sensortypes works and returns some kind of data if configured with valid data
 - Added dependency on jsonpickle as the builtin json serialiser kind of sucks
-- Added hass reference to all sensors for consitancy (even if they have it via worker object, perhaps could be cleaned later?)
 - Added version field to manifest
+- Added system health checks
+- Services now response on the event bus by hasl3_response
+- Services can be called via the event bus on hasl3_execute with argument cmd=<service> and then the rest of the argument as when normally using when calling a service
+
+### Still needed to release for testing
+- Think it is mostly complete now actually..... 
+- Will probably require higher version of homeassistant to make sure it works and to not test it will all the older versions..
+
+### Needed to release production
+- binary_sensor fault management not implemented
+- binary_sensor missing logging (namespace custom_integrations.hasl3.sensors)
+- sensor missing logging (namespace custom_integrations.hasl3.sensors)
+- sensor fault management not implemented
+- worker missing logging (namespace custom_integrations.hasl3.worker)
+- worker fault management not implemented
+
+### Stuff I am thinking about implementing or refining
+- Input validation missing for creating new integration, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
+- Input validation missing for setting integration options, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
 
 ## [2.2.3] (2020-03-04)
 
@@ -247,7 +266,7 @@ Generally stuff is really broken right now and I'm working on lots of stuff all 
 - Log error code.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...dev
+[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3
 [2.2.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3...2.2.2
 [2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
 [2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0

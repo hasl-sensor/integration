@@ -1,13 +1,13 @@
 {
     "config": {
-        "title": "SL Sensor",
+        "title": "SL Integration",
         "step": {
             "user": {
-                "title": "SL Sensor",
+                "title": "SL Integration",
                 "description": "Enter a friendly name for your HASL integration to get started.",
                 "data": {
-                    "name": "Device friendly name",
-                    "sensortype": "Which kind of sensor?"
+                    "name": "Integration friendly name",
+                    "sensortype": "Which kind of integration?"
                 }
             }
         }
@@ -15,10 +15,9 @@
     "options": {
         "step": {
             "user": {
-                "title": "SL Sensor",
-                "description": "Change HASL parameters. More info on https://hasl.sorlov.com",
+                "title": "SL Integration",
+                "description": "Change SL Integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
-                    "debug": "Enable debug logging",
 					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
@@ -47,7 +46,14 @@
                     "fpspvc": "Spårväg City",
                     "fptb1": "Gröna Linjen",
                     "fptb2": "Röda linjen",
-                    "fptb3": "Blåa linjen"
+                    "fptb3": "Blåa linjen",
+
+                    "metro": "Subway",
+                    "train": "Commuter trains",
+                    "local": "Local trains",
+                    "tram": "Trams",
+                    "bus": "Buses",
+                    "ferry": "Ferries"                    
 				}
             }
         }

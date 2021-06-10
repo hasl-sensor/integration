@@ -1,5 +1,4 @@
-# Describes the format for available hasl services
-
+# Describes the format for available hasl3 services
 dump_cache:
   description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created
 

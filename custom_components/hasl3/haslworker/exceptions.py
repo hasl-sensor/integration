@@ -1,6 +1,5 @@
 """Custom Exceptions."""
 
-
 class HaslException(Exception):
     """Super basic."""
 

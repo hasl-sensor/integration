@@ -4,32 +4,27 @@ import logging
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import HomeAssistant, State
 from homeassistant.util.dt import now
-from .haslworker import HaslWorker as worker
-from .globals import get_worker
-
-from .slapi import (
-    slapi,
-    SLAPI_Error,
-    SLAPI_API_Error,
-    SLAPI_HTTP_Error
-)
-
-from .slapi.const import (
-    __version__ as SLAPI_VERSION
-)
 
 from .const import (
     DOMAIN,
-    VERSION,
-    STATE_OFF,
+    HASL_VERSION,
+    DEVICE_NAME,
+    DEVICE_MANUFACTURER,
+    DEVICE_MODEL,
+    DEVICE_GUID,
+    DEVICE_TYPE,
     STATE_ON,
     CONF_SENSOR,
     CONF_ANALOG_SENSORS,
     CONF_TL2_KEY,
     SENSOR_STATUS,
     CONF_INTEGRATION_TYPE,
-    CONF_INTEGRATION_ID
+    CONF_INTEGRATION_ID,
+    CONF_SCAN_INTERVAL,
+    CONF_TRANSPORT_MODE_LIST
 )
+
+logger = logging.getLogger(f"custom_components.{DOMAIN}.sensors")
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     async_add_entities(await setup_hasl_sensor(hass,config))
@@ -39,15 +34,15 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
 async def setup_hasl_sensor(hass,config):
     sensors = []
-    worker = get_worker()
     
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
         if not config.options[CONF_ANALOG_SENSORS]:
             if CONF_TL2_KEY in config.options:
-                await worker.assert_tl2(config.options[CONF_TL2_KEY])
-                for sensortype in ["metro","train","local","tram","bus","ferry"]:
-                    sensors.append(HASLTrafficProblemSensor(hass,config,sensortype))
-            await worker.process_tl2()
+                await hass.data[DOMAIN]["worker"].assert_tl2(config.options[CONF_TL2_KEY])
+                for sensortype in CONF_TRANSPORT_MODE_LIST:
+                    if sensortype in config.options and config.options[sensortype]:
+                        sensors.append(HASLTrafficProblemSensor(hass,config,sensortype))
+            await hass.data[DOMAIN]["worker"].process_tl2()
 
     return sensors
 
@@ -57,15 +52,16 @@ class HASLDevice(Entity):
     def device_info(self):
         """Return device information about HASL Device."""
         return {
-            "identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-6a618956-520c-41d2-9a10-6d7e7353c7f5")},
-            "name": f"SL API Communications Device",
-            "manufacturer": "hasl.sorlov.com",
-            "model": f"slapi-v{SLAPI_VERSION}",
-            "sw_version": VERSION,
+            "identifiers": {(DOMAIN, DEVICE_GUID)},
+            "name": DEVICE_NAME,
+            "manufacturer": DEVICE_MANUFACTURER,
+            "model": DEVICE_MODEL,
+            "sw_version": HASL_VERSION,
+            "entry_type": "service"
         }
 
 class HASLTrafficProblemSensor(HASLDevice):
-    """Class to hold Hue Sensor basic info."""
+    """Class to hold Sensor basic info."""
 
     def __init__(self, hass, config, sensortype):
         """Initialize the sensor object."""
@@ -73,23 +69,20 @@ class HASLTrafficProblemSensor(HASLDevice):
         self._config = config
         self._sensortype = sensortype
         self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._sensortype.capitalize()} Problem Sensor"
+        self._name = f"SL {self._sensortype.capitalize()} Problem Sensor ({self._config.title})"
         self._sensordata = []
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
         """Update the sensor."""
-        worker = get_worker()
 
-        if worker.system.status.background_task:
-            return
+        if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_tl2()
 
-        if worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_tl2()
-
-        self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]       
+        self._sensordata = self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]       
 
     @property
     def name(self):
@@ -153,7 +146,6 @@ class HASLTrafficProblemSensor(HASLDevice):
     @property
     def device_state_attributes(self):
         """Attributes."""
-        worker = get_worker()
         val = {}
         
         if self._sensordata == []:
@@ -166,7 +158,7 @@ class HASLTrafficProblemSensor(HASLDevice):
 
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['status_text'] = self._sensordata["data"][self._sensortype]["status"]
         val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]

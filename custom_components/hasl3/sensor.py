@@ -4,30 +4,20 @@ import math
 import datetime
 import jsonpickle
 import time
+
 from datetime import timedelta
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import HomeAssistant, State
 from homeassistant.util.dt import now
-from .haslworker import HaslWorker as worker
-from .globals import get_worker
-
-from .slapi import (
-    slapi,
-    slapi_fp,
-    slapi_tl2,
-    slapi_ri4,
-    slapi_si2,
-    SLAPI_Error,
-    SLAPI_API_Error,
-    SLAPI_HTTP_Error
-)
-from .slapi.const import (
-    __version__ as slapi_version
-)
 
 from .const import (
     DOMAIN,
-    VERSION,
+    HASL_VERSION,
+    DEVICE_NAME,
+    DEVICE_MANUFACTURER,
+    DEVICE_MODEL,
+    DEVICE_GUID,
+    DEVICE_TYPE,
     SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
@@ -42,14 +32,12 @@ from .const import (
     CONF_FP_SPVC,
     CONF_FP_TB1,
     CONF_FP_TB2,
-    CONF_FP_TB3,       
     CONF_TL2_KEY,
     CONF_RI4_KEY,
     CONF_SI2_KEY,
     CONF_RP3_KEY,
     CONF_SITE_ID,
     CONF_SENSOR,
-    CONF_TRIPS,
     CONF_LINES,
     CONF_INTEGRATION_TYPE,
     CONF_INTEGRATION_ID,
@@ -63,9 +51,11 @@ from .const import (
     CONF_SCAN_INTERVAL,
     CONF_SOURCE,
     CONF_DESTINATION,
-    STATE_OFF,
-    STATE_ON
+    STATE_ON,
+    CONF_TRANSPORT_MODE_LIST
 )
+
+logger = logging.getLogger(f"custom_components.{DOMAIN}.sensors")
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     async_add_entities(await setup_hasl_sensor(hass,config))
@@ -76,7 +66,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 async def setup_hasl_sensor(hass,config):
     """Setup sensor platform."""
     sensors = []
-    worker = get_worker()
+    worker = hass.data[DOMAIN]["worker"]
    
     #try:
 
@@ -106,8 +96,11 @@ async def setup_hasl_sensor(hass,config):
         if config.options[CONF_ANALOG_SENSORS]:
             if CONF_TL2_KEY in config.options:
                 await worker.assert_tl2(config.options[CONF_TL2_KEY])
-                for sensortype in ["metro","train","local","tram","bus","ferry"]:
-                    sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
+
+                for sensortype in CONF_TRANSPORT_MODE_LIST:
+                    if sensortype in config.options and config.options[sensortype]:
+                        sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
+                   
             await worker.process_tl2()
         
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
@@ -138,7 +131,7 @@ async def setup_hasl_sensor(hass,config):
         if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
             await worker.assert_fp("TB3")
             sensors.append(HASLVehicleLocationSensor(hass,config,'TB3'))
-        await worker.process_fp();
+        await worker.process_fp()
 
     #except:
     #    return
@@ -150,15 +143,13 @@ class HASLDevice(Entity):
     @property
     def device_info(self):
         """Return device information about HASL Device."""
-        #Keep this for now if reverting to a per integration device but cannot see why we would do that
-        #"identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-{self._config.data[CONF_INTEGRATION_ID]}")},
-        #"name": f"SL {self._config.data[CONF_INTEGRATION_TYPE]} Device",
         return {
-            "identifiers": {(DOMAIN, f"10ba5386-5fad-49c6-8f03-c7a047cd5aa5-6a618956-520c-41d2-9a10-6d7e7353c7f5")},
-            "name": f"SL API Communications Device",
-            "manufacturer": "hasl.sorlov.com",
-            "model": f"slapi-v{slapi_version}",
-            "sw_version": VERSION,
+            "identifiers": {(DOMAIN, DEVICE_GUID)},
+            "name": DEVICE_NAME,
+            "manufacturer": DEVICE_MANUFACTURER,
+            "model": DEVICE_MODEL,
+            "sw_version": HASL_VERSION,
+            "entry_type": DEVICE_TYPE
         }
         
 class HASLRouteSensor(HASLDevice):
@@ -170,23 +161,20 @@ class HASLRouteSensor(HASLDevice):
         self._config = config
         self._enabled_sensor = config.options[CONF_SENSOR]
         self._trip = trip
-        self._name = f"SL {self._trip} Route Sensor"
+        self._name = f"SL {self._trip} Route Sensor ({self._config.title})"
         self._sensordata = []
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
-        """Update the sensor."""
-        worker = get_worker()
+        """Update the sensor."""       
 
-        if worker.system.status.background_task:
-            return
+        if self._worker.data.rp3[self._trip]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.rp3[self._trip]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_rp3()
 
-        if worker.data.rp3[self._trip]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.rp3[self._trip]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_rp3()
-
-        self._sensordata = worker.data.rp3[self._trip]
+        self._sensordata = self._worker.data.rp3[self._trip]
         
         return
 
@@ -225,7 +213,7 @@ class HASLRouteSensor(HASLDevice):
 
     @property
     def device_state_attributes(self):
-        worker = get_worker()
+        
         val = {}
         
         if self._sensordata == []:
@@ -238,7 +226,7 @@ class HASLRouteSensor(HASLDevice):
 
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['trips'] = self._sensordata["trips"]
         val['transfers'] = self._sensordata["transfers"]
@@ -269,7 +257,7 @@ class HASLDepartureSensor(HASLDevice):
         self._config = config
         self._lines = config.options[CONF_LINES]
         self._siteid = str(siteid)
-        self._name = f"SL Departure Sensor {self._siteid}"
+        self._name = f"SL Departure Sensor {self._siteid} ({self._config.title})"
         self._enabled_sensor = config.options[CONF_SENSOR]
         self._sensorproperty = config.options[CONF_SENSOR_PROPERTY]
         self._direction = config.options[CONF_DIRECTION]
@@ -280,27 +268,31 @@ class HASLDepartureSensor(HASLDevice):
         self._unit_of_measure = unit_table.get(self._config.options[CONF_SENSOR_PROPERTY], 'min')
         self._sensordata = None
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
         
     async def async_update(self):
         """Update the sensor."""
-        worker = get_worker()
 
-        if worker.system.status.background_task:
-            return
+        if self._worker.data.ri4[self._siteid]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_ri4()
 
-        if worker.data.ri4[self._siteid]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_ri4()
-
-        self._sensordata = worker.data.ri4[self._siteid]
+        self._sensordata = self._worker.data.ri4[self._siteid]
         
-        if f"stop_{self._siteid}" in worker.data.si2:
-            self._sensordata["deviations"] = worker.data.si2[f"stop_{self._siteid}"]["data"]
+        if f"stop_{self._siteid}" in self._worker.data.si2:
+            if "data" in self._worker.data.si2[f"stop_{self._siteid}"]:
+                self._sensordata["deviations"] = self._worker.data.si2[f"stop_{self._siteid}"]["data"]
+            else: 
+                self._sensordata["deviations"] = []
         else:
             self._sensordata["deviations"] = []
-               
-        self._last_updated = self._sensordata["last_updated"]
+
+        if "last_updated" in self._sensordata:
+            self._last_updated = self._sensordata["last_updated"]
+        else:
+            self._last_updated = now().strftime('%Y-%m-%d %H:%M:%S')    
+
         
         return
 
@@ -355,9 +347,10 @@ class HASLDepartureSensor(HASLDevice):
             return None
 
         now = datetime.datetime.now()
-        for departure in self._sensordata["data"]:
-            if departure['expected'] > now:
-                return departure
+        if "data" in self._sensordata:
+            for departure in self._sensordata["data"]:
+                if departure['expected'] > now:
+                    return departure
         return None        
 
     @property
@@ -380,7 +373,7 @@ class HASLDepartureSensor(HASLDevice):
         """ Return the sensor attributes ."""
 
         # Initialize the state attributes.
-        worker = get_worker()
+        
         val = {}
 
         if self._sensordata == [] or self._sensordata is None:
@@ -408,7 +401,7 @@ class HASLDepartureSensor(HASLDevice):
             
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['departures'] = self._sensordata["data"]
         val['deviations'] = self._sensordata["deviations"]
@@ -429,25 +422,21 @@ class HASLDeviationSensor(HASLDevice):
         self._deviationkey = deviationkey
         self._deviationtype = deviationtype
         self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._deviationtype.capitalize()} Deviation Sensor {self._deviationkey}"
+        self._name = f"SL {self._deviationtype.capitalize()} Deviation Sensor {self._deviationkey} ({self._config.title})"
         self._sensordata = []
         self._enabled_sensor
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
         
     async def async_update(self):
         """Update the sensor."""
-        worker = get_worker()
 
-        if worker.system.status.background_task:
-            return
-
-
-        if worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_si2()
+        if self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_si2()
                     
-        self._sensordata = worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]
+        self._sensordata = self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]
         
         return
 
@@ -487,7 +476,7 @@ class HASLDeviationSensor(HASLDevice):
     @property
     def device_state_attributes(self):
         """ Return the sensor attributes."""
-        worker = get_worker()
+        
         val = {}
         
         if self._sensordata == []:
@@ -500,7 +489,7 @@ class HASLDeviationSensor(HASLDevice):
 
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['deviations'] = self._sensordata["data"]
         val['last_refresh'] = self._sensordata["last_updated"]
@@ -517,23 +506,20 @@ class HASLVehicleLocationSensor(HASLDevice):
         self._config = config
         self._vehicletype = vehicletype
         self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._vehicletype} Location Sensor"
+        self._name = f"SL {self._vehicletype} Location Sensor ({self._config.title})"
         self._sensordata = []
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
         """Update the sensor."""
-        worker = get_worker()
 
-        if worker.system.status.background_task:
-            return
+        if self._worker.data.fp[self._vehicletype]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_fp()
 
-        if worker.data.fp[self._vehicletype]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_fp()
-
-        self._sensordata = worker.data.fp[self._vehicletype]
+        self._sensordata = self._worker.data.fp[self._vehicletype]
         
         return
 
@@ -572,7 +558,7 @@ class HASLVehicleLocationSensor(HASLDevice):
 
     @property
     def device_state_attributes(self):
-        worker = get_worker()
+        
         val = {}
         
         if self._sensordata == []:
@@ -585,7 +571,7 @@ class HASLVehicleLocationSensor(HASLDevice):
 
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['data'] = self._sensordata["data"]
         val['last_refresh'] = self._sensordata["last_updated"]
@@ -603,23 +589,20 @@ class HASLTrafficStatusSensor(HASLDevice):
         self._config = config
         self._sensortype = sensortype
         self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._sensortype.capitalize()} Status Sensor"
+        self._name = f"SL {self._sensortype.capitalize()} Status Sensor ({self._config.title})"
         self._sensordata = []
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
+        self._worker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
         """Update the sensor."""
-        worker = get_worker()
 
-        if worker.system.status.background_task:
-            return
-
-        if worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
-            if worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await worker.process_tl2()
+        if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
+            if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                    await self._worker.process_tl2()
                     
-        self._sensordata = worker.data.tl2[self._config.options[CONF_TL2_KEY]]
+        self._sensordata = self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]
         
         return
 
@@ -666,7 +649,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         
     @property
     def device_state_attributes(self):
-        worker = get_worker()
+        
         val = {}
         
         if self._sensordata == []:
@@ -679,7 +662,7 @@ class HASLTrafficStatusSensor(HASLDevice):
 
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
-        val['refresh_enabled'] = worker.checksensorstate(self._enabled_sensor,STATE_ON)
+        val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
         val['attribution'] = self._sensordata["attribution"]
         val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]
         val['events'] = self._sensordata["data"][self._sensortype]["events"]        

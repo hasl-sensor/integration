@@ -1,18 +1,20 @@
 {
   "codeowners": [
-	"@DSorlov"
+	  "@DSorlov"
   ],
   "domain": "hasl3",
-  "name": "SL Sensor (HASLv3)",
+  "name": "SL Integration (HASL)",
   "documentation": "https://hasl.sorlov.com",
+  "issue_tracker": "https://github.com/hasl-sensor/integration/issues",
   "dependencies": [],
+  "after_dependencies": [],
   "config_flow": true,
-  "version": "3.0.0",
+  "version": "3.0.0-beta.0",
+  "iot_class": "cloud_polling",
+  "quality_scale": "silver",
   "requirements": [
-    "integrationhelper==0.2.2",
-	"httpx==0.12.1",
-    "queueman==0.5",
-	"jsonpickle==1.4.1",
-	"isodate==0.6.0"
+	  "httpx==0.12.1",
+	  "jsonpickle==2.0.0",
+	  "isodate==0.6.0"
   ]
 }

@@ -42,19 +42,9 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Binary sensor logging and fault management implemented
 - Slapi and haslworker logging and fault management implemented
 
-### Still needed to release for testing
-- Think it is mostly complete now actually..... 
-- Will probably require higher version of homeassistant to make sure it works and to not test it will all the older versions..
-
 ### Needed to release production
 - sensor missing logging (namespace custom_integrations.hasl3.sensors)
 - sensor fault management not implemented
-- worker missing logging (namespace custom_integrations.hasl3.worker)
-- worker fault management not implemented
-
-### Stuff I am thinking about implementing or refining
-- Input validation missing for creating new integration, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
-- Input validation missing for setting integration options, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
 
 ## [2.2.3] (2020-03-04)
 

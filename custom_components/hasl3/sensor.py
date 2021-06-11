@@ -65,77 +65,110 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
 async def setup_hasl_sensor(hass,config):
     """Setup sensor platform."""
+    logger.debug("[setup_hasl_sensor] Entered")
+
     sensors = []
     worker = hass.data[DOMAIN]["worker"]
    
-    #try:
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up RI4 sensors..")
+        if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STANDARD:
+            if CONF_RI4_KEY in config.options and CONF_SITE_ID in config.options:
+                await worker.assert_ri4(config.options[CONF_RI4_KEY],config.options[CONF_SITE_ID])
+                sensors.append(HASLDepartureSensor(hass,config,config.options[CONF_SITE_ID]))
+            logger.debug("[setup_hasl_sensor] Force proccessing RI4 sensors")
+            await worker.process_ri4();
+        logger.debug("[setup_hasl_sensor] Completed setting up RI4 sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup RI4 sensors {str(e)}")
 
-    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STANDARD:
-        if CONF_RI4_KEY in config.options and CONF_SITE_ID in config.options:
-            await worker.assert_ri4(config.options[CONF_RI4_KEY],config.options[CONF_SITE_ID])
-            sensors.append(HASLDepartureSensor(hass,config,config.options[CONF_SITE_ID]))
-        await worker.process_ri4();
 
-    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_DEVIATION:
-        if CONF_SI2_KEY in config.options:
-            for deviationid in ','.join(set(config.options[CONF_DEVIATION_LINES].split(','))).split(','):
-                await worker.assert_si2_line(config.options[CONF_SI2_KEY],deviationid)
-                sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_LINE,deviationid))
-            for deviationid in ','.join(set(config.options[CONF_DEVIATION_STOPS].split(','))).split(','):
-                await worker.assert_si2_stop(config.options[CONF_SI2_KEY],deviationid)
-                sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_STOP,deviationid))
-        await worker.process_si2()
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up SI2 sensors..")
+        if config.data[CONF_INTEGRATION_TYPE]==SENSOR_DEVIATION:
+            if CONF_SI2_KEY in config.options:
+                for deviationid in ','.join(set(config.options[CONF_DEVIATION_LINES].split(','))).split(','):
+                    await worker.assert_si2_line(config.options[CONF_SI2_KEY],deviationid)
+                    sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_LINE,deviationid))
+                for deviationid in ','.join(set(config.options[CONF_DEVIATION_STOPS].split(','))).split(','):
+                    await worker.assert_si2_stop(config.options[CONF_SI2_KEY],deviationid)
+                    sensors.append(HASLDeviationSensor(hass,config,CONF_DEVIATION_STOP,deviationid))
+            logger.debug("[setup_hasl_sensor] Force proccessing SI2 sensors")
+            await worker.process_si2()
+        logger.debug("[setup_hasl_sensor] Completed setting up SI2 sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup SI2 sensors {str(e)}")
 
-    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_ROUTE:
-        if CONF_RP3_KEY in config.options:            
-            await worker.assert_rp3(config.options[CONF_RP3_KEY],config.options[CONF_SOURCE],config.options[CONF_DESTINATION])
-            sensors.append(HASLRouteSensor(hass,config,f"{config.options[CONF_SOURCE]}-{config.options[CONF_DESTINATION]}"))
-        await worker.process_rp3()
-        
-    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
-        if config.options[CONF_ANALOG_SENSORS]:
-            if CONF_TL2_KEY in config.options:
-                await worker.assert_tl2(config.options[CONF_TL2_KEY])
 
-                for sensortype in CONF_TRANSPORT_MODE_LIST:
-                    if sensortype in config.options and config.options[sensortype]:
-                        sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
-                   
-            await worker.process_tl2()
-        
-    if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
-        if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
-            await worker.assert_fp("PT")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'PT'))
-        if CONF_FP_RB in config.options and config.options[CONF_FP_RB]:
-            await worker.assert_fp("RB")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'RB'))
-        if CONF_FP_TVB in config.options and config.options[CONF_FP_TVB]:
-            await worker.assert_fp("TVB")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'TVB'))
-        if CONF_FP_SB in config.options and config.options[CONF_FP_SB]:
-            await worker.assert_fp("SB")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'SB'))
-        if CONF_FP_LB in config.options and config.options[CONF_FP_LB]:
-            await worker.assert_fp("LB")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'LB'))
-        if CONF_FP_SPVC in config.options and config.options[CONF_FP_SPVC]:
-            await worker.assert_fp("SpvC")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'SpvC'))
-        if CONF_FP_TB1 in config.options and config.options[CONF_FP_TB1]:
-            await worker.assert_fp("TB1")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'TB1'))
-        if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
-            await worker.assert_fp("TB2")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'TB2'))
-        if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
-            await worker.assert_fp("TB3")
-            sensors.append(HASLVehicleLocationSensor(hass,config,'TB3'))
-        await worker.process_fp()
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up RP3 sensors..")
+        if config.data[CONF_INTEGRATION_TYPE]==SENSOR_ROUTE:
+            if CONF_RP3_KEY in config.options:            
+                await worker.assert_rp3(config.options[CONF_RP3_KEY],config.options[CONF_SOURCE],config.options[CONF_DESTINATION])
+                sensors.append(HASLRouteSensor(hass,config,f"{config.options[CONF_SOURCE]}-{config.options[CONF_DESTINATION]}"))
+            logger.debug("[setup_hasl_sensor] Force proccessing RP3 sensors")
+            await worker.process_rp3()
+        logger.debug("[setup_hasl_sensor] Completed setting up RP3 sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup RP3 sensors {str(e)}")
+            
 
-    #except:
-    #    return
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up TL2 sensors..")
+        if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
+            if config.options[CONF_ANALOG_SENSORS]:
+                if CONF_TL2_KEY in config.options:
+                    await worker.assert_tl2(config.options[CONF_TL2_KEY])
 
+                    for sensortype in CONF_TRANSPORT_MODE_LIST:
+                        if sensortype in config.options and config.options[sensortype]:
+                            sensors.append(HASLTrafficStatusSensor(hass,config,sensortype))
+                    
+                logger.debug("[setup_hasl_sensor] Force proccessing TL2 sensors")
+                await worker.process_tl2()
+        logger.debug("[setup_hasl_sensor] Completed setting up TL2 sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup Tl2 sensors {str(e)}")
+            
+
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up FP sensors..")
+        if config.data[CONF_INTEGRATION_TYPE]==SENSOR_VEHICLE_LOCATION:
+            if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
+                await worker.assert_fp("PT")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'PT'))
+            if CONF_FP_RB in config.options and config.options[CONF_FP_RB]:
+                await worker.assert_fp("RB")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'RB'))
+            if CONF_FP_TVB in config.options and config.options[CONF_FP_TVB]:
+                await worker.assert_fp("TVB")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'TVB'))
+            if CONF_FP_SB in config.options and config.options[CONF_FP_SB]:
+                await worker.assert_fp("SB")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'SB'))
+            if CONF_FP_LB in config.options and config.options[CONF_FP_LB]:
+                await worker.assert_fp("LB")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'LB'))
+            if CONF_FP_SPVC in config.options and config.options[CONF_FP_SPVC]:
+                await worker.assert_fp("SpvC")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'SpvC'))
+            if CONF_FP_TB1 in config.options and config.options[CONF_FP_TB1]:
+                await worker.assert_fp("TB1")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'TB1'))
+            if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
+                await worker.assert_fp("TB2")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'TB2'))
+            if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
+                await worker.assert_fp("TB3")
+                sensors.append(HASLVehicleLocationSensor(hass,config,'TB3'))
+            logger.debug("[setup_hasl_sensor] Force proccessing FP sensors")
+            await worker.process_fp()
+        logger.debug("[setup_hasl_sensor] Completed setting up FP sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup FP sensors {str(e)}")
+
+
+    logger.debug("[setup_hasl_sensor] Completed")
     return sensors
     
 class HASLDevice(Entity):
@@ -169,13 +202,23 @@ class HASLRouteSensor(HASLDevice):
     async def async_update(self):
         """Update the sensor."""       
 
+        logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
+
         if self._worker.data.rp3[self._trip]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.rp3[self._trip]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await self._worker.process_rp3()
+                    try:
+                        await self._worker.process_rp3()
+                        logger.debug("[async_update] Update processed")
+                    except:
+                        logger.debug("[async_update] Error occured during update")
+                else:
+                    logger.debug("[async_update] Not due for update, skipping")
+                        
 
         self._sensordata = self._worker.data.rp3[self._trip]
-        
+        logger.debug("[async_update] Completed")        
         return
 
     @property
@@ -273,13 +316,23 @@ class HASLDepartureSensor(HASLDevice):
     async def async_update(self):
         """Update the sensor."""
 
+        logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.ri4[self._siteid]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await self._worker.process_ri4()
+                    try:
+                        await self._worker.process_ri4()
+                        logger.debug("[async_update] Update processed")
+                    except:
+                        logger.debug("[async_update] Error occured during update")
+                else:
+                    logger.debug("[async_update] Not due for update, skipping")
+
 
         self._sensordata = self._worker.data.ri4[self._siteid]
         
+        logger.debug("[async_update] Performing calculations")
         if f"stop_{self._siteid}" in self._worker.data.si2:
             if "data" in self._worker.data.si2[f"stop_{self._siteid}"]:
                 self._sensordata["deviations"] = self._worker.data.si2[f"stop_{self._siteid}"]["data"]
@@ -293,7 +346,7 @@ class HASLDepartureSensor(HASLDevice):
         else:
             self._last_updated = now().strftime('%Y-%m-%d %H:%M:%S')    
 
-        
+        logger.debug("[async_update] Completed")                
         return
 
     @property
@@ -431,13 +484,22 @@ class HASLDeviationSensor(HASLDevice):
     async def async_update(self):
         """Update the sensor."""
 
+        logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await self._worker.process_si2()
+                    try:
+                        await self._worker.process_si2()
+                        logger.debug("[async_update] Update processed")
+                    except:
+                        logger.debug("[async_update] Error occured during update")
+                else:
+                    logger.debug("[async_update] Not due for update, skipping")
+
                     
         self._sensordata = self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]
-        
+        logger.debug("[async_update] Completed")               
         return
 
     @property
@@ -514,13 +576,21 @@ class HASLVehicleLocationSensor(HASLDevice):
     async def async_update(self):
         """Update the sensor."""
 
+        logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.fp[self._vehicletype]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await self._worker.process_fp()
+                    try:
+                        await self._worker.process_fp()
+                        logger.debug("[async_update] Update processed")
+                    except:
+                        logger.debug("[async_update] Error occured during update")
+                else:
+                    logger.debug("[async_update] Not due for update, skipping")
 
         self._sensordata = self._worker.data.fp[self._vehicletype]
-        
+        logger.debug("[async_update] Completed")                
         return
 
     @property
@@ -597,13 +667,22 @@ class HASLTrafficStatusSensor(HASLDevice):
     async def async_update(self):
         """Update the sensor."""
 
+        logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
-                    await self._worker.process_tl2()
+                    try:
+                        await self._worker.process_tl2()
+                        logger.debug("[async_update] Update processed")
+                    except:
+                        logger.debug("[async_update] Error occured during update")
+                else:
+                    logger.debug("[async_update] Not due for update, skipping")
+
                     
         self._sensordata = self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]
-        
+        logger.debug("[async_update] Completed")               
         return
 
     @property

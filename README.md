@@ -17,16 +17,9 @@ Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 it wil
 
 ## Install using HACS
 
-Remember: This is a temporary procedure while we are running in beta.
+First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want are ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
 
-Go to HACS in your local Home Assistant install.
-Click yourself into the `Integrations`-section.
-At the right-most corner you will find three vertical dots, click them and then `Custom repositories`.
-
-Respository URL is https://github.com/hasl-sensor/integration
-Category is `Integration`
-
-You can now find HASLv3 in your integrations section in HACS.
+Then go into HACS and search for HASLv3 under the Integrations headline (HASL is the legacy version, see below)
 
 ## Legacy version will soon die but not yet..
 

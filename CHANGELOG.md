@@ -39,14 +39,13 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Added system health checks
 - Services now response on the event bus by hasl3_response
 - Services can be called via the event bus on hasl3_execute with argument cmd=<service> and then the rest of the argument as when normally using when calling a service
+- Binary sensor logging and fault management implemented
 
 ### Still needed to release for testing
 - Think it is mostly complete now actually..... 
 - Will probably require higher version of homeassistant to make sure it works and to not test it will all the older versions..
 
 ### Needed to release production
-- binary_sensor fault management not implemented
-- binary_sensor missing logging (namespace custom_integrations.hasl3.sensors)
 - sensor missing logging (namespace custom_integrations.hasl3.sensors)
 - sensor fault management not implemented
 - worker missing logging (namespace custom_integrations.hasl3.worker)

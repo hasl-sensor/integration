@@ -33,30 +33,30 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     async_add_devices(await setup_hasl_sensor(hass, config_entry))
 
 async def setup_hasl_sensor(hass,config):
-    logger.debug("[setup_hasl_sensor] Entered")
+    logger.debug("[setup_binary_sensor] Entered")
 
     sensors = []
     
-    logger.debug("[setup_hasl_sensor] Processing sensors")
+    logger.debug("[setup_binary_sensor] Processing sensors")
     if config.data[CONF_INTEGRATION_TYPE]==SENSOR_STATUS:
         if not config.options[CONF_ANALOG_SENSORS]:
             if CONF_TL2_KEY in config.options:
                 await hass.data[DOMAIN]["worker"].assert_tl2(config.options[CONF_TL2_KEY])
                 for sensortype in CONF_TRANSPORT_MODE_LIST:
                     if sensortype in config.options and config.options[sensortype]:
-                        logger.debug("[setup_hasl_sensor] Setting up binary problem sensor..")
+                        logger.debug("[setup_binary_sensor] Setting up binary problem sensor..")
                         try:
                             sensors.append(HASLTrafficProblemSensor(hass,config,sensortype))
-                            logger.debug("[setup_hasl_sensor] Sensor setup completed successfully")
+                            logger.debug("[setup_binary_sensor] Sensor setup completed successfully")
                         except:
-                            logger.debug("[setup_hasl_sensor] Sensor setup failed")
+                            logger.debug("[setup_binary_sensor] Sensor setup failed")
 
-            logger.debug("[setup_hasl_sensor] Force processing problem sensors..")
+            logger.debug("[setup_binary_sensor] Force processing problem sensors..")
             try:
                 await hass.data[DOMAIN]["worker"].process_tl2()
-                logger.debug("[setup_hasl_sensor] Force processing completed successfully")
+                logger.debug("[setup_binary_sensor] Force processing completed successfully")
             except:
-                logger.debug("[setup_hasl_sensor] Force processing failed")
+                logger.debug("[setup_binary_sensor] Force processing failed")
 
 
     return sensors
@@ -93,6 +93,7 @@ class HASLTrafficProblemSensor(HASLDevice):
         """Update the sensor."""
 
         logger.debug("[async_update] Entered")
+        logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
                 if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:

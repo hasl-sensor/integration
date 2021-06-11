@@ -19,7 +19,20 @@ Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 it wil
 
 First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want are ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
 
-Then go into HACS and search for HASLv3 under the Integrations headline (HASL is the legacy version, see below)
+Then go into HACS and search for HASLv3 under the Integrations headline (HASL is the legacy version, see below).
+
+You will need to restart Home Assistant to finish the process. Once that is done reload your GUI (caching issues preventing the integration to be shown).
+
+Goto Integrations and add HASLv3
+
+## Manual installation (not advised)
+
+The integration can be installed manually by copying some files from this repo to your install. Also you will need to create API key and config as outlined in the previous section.
+Note that HASLv3 will not automatically update as newer versions are released so you need to keep track of that yourself. We recomend using HACSv3 as outlined above in the previous section.
+
+Please copy all files fron the `custom_components\hasl3` files into the `<config>/custom_components/hasl3/` directory. You need to restart Home Assistant and reload the GUI to make sure the integration is available.Goto Integrations and add HASLv3.
+
+where `<config>` is your Home Assistant configuration directory.
 
 ## Legacy version will soon die but not yet..
 
@@ -29,9 +42,20 @@ HASL is still available from https://github.com/DSorlov/hasl-platform and will b
 
 None of the existing lovelace cards have been tested with HASLv3. It will be updated as soon as time permits.
 
+The sensors should be able to be used multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
+
+![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
+
+## API-call restrictions and optimizations
+
+The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
+The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
+You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.
+
 ## Sensors
 
-Right now the integration provides a number of sensors, this could change. One objective during rewrite have been to not touch the existing sensors so much to make sure it is compatible as far as possible. This table also contains differances between v2.x (Legacy) and HASLv3.
+One objective during rewrite have been to not touch the existing sensors so much to make sure it is compatible as far as possible. This table also contains differances between v2.x (Legacy) and HASLv3.
+
 | HASL | HASLv3 | Sensor Name | Description | Notes |
 | -- | -- | -- | -- | -- |
 | :heavy_check_mark: | :heavy_check_mark: | Departures | Departure information for a given SL Hållplats | Same between both versions. In v3 Deviation Sensor is used for deviation information. |

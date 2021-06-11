@@ -79,42 +79,64 @@ class HaslWorker(object):
         return HaslWorker()
 
     def debugdump(self, data):
-        timestring = time.strftime("%Y%m%d%H%M%S")
-        outputfile = self.hass.config.path(f"hasl_debug_{timestring}.json")
-        jsonFile = open(outputfile, "w")
-        jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
-        jsonFile.close()
-        
+        logger.debug("[debug_dump] Entered")          
+
+        try:
+            timestring = time.strftime("%Y%m%d%H%M%S")
+            outputfile = self.hass.config.path(f"hasl_debug_{timestring}.json")
+            jsonFile = open(outputfile, "w")
+            jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
+            jsonFile.close()
+            logger.debug("[debug_dump] Completed")          
+        except:
+            logger.debug("[debug_dump] A processing error occured")          
+
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
         d2 = datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
         return abs((d2 - d1).seconds)
         
     def checksensorstate(self, sensor,state,default=True):
+        logger.debug("[check_sensor_state] Entered")          
         if not sensor is None and not sensor == "":
-            sensor_state = self.hass.states.get(sensor)
-            if sensor_state.state is state:
-                return True
-            else:
-                return False
+            try:
+                sensor_state = self.hass.states.get(sensor)
+                if sensor_state.state is state:
+                    logger.debug("[check_sensor_state] Completed will return TRUE/ENABLED")
+                    return True
+                else:
+                    logger.debug("[check_sensor_state] Completed will return FALSE/DISABLED")
+                    return False
+            except:
+                logger.debug("[check_sensor_state] An error occured, default will be returned")
+                return default          
         else:
+            logger.debug("[check_sensor_state] No sensor specified, will return default")
             return default        
 
     async def assert_rp3(self, key, source, destination):
+        logger.debug("[assert_rp3] Entered")
+
         listvalue = f"{source}-{destination}"
         if not key in self.data.rp3keys:
+            logger.debug("[assert_rp3] Registered key")
             self.data.rp3keys[key] = {
                 "api_key": key,
                 "trips": ""
             }
+        else:
+            logger.debug("[assert_rp3] Key already present")
             
         currentvalue = self.data.rp3keys[key]['trips']    
         if currentvalue=="":
+            logger.debug("[assert_rp3] Creating trip key")
             self.data.rp3keys[key]["trips"] = listvalue
         else:
+            logger.debug("[assert_rp3] Amending to trip key")
             self.data.rp3keys[key]["trips"] = f"{currentvalue},{listvalue}"
 
         if not listvalue in self.data.rp3:
+            logger.debug("[assert_rp3] Creating default values")
             self.data.rp3[listvalue] = {
                 "api_type": "slapi-si2",
                 "api_lastrun": '1970-01-01 01:01:01',
@@ -122,6 +144,7 @@ class HaslWorker(object):
                 "trips": []
             }
 
+        logger.debug("[assert_rp3] Completed")
         return
 
 
@@ -150,11 +173,14 @@ class HaslWorker(object):
         
         
     async def process_rp3(self):
+        logger.debug("[process_rp3] Entered")
     
         for rp3key in list(self.data.rp3keys):
+            logger.debug(f"[process_rp3] Processing key {rp3key}")
             rp3data = self.data.rp3keys[rp3key]
             api = slapi_rp3(rp3key)
             for tripname in ','.join(set(rp3data["trips"].split(','))).split(','):
+                logger.debug(f"[process_rp3] Processing trip {tripname}")
                 newdata = self.data.rp3[tripname]
                 positions = tripname.split('-')
                 
@@ -215,27 +241,42 @@ class HaslWorker(object):
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                 except Exception as e:
+                    logger.debug(f"[process_rp3] Error occured: {str(e)}")
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
             
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.rp3[tripname] = newdata
 
+                logger.debug(f"[process_rp3] Completed trip {tripname}")
+
+            logger.debug(f"[process_rp3] Completed key {rp3key}")
+
+        logger.debug("[process_rp3] Completed")
 
 
     async def assert_fp(self, traintype):
+        logger.debug("[assert_fp] Entered")
+
         if not traintype in self.data.fp:
+            logger.debug(f"[assert_fp] Registering {traintype}")
             self.data.fp[traintype] = {
                 "api_type": "slapi-fp1",
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
+        else:
+            logger.debug(f"[assert_fp] {traintype} already registered")
+            
+        logger.debug("[assert_fp] Completed")
         return
         
     async def process_fp(self, notarealarg=None):
+        logger.debug("[process_rp3] Entered")
         
         api = slapi_fp()
         for traintype in list(self.data.fp):
+            logger.debug(f"[process_rp3] Processing {traintype}")
 
             newdata = self.data.fp[traintype]
             try:
@@ -243,12 +284,15 @@ class HaslWorker(object):
                 newdata['attribution'] = "Stockholms Lokaltrafik"
                 newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 newdata['api_result'] = "Success"
+                logger.debug(f"[process_rp3] Completed {traintype}")
             except Exception as e:
                 newdata['api_result'] = "Error"
                 newdata['api_error'] = str(e)
+                logger.debug(f"[process_rp3] Error occured for {traintype}: {str(e)}")
             
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.fp[traintype] = newdata
+        logger.debug("[process_rp3] Completed")
 
     async def assert_si2_stop(self, key, stop):
         await self.assert_si2(key,f"stop_{stop}","stops",stop)
@@ -257,33 +301,45 @@ class HaslWorker(object):
         await self.assert_si2(key,f"line_{line}","lines",line)
 
     async def assert_si2(self, key, datakey, listkey, listvalue):   
+        logger.debug("[assert_si2] Entered")
+
         if not key in self.data.si2keys:
+            logger.debug("[assert_si2] Registering key")
             self.data.si2keys[key] = {
                 "api_key": key,
                 "stops": "",
                 "lines": ""
             }
-            
+        else:
+            logger.debug("[assert_si2] Key already present")
+
         if self.data.si2keys[key][listkey]=="":
+            logger.debug("[assert_si2] Creating trip key")
             self.data.si2keys[key][listkey] = listvalue
         else:
+            logger.debug("[assert_si2] Appending to trip key")
             self.data.si2keys[key][listkey] = f"{self.data.si2keys[key][listkey]},{listvalue}"
             
         if not datakey in self.data.si2:
+            logger.debug("[assert_si2] Creating default values")
             self.data.si2[datakey] = {
                 "api_type": "slapi-si2",
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
             
+        logger.debug("[assert_si2] Completed")
         return
         
     async def process_si2(self, notarealarg=None):
+        logger.debug("[process_si2] Entered")
     
         for si2key in list(self.data.si2keys):
+            logger.debug(f"[process_si2] Processing key {si2key}")
             si2data = self.data.si2keys[si2key]
             api = slapi_si2(si2key, 60)
             for stop in ','.join(set(si2data["stops"].split(','))).split(','):
+                logger.debug(f"[process_si2] Processing stop {stop}")
                 newdata = self.data.si2[f"stop_{stop}"]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
 
@@ -306,14 +362,19 @@ class HaslWorker(object):
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
+                    logger.debug(f"[process_si2] Processing stop {stop} completed")
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)                
+                    logger.debug(f"[process_si2] An error occured during processing of stop {stop}")
+
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"stop_{stop}"] = newdata
+                logger.debug(f"[process_si2] Completed processing of stop {stop}")
                 
             for line in ','.join(set(si2data["lines"].split(','))).split(','):
+                logger.debug(f"[process_si2] Processing line {line}")
                 newdata = self.data.si2[f"line_{line}"]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
 
@@ -336,36 +397,48 @@ class HaslWorker(object):
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
+                    logger.debug(f"[process_si2] Processing line {line} completed")
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)                
+                    logger.debug(f"[process_si2] An error occured during processing of line {line}")
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"line_{line}"] = newdata
+                logger.debug(f"[process_si2] Completed processing of line {line}")
 
+            logger.debug(f"[process_si2] Completed processing key {si2key}")
+
+        logger.debug("[process_si2] Completed")
         return
 
     async def assert_ri4(self, key, stop):
+        logger.debug("[assert_ri4] Entered")
         stopkey = str(stop)
     
         if not key in self.data.ri4keys:
+            logger.debug("[assert_ri4] Registering key and stop")
             self.data.ri4keys[key] = {
                 "api_key": key,
                 "stops": stopkey
             }
         else:
+            logger.debug("[assert_ri4] Adding stop to existing key")
             self.data.ri4keys[key]["stops"] = f"{self.data.ri4keys[key]['stops']},{stopkey}"
             
         if not stop in self.data.ri4:
+            logger.debug("[assert_ri4] Creating default data")
             self.data.ri4[stopkey] = {
                 "api_type": "slapi-ri4",
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
             
+        logger.debug("[assert_ri4] Completed")
         return
         
     async def process_ri4(self, notarealarg=None):
+        logger.debug("[process_ri4] Entered")
 
         iconswitcher = {
             'Buses': 'mdi:bus',
@@ -376,9 +449,11 @@ class HaslWorker(object):
         }
 
         for ri4key in list(self.data.ri4keys):
+            logger.debug(f"[process_ri4] Processing key {ri4key}")
             ri4data = self.data.ri4keys[ri4key]
             api = slapi_ri4(ri4key, 60)
             for stop in ','.join(set(ri4data["stops"].split(','))).split(','):
+                logger.debug(f"[process_ri4] Processing stop {stop}")
                 newdata = self.data.ri4[stop]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
                 
@@ -417,27 +492,43 @@ class HaslWorker(object):
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
+                    logger.debug(f"[process_ri4] Stop {stop} updated sucessfully")
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
+                    logger.debug(f"[process_ri4] Error occured during update {stop}")
                 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.ri4[stop] = newdata
+                logger.debug(f"[process_ri4] Completed stop {stop}")
+
+            logger.debug(f"[process_ri4] Completed key {ri4key}")
+
+        logger.debug("[process_ri4] Completed")
         return
 
 
     async def assert_tl2(self, key):
+        logger.debug("[assert_tl2] Entered")
+
         if not key in self.data.tl2:
+            logger.debug("[assert_tl2] Registering key")
             self.data.tl2[key] = {
                 "api_type": "slapi-tl2",
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
+        else:
+            logger.debug("[assert_tl2] Key already present")
+
+        logger.debug("[assert_tl2] Completed")
         return
 
     async def process_tl2(self, notarealarg=None):
+        logger.debug("[process_tl2] Entered")
         
         for tl2key in list(self.data.tl2):
+            logger.debug(f"[process_tl2] Processing {tl2key}")
             
             newdata = self.data.tl2[tl2key]
             
@@ -483,12 +574,15 @@ class HaslWorker(object):
                 newdata['attribution'] = "Stockholms Lokaltrafik"
                 newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 newdata['api_result'] = "Success"
+                logger.debug(f"[process_tl2] Update of {tl2key} succeeded")
             except Exception as e:
                 newdata['api_result'] = "Error"
                 newdata['api_error'] = str(e)
-            dispatcher_send(self.hass, "tl2_data_update")
-            
+                logger.debug(f"[process_tl2] Update of {tl2key} failed")
+           
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.tl2[tl2key] = newdata
+            logger.debug(f"[process_tl2] Completed {tl2key}")
             
+        logger.debug(f"[process_tl2] Completed")
         return            

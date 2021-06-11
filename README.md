@@ -9,9 +9,9 @@
 Home Assistant SL Integration (HASLv3)
 ======================================
 
-This is a integration to provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing.
+This is a integration to provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)).
 
-Right now HASLv3 is only supported as beta install as it is still in development. In the future it will be installed via HACS default just as HASL. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)).
+This integration is prepared for the new API that will be released from SL during 2021 (preliminary date). The legacy version (HASL) will NOT be upgraded once this happens.
 
 Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 it will be available once done at the same location, until then this page serves as documentation.
 
@@ -46,12 +46,6 @@ The sensors should be able to be used multiple cards in hasl-cards ([departure-c
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
 
-## API-call restrictions and optimizations
-
-The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
-The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
-You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.
-
 ## Sensors
 
 One objective during rewrite have been to not touch the existing sensors so much to make sure it is compatible as far as possible. This table also contains differances between v2.x (Legacy) and HASLv3.
@@ -64,7 +58,7 @@ One objective during rewrite have been to not touch the existing sensors so much
 | :heavy_check_mark: | :heavy_check_mark: | Traffic Status | High level status for different traffic types | In v2 one combined sensor is created for all traffic types while in v3 a binary_sensor is created for each selected type. |
 | :heavy_check_mark:* | :heavy_check_mark: | Vehicle Locations | How many vehicles and their locations | Was experimental in v2 and data is cleaned up in v3. A separate sensor is created for each type of traffic |
 
-### Services and events
+## Services and events
 
 HASLv3 implements some services that can be useful for accessing data and using for automations or whatnot. Anyway. There are five services that can be used. They return data by triggering an event on the `hasl3_response` topic.
 
@@ -74,7 +68,7 @@ HASLv3 implements some services that can be useful for accessing data and using 
 - `find_trip_id` Arguments `api_key`, `org`, `dest`. Returns a trip from org to dest.
 - `find_trip_pos` Arguments `api_key`, `orig_lat`, `orig_long`, `dest_lat`, `dest_long`. Returns a trip from org to dest.
 
-### Debugging and logging
+## Debugging and logging
 
 HASLv3 is using the standard logging facilities in Home Assistant. There is some logging of normal operations but it have been built to be as quiet as possible. Keys and APIs will mostly just log a failure to debug and retry next time. Such things do occur from time to time due to API or just Internet. However setup and other more defining actions are logged as errors to make sure you see them. However you can tweak logging:
 
@@ -89,6 +83,13 @@ logger:
     custom_components.hasl3.slapi: debug      # This is SLAPI, the underlying library, should be needed
 ````
 
-### Stuff I am thinking about implementing or refining
+## Stuff I am thinking about implementing or refining
+
 - Input validation missing for creating new integration, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
 - Input validation missing for setting integration options, field syntax validation is already done by HA but perhaps key validation or similar could be peformed?
+
+## API-call restrictions and optimizations
+
+The `Bronze` level API is limited to 30 API calls per minute, 10.000 per month. With 10.000 calls per month, that allows for less than one call every 4 minute but if you are using multiple sensors this is split between them and each config sensor section can contain a separate pair of api-keys.
+The calls have been optimized and are beeing locally cached for the specified freshness, if multiple sensors are using the same siteid there will still only be one call. Caching is done in a file (haslcache.json) that will be automatically created in the configuration directory.
+You can also specify a binary_sensor that perhaps is turned of when no-one is at home or similar to reduce the number of calls. Optimizations can be turned of if needed in very specific situation or if you have a high level API-key.

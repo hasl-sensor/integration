@@ -40,6 +40,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Services now response on the event bus by hasl3_response
 - Services can be called via the event bus on hasl3_execute with argument cmd=<service> and then the rest of the argument as when normally using when calling a service
 - Binary sensor logging and fault management implemented
+- Slapi and haslworker logging and fault management implemented
 
 ### Still needed to release for testing
 - Think it is mostly complete now actually..... 

@@ -42,6 +42,27 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Binary sensor logging and fault management implemented
 - Slapi and haslworker logging and fault management implemented
 - Sensor logging and fault management implemented
+- Changed fork from DSorlov to hasl-sensor
+
+## [2.2.7] (2021-06-08)
+
+### Changed
+- Workaround fix for timezone error
+
+## [2.2.6] (2021-05-18)
+
+### Changed
+- Fixed version numbers discrepencies
+
+## [2.2.5] (2021-05-10)
+
+### Changed
+- Updated manifest.json
+
+## [2.2.4] (2020-05-23)
+
+### Changed
+- Documentation updates
 
 ## [2.2.3] (2020-03-04)
 
@@ -236,6 +257,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 
 ### Changed
 - Log error message instead of just reporting failure.
+- Changed fork from fredrikbaberg to DSorlov
 
 ## [0.0.3] (2018-09-30)
 
@@ -246,35 +268,40 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 
 ### Changed
 - Log error code.
+- Changed fork from fuffenz to fredrikbaberg
 
 ## [0.0.1] (2018-05-08)
 
-### Changed
-- Log error code.
+### Initial release
+- This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3
-[2.2.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.3...2.2.2
-[2.2.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.2...2.2.1
-[2.2.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.1...2.2.0
-[2.2.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.2.0...2.1.3
-[2.1.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.3...2.1.2
-[2.1.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.1...2.1.2
-[2.1.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.1.0...2.1.1
-[2.1.0]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.3...2.1.0
-[2.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.2...2.0.3
-[2.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.1...2.0.2
-[2.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/2.0.0...2.0.1
-[2.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.3...2.0.0
-[1.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.2...1.0.3
-[1.0.2]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.1...1.0.2
-[1.0.1]: https://github.com/DSorlov/ha-sensor-sl/compare/1.0.0...1.0.1
-[1.0.0]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.8...1.0.0
-[0.0.8]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.7...0.0.8
-[0.0.7]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.6...0.0.7
-[0.0.6]: https://github.com/DSorlov/ha-sensor-sl/compare/0.0.5...0.0.6
-[0.0.5]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.4...0.0.5
-[0.0.4]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.3...v0.0.4
-[0.0.3]: https://github.com/DSorlov/ha-sensor-sl/compare/v0.0.2...v0.0.3
-[0.0.2]: https://github.com/fredrikbaberg/ha-sensor-sl/releases/tag/v0.0.2
+[Unreleased]: https://github.com/hasl-sensor/integration/compare/master...DSorlov:2.2.7
+[2.2.7]: https://github.com/DSorlov/hasl-platform/compare/2.2.6...2.2.7
+[2.2.6]: https://github.com/DSorlov/hasl-platform/compare/2.2.5...2.2.6
+[2.2.5]: https://github.com/DSorlov/hasl-platform/compare/2.2.4...2.2.5
+[2.2.4]: https://github.com/DSorlov/hasl-platform/compare/2.2.3...2.2.4
+[2.2.3]: https://github.com/DSorlov/hasl-platform/compare/2.2.3...2.2.2
+[2.2.2]: https://github.com/DSorlov/hasl-platform/compare/2.2.2...2.2.1
+[2.2.1]: https://github.com/DSorlov/hasl-platform/compare/2.2.1...2.2.0
+[2.2.0]: https://github.com/DSorlov/hasl-platform/compare/2.2.0...2.1.3
+[2.1.3]: https://github.com/DSorlov/hasl-platform/compare/2.1.3...2.1.2
+[2.1.2]: https://github.com/DSorlov/hasl-platform/compare/2.1.1...2.1.2
+[2.1.1]: https://github.com/DSorlov/hasl-platform/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/DSorlov/hasl-platform/compare/2.0.3...2.1.0
+[2.0.3]: https://github.com/DSorlov/hasl-platform/compare/2.0.2...2.0.3
+[2.0.2]: https://github.com/DSorlov/hasl-platform/compare/2.0.1...2.0.2
+[2.0.1]: https://github.com/DSorlov/hasl-platform/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/DSorlov/hasl-platform/compare/1.0.3...2.0.0
+[1.0.3]: https://github.com/DSorlov/hasl-platform/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/DSorlov/hasl-platform/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/DSorlov/hasl-platform/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/DSorlov/hasl-platform/compare/0.0.8...1.0.0
+[0.0.8]: https://github.com/DSorlov/hasl-platform/compare/0.0.7...0.0.8
+[0.0.7]: https://github.com/DSorlov/hasl-platform/compare/0.0.6...0.0.7
+[0.0.6]: https://github.com/DSorlov/hasl-platform/compare/0.0.5...0.0.6
+[0.0.5]: https://github.com/DSorlov/hasl-platform/compare/v0.0.4...0.0.5
+[0.0.4]: https://github.com/fredrikbaberg/ha-sensor-sl/compare/v0.0.3...DSorlov:v0.0.4
+[0.0.3]: https://github.com/fredrikbaberg/ha-sensor-sl/compare/v0.0.2...v0.0.3
+[0.0.2]: https://github.com/fredrikbaberg/ha-sensor-sl/compare/fredrikbaberg:v0.0.2...fuffenz:master
 [0.0.1]: https://github.com/fuffenz/ha-sensor-sl

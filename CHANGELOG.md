@@ -41,10 +41,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Services can be called via the event bus on hasl3_execute with argument cmd=<service> and then the rest of the argument as when normally using when calling a service
 - Binary sensor logging and fault management implemented
 - Slapi and haslworker logging and fault management implemented
-
-### Needed to release production
-- sensor missing logging (namespace custom_integrations.hasl3.sensors)
-- sensor fault management not implemented
+- Sensor logging and fault management implemented
 
 ## [2.2.3] (2020-03-04)
 

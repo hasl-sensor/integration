@@ -166,7 +166,7 @@ class HaslWorker(object):
                 if min < 0:
                     min = min + 1440
                 return min
-        except Exception:
+        except Exception as e:
             ##TODO LOG EXCEPTION
             return
         return        

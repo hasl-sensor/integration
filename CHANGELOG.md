@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ### Changed
 - Replaced all bare except:
-
+- [#9](https://github.com/hasl-sensor/integration/issues/9) fixed. Implemented skeleton async_migrate_entry
 
 ## [3.0.0-beta.2] (2021-06-14)
 
@@ -17,7 +17,6 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - [#7](https://github.com/hasl-sensor/integration/issues/7) fixed. Too many programming languages I guess... =)
 - [#6](https://github.com/hasl-sensor/integration/issues/6) fixed. Fault management implemented.
 - Fixed double type datetime.datetime vs datetime in haslworker
-- [#9](https://github.com/hasl-sensor/integration/issues/9) fixed. Implemented skeleton async_migrate_entry
 
 ## [3.0.0-beta.1] (2021-06-11)
 

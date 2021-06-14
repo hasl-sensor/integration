@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ### Fixes
 - [#7](https://github.com/hasl-sensor/integration/issues/7) fixed. Too many programming languages I guess... =)
+- [#6](https://github.com/hasl-sensor/integration/issues/6) fixed. Fault management implemented.
 
 ## [3.0.0-beta.1] (2021-06-11)
 

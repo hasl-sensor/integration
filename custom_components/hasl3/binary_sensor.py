@@ -183,10 +183,14 @@ class HASLTrafficProblemSensor(HASLDevice):
         # Set values of the sensor.
         val['scan_interval'] = self._scan_interval
         val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
-        val['attribution'] = self._sensordata["attribution"]
-        val['status_text'] = self._sensordata["data"][self._sensortype]["status"]
-        val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]
-        val['events'] = self._sensordata["data"][self._sensortype]["events"]        
-        val['last_updated'] = self._sensordata["last_updated"]
+        try:
+            val['attribution'] = self._sensordata["attribution"]
+            val['status_text'] = self._sensordata["data"][self._sensortype]["status"]
+            val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]
+            val['events'] = self._sensordata["data"][self._sensortype]["events"]        
+            val['last_updated'] = self._sensordata["last_updated"]
+        except:
+            val['error'] = "NoDataYet"
+            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
 
         return val

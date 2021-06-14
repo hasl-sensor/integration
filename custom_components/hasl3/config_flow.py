@@ -83,7 +83,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     tempResult = self.async_create_entry(title=name, data=user_input)
                     logger.debug(f"[setup_integration] Entry creating succeeded")
                     return tempResult
-                except:
+                except Exception as e:
                     logger.error(f"[setup_integration] Entry creation failed for '{name}' with id {id}")
                     return self.async_abort(reason="not_supported")
 
@@ -143,7 +143,7 @@ class OptionsFlow(config_entries.OptionsFlow):
                     tempresult = self.async_create_entry(title=self.config_entry.title, data=user_input)
                     logger.debug(f"[integration_options] Entry update succeeded")
                     return tempresult
-                except:
+                except Exception as e:
                     logger.error("[integration_options] Unknown exception occured")
 
 

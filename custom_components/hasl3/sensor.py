@@ -367,7 +367,7 @@ class HASLDepartureSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
             
-        if sensorproperty is 'min':
+        if sensorproperty == 'min':
             next_departure = self.nextDeparture()
             if not next_departure:
                 return '-'
@@ -377,7 +377,7 @@ class HASLDepartureSensor(HASLDevice):
             return expected_minutes
 
         # If the sensor should return the time at which next departure occurs.
-        if sensorproperty is 'time':
+        if sensorproperty == 'time':
             next_departure = self.nextDeparture()
             if not next_departure:
                 return '-'
@@ -386,10 +386,10 @@ class HASLDepartureSensor(HASLDevice):
             return expected
 
         # If the sensor should return the number of deviations.
-        if sensorproperty is 'deviations':
+        if sensorproperty == 'deviations':
             return len(self._sensordata["deviations"])
 
-        if sensorproperty is 'updated':
+        if sensorproperty == 'updated':
             return self._sensordata["last_updated"]
             
         # Failsafe
@@ -444,7 +444,7 @@ class HASLDepartureSensor(HASLDevice):
             expected_minutes = '-'
 
         # Setup the unit of measure.
-        if self._unit_of_measure is not '':
+        if self._unit_of_measure != '':
             val['unit_of_measurement'] = self._unit_of_measure
 
         if self._sensordata["api_result"] == "Success":

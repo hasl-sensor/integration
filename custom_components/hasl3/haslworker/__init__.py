@@ -52,17 +52,25 @@ class HASLData(object):
 class HASLInstances(object):
     """The instance holder object object"""
 
-    instances = []
+    instances = {}
+    instanceCount = 0
 
-    def add(self, id):
-        self.instances.append(id)
+    def add(self, id, updater):
+        self.instances[id] = {
+            subscriber = updater
+        }
+        instanceCount++
 
     def remove(self, id):
-        self.instances.remove(id)
+        try:
+            self.instances[id].subscriber()
+            instanceCount--
+            del self.instances[id]
+        except Exception as e:
+            logger.debug(f"Error occured while unregistering listener {str(e)}")
 
     def count(self):
-        return len(self.instances)
-    
+        return instanceCount  
 
 class HaslWorker(object):
     """HaslWorker."""

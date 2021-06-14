@@ -177,7 +177,7 @@ async def async_setup(hass, config):
                 "worker": worker
             }
             logger.debug("[setup] Worker created")
-    except:
+    except Exception as e:
             logger.error("[setup] Could not get worker")
             return False
 
@@ -189,14 +189,14 @@ async def async_setup(hass, config):
         hass.services.async_register(DOMAIN, 'find_trip_pos', find_trip_pos)
         hass.services.async_register(DOMAIN, 'find_trip_id', find_trip_id)
         logger.debug("[setup] Service registration completed")
-    except:
+    except Exception as e:
         logger.error("[setup] Service registration failed")
 
     logger.debug("[setup] Registering event listeners")
     try:
         hass.bus.async_listen(f"{DOMAIN}_execute", eventListener)
         logger.debug("[setup] Registering event listeners completed")
-    except:
+    except Exception as e:
         logger.error("[setup] Registering event listeners failed")
 
     hass.data[DOMAIN]["worker"].status.startup_in_progress = False
@@ -210,13 +210,13 @@ async def reload_entry(hass, entry):
     try:
         await async_unload_entry(hass, entry)
         logger.debug("[reload_entry] Unload succeeded")
-    except:
+    except Exception as e:
         logger.error("[reload_entry] Unload failed")
 
     try:
         await async_setup_entry(hass, entry)
         logger.debug("[reload_entry] Setup succeeded")
-    except:
+    except Exception as e:
         logger.error("[reload_entry] Setup failed")
 
     logger.debug("[reload_entry] Completed")
@@ -240,30 +240,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             entry_type=DEVICE_TYPE
         )    
         logger.debug("[setup_entry] Created device")
-    except:
+    except Exception as e:
         logger.error("[setup_entry] Failed to create device")
-        return False
-
-    try:
-        hass.data[DOMAIN]["worker"].instances.add(entry.entry_id)
-        logger.debug("[setup_entry] Worker registration succeeded")
-    except:
-        logger.error("[setup_entry] Worker registration failed")
         return False
 
     try:
         hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, "sensor"))
         hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, "binary_sensor"))
         logger.debug("[setup_entry] Forward entry setup succeeded")
-    except:
+    except Exception as e:
         logger.error("[setup_entry] Forward entry setup failed")
         return False
 
+    updater = None
     try:
-        entry.add_update_listener(reload_entry)
-    except:
+        updater = entry.add_update_listener(reload_entry)
+    except Exception as e:
         logger.error("[setup_entry] Update listener setup failed")
         return False
+
+    try:
+        hass.data[DOMAIN]["worker"].instances.add(entry.entry_id, updater)
+        logger.debug("[setup_entry] Worker registration succeeded")
+    except Exception as e:
+        logger.error("[setup_entry] Worker registration failed")
+        return False        
 
     logger.debug("[setup_entry] Completed")
 
@@ -278,14 +279,14 @@ async def async_unload_entry(hass, entry):
 
         hass.async_add_job(hass.config_entries.async_forward_entry_unload(entry, "sensor"))
         hass.async_add_job(hass.config_entries.async_forward_entry_unload(entry, "binary_sensor"))
-    except:
+    except Exception as e:
         logger.error("[unload_entry] Forward entry unload failed")
         return False
 
     try:
         hass.data[DOMAIN]["worker"].instances.remove(entry.entry_id)
         logger.debug("[unload_entry] Worker deregistration succeeded")
-    except:
+    except Exception as e:
         logger.error("[unload_entry] Worker deregistration failed")
         return False
 

@@ -57,20 +57,20 @@ class HASLInstances(object):
 
     def add(self, id, updater):
         self.instances[id] = {
-            subscriber = updater
+            'subscriber': updater
         }
-        instanceCount++
+        self.instanceCount+=1
 
     def remove(self, id):
         try:
-            self.instances[id].subscriber()
-            instanceCount--
+            self.instances[id]['subscriber']()
+            self.instanceCount-=1
             del self.instances[id]
         except Exception as e:
             logger.debug(f"Error occured while unregistering listener {str(e)}")
 
     def count(self):
-        return instanceCount  
+        return self.instanceCount  
 
 class HaslWorker(object):
     """HaslWorker."""

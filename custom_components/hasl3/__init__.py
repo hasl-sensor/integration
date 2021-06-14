@@ -203,6 +203,16 @@ async def async_setup(hass, config):
     logger.debug("[setup] Completed")
     return True
 
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    logger.debug("[migrate_entry] Entered")
+
+    logger.debug("[migrate_entry] Nothing to do from version %s to version %s", config_entry.version, HASL_VERSION)
+
+    logger.debug("[migrate_entry] Completed")
+
+    return True
+
+
 async def reload_entry(hass, entry):
     """Reload HASL."""
     logger.debug(f"[reload_entry] Entering for {entry.entry_id}")
@@ -263,7 +273,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data[DOMAIN]["worker"].instances.add(entry.entry_id, updater)
         logger.debug("[setup_entry] Worker registration succeeded")
     except Exception as e:
-        logger.error("[setup_entry] Worker registration failed")
+        logger.error(f"[setup_entry] Worker registration failed: {str(e)}")
         return False        
 
     logger.debug("[setup_entry] Completed")

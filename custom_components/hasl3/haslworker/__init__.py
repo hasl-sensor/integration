@@ -480,7 +480,7 @@ class HaslWorker(object):
                                 'departure': displaytime,
                                 'destination': destination,
                                 'time': diff,
-                                'expected': datetime.datetime.strptime(
+                                'expected': datetime.strptime(
                                     expected, '%Y-%m-%dT%H:%M:%S'
                                 ),
                                 'type': traffictype,

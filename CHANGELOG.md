@@ -5,7 +5,14 @@ Changelog for HomeAssistant SL Sensor (HASLv3).
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
-## [3.0.0-beta.1] (2021-16-11)
+## [3.0.0-beta.2] (2021-06-14)
+
+### Fixes
+- [#7](https://github.com/hasl-sensor/integration/issues/7) fixed. Too many programming languages I guess... =)
+- [#6](https://github.com/hasl-sensor/integration/issues/6) fixed. Fault management implemented.
+- Fixed double type datetime.datetime vs datetime in haslworker
+
+## [3.0.0-beta.1] (2021-06-11)
 
 Generally stuff could be really broken right now and I'm working on lots of stuff all over the code.
 Forked from 2.2.3 but changes from later versions are implemented as needed.
@@ -276,6 +283,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.0.0-beta.2]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...3.0.0-beta.2
 [3.0.0-beta.1]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...DSorlov:2.2.7
 [2.2.7]: https://github.com/DSorlov/hasl-platform/compare/2.2.6...2.2.7
 [2.2.6]: https://github.com/DSorlov/hasl-platform/compare/2.2.5...2.2.6

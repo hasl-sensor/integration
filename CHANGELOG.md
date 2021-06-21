@@ -5,7 +5,7 @@ Changelog for HomeAssistant SL Sensor (HASLv3).
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
-## [3.0.0-beta.3] (Not released, is dev branch)
+## [3.0.0-beta.3] (2021-06-21)
 
 ### Changed
 - Replaced all bare except:

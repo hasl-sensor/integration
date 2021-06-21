@@ -5,6 +5,12 @@ Changelog for HomeAssistant SL Sensor (HASLv3).
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
+## [3.0.0-beta.3] (2021-06-21)
+
+### Changed
+- Replaced all bare except:
+- [#9](https://github.com/hasl-sensor/integration/issues/9) fixed. Implemented skeleton async_migrate_entry
+
 ## [3.0.0-beta.2] (2021-06-14)
 
 ### Fixes
@@ -283,6 +289,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.0.0-beta.3]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.2...3.0.0-beta.3
 [3.0.0-beta.2]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...3.0.0-beta.2
 [3.0.0-beta.1]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...DSorlov:2.2.7
 [2.2.7]: https://github.com/DSorlov/hasl-platform/compare/2.2.6...2.2.7

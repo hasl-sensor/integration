@@ -45,7 +45,7 @@ def async_register(
         register.domain = DOMAIN
         register.async_register_info(system_health_info, "/config/integrations")
         logger.debug("[system_health_register] System health registration succeeded")
-    except:
+    except Exception as e:
         logger.error("[system_health_register] System health registration failed")
 
 
@@ -66,7 +66,7 @@ async def system_health_info(hass):
         }
         logger.debug("[system_health_info] Information gather succeeded")
         return statusObject
-    except:
+    except Exception as e:
         logger.debug("[system_health_info] Information gather Failed")
         return {
             "Core Version": HASL_VERSION,

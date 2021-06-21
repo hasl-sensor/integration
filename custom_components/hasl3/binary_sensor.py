@@ -48,14 +48,14 @@ async def setup_hasl_sensor(hass,config):
                         try:
                             sensors.append(HASLTrafficProblemSensor(hass,config,sensortype))
                             logger.debug("[setup_binary_sensor] Sensor setup completed successfully")
-                        except:
+                        except Exception as e:
                             logger.debug("[setup_binary_sensor] Sensor setup failed")
 
             logger.debug("[setup_binary_sensor] Force processing problem sensors..")
             try:
                 await hass.data[DOMAIN]["worker"].process_tl2()
                 logger.debug("[setup_binary_sensor] Force processing completed successfully")
-            except:
+            except Exception as e:
                 logger.debug("[setup_binary_sensor] Force processing failed")
 
 
@@ -96,11 +96,11 @@ class HASLTrafficProblemSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor,STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
+                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'),self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")
-                    except:
+                    except Exception as e:
                         logger.debug("[async_update] Error occured during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
@@ -187,9 +187,9 @@ class HASLTrafficProblemSensor(HASLDevice):
             val['attribution'] = self._sensordata["attribution"]
             val['status_text'] = self._sensordata["data"][self._sensortype]["status"]
             val['status_icon'] = self._sensordata["data"][self._sensortype]["status_icon"]
-            val['events'] = self._sensordata["data"][self._sensortype]["events"]        
+            val['events'] = self._sensordata["data"][self._sensortype]["events"] 
             val['last_updated'] = self._sensordata["last_updated"]
-        except:
+        except Exception as e:
             val['error'] = "NoDataYet"
             logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
 

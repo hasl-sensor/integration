@@ -472,8 +472,8 @@ class HASLDepartureSensor(HASLDevice):
 
         try:
             departures = self._sensordata["data"]
-            direction_filtered = list(filter(self.filter_direction, departures))
-            lines_filtered = list(filter(self.filter_lines, direction_filtered))
+            dirs_filtered = list(filter(self.filter_direction, departures))
+            lines_filtered = list(filter(self.filter_lines, dirs_filtered))
 
             val['attribution'] = self._sensordata["attribution"]
             val['departures'] = lines_filtered

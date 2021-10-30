@@ -470,11 +470,14 @@ class HASLDepartureSensor(HASLDevice):
         val['scan_interval'] = self._scan_interval
         val['refresh_enabled'] = self._worker.checksensorstate(self._enabled_sensor,STATE_ON)
 
-        try:
-            departures = self._sensordata["data"]
-            dirs_filtered = list(filter(self.filter_direction, departures))
-            lines_filtered = list(filter(self.filter_lines, dirs_filtered))
+        if val['api_result'] != "Ok":
+            return val
 
+        departures = self._sensordata["data"]
+        direction_filtered = list(filter(self.filter_direction, departures))
+        lines_filtered = list(filter(self.filter_lines, direction_filtered))
+
+        try:
             val['attribution'] = self._sensordata["attribution"]
             val['departures'] = lines_filtered
             val['deviations'] = self._sensordata["deviations"]

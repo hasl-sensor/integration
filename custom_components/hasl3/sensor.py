@@ -545,7 +545,11 @@ class HASLDeviationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            return len(self._sensordata["data"])
+            if self._sensordata["data"]:
+                return len(self._sensordata["data"])
+            else:
+                return 'Unknown'
+
 
     @property
     def icon(self):
@@ -640,7 +644,10 @@ class HASLVehicleLocationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            return len(self._sensordata["data"])
+            if self._sensordata["data"]:
+                return len(self._sensordata["data"])
+            else:
+                return 'Unknown'
 
     @property
     def icon(self):

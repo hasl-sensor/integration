@@ -1,7 +1,7 @@
 ![maintained](https://img.shields.io/maintenance/yes/2021.svg)
 [![hacs_badge](https://img.shields.io/badge/hacs-default-green.svg)](https://github.com/custom-components/hacs)
-[![ha_version](https://img.shields.io/badge/home%20assistant-0.98%2B-green.svg)](https://www.home-assistant.io)
-![version](https://img.shields.io/badge/version-3.0.0_beta.4-lightgrey.svg)a
+[![ha_version](https://img.shields.io/badge/home%20assistant-2021.12%2B-green.svg)](https://www.home-assistant.io)
+![version](https://img.shields.io/badge/version-3.0.0_beta.4-lightgrey.svg)
 ![stability-alpha](https://img.shields.io/badge/stability-beta-lightgrey.svg)
 [![maintainer](https://img.shields.io/badge/maintainer-dsorlov-blue.svg)](https://github.com/DSorlov)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -9,11 +9,9 @@
 Home Assistant SL Integration (HASLv3)
 ======================================
 
-This is a integration to provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)).
+This is a updated integration of HASL. It like its predecessor provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). This integration beeing updated also to use the new API from SL. The legacy version (HASL) will NOT be upgraded to use the new API.
 
-This integration is prepared for the new API that will be released from SL during 2021 (preliminary date). The legacy version (HASL) will NOT be upgraded once this happens.
-
-Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 it will be available once done at the same location, until then this page serves as documentation.
+Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 (this project) it will be available once HASLv3 leaves beta, and then at the same location, until then this page serves as documentation.
 
 ## Install using HACS
 
@@ -25,9 +23,10 @@ You will need to restart Home Assistant to finish the process. Once that is done
 
 Goto Integrations and add HASLv3
 
-## Manual installation (not advised)
+## Manual installation (not advised and not supported)
 
-The integration can be installed manually by copying some files from this repo to your install. Also you will need to create API key and config as outlined in the previous section.
+The integration can be installed manually by copying some files from this repo to your install. Also you will need to create API key and config as outlined in the previous section. 
+
 Note that HASLv3 will not automatically update as newer versions are released so you need to keep track of that yourself. We recomend using HACSv3 as outlined above in the previous section.
 
 Please copy all files fron the `custom_components\hasl3` files into the `<config>/custom_components/hasl3/` directory. You need to restart Home Assistant and reload the GUI to make sure the integration is available.Goto Integrations and add HASLv3.
@@ -36,7 +35,7 @@ where `<config>` is your Home Assistant configuration directory.
 
 ## Legacy version will soon die but not yet..
 
-HASL is still available from https://github.com/DSorlov/hasl-platform and will be for some time to support those who are afraid of progressing and learning new things and for those who prefer the old yaml configuration method and the old sensor architechture. Or atleast to the planned SL API-changes are made. Then it will die.
+HASL is still available from https://github.com/DSorlov/hasl-platform and will be for some time to support those who are afraid of progressing and learning new things and for those who prefer the old yaml configuration method and the old sensor architechture. Or atleast to the planned SL API-changes are made. Then it will die. There have been some updates to HomeAssistant API which will speed this process along also (december 2021). So it is nolonger recomended to use the old HASL version.
 
 ## Visualisation
 

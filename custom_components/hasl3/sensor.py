@@ -255,7 +255,7 @@ class HASLRouteSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         
@@ -436,7 +436,7 @@ class HASLDepartureSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """ Return the sensor attributes ."""
 
         # Initialize the state attributes.
@@ -563,7 +563,7 @@ class HASLDeviationSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """ Return the sensor attributes."""
         
         val = {}
@@ -658,7 +658,7 @@ class HASLVehicleLocationSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         
@@ -762,7 +762,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         return self._scan_interval
         
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         

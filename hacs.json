@@ -3,7 +3,7 @@
     "content_in_root": false,
 	"country": "SE",
     "render_readme": false,
-    "homeassistant": "0.98",
+    "homeassistant": "2021.12",
     "zip_release": false,
 	"domains": ["sensor","binary_sensor"],
 	"iot_class": "cloud_poll"

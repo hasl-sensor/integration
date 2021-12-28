@@ -7,7 +7,6 @@ from .exceptions import *
 from .const import (
     __version__,
     FORDONSPOSITION_URL,
-    TRAFIKLAB_URL,
     SI2_URL,
     TL2_URL,
     RI4_URL,
@@ -39,10 +38,11 @@ class slapi_fp(object):
                 request = await client.get(FORDONSPOSITION_URL.format(vehicletype,
                                                               time.time()),
                                    headers={"User-agent": USER_AGENT},
-                                   allow_redirects=True,
+                                   follow_redirects=True,
                                    timeout=self._timeout)
         except Exception as e:
             error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
+            logger.debug(e)
             logger.debug(error)
             raise error
 
@@ -76,10 +76,11 @@ class slapi(object):
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url,
                                 headers={"User-agent": USER_AGENT},
-                                allow_redirects=True,
+                                follow_redirects=True,
                                 timeout=self._timeout)
         except Exception as e:
             error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
+            logger.debug(e)
             logger.debug(error)
             raise error
 

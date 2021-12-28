@@ -8,6 +8,7 @@ import time
 from datetime import timedelta
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import HomeAssistant, State
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util.dt import now
 
 from .const import (
@@ -17,7 +18,6 @@ from .const import (
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
     DEVICE_GUID,
-    DEVICE_TYPE,
     SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
@@ -182,7 +182,7 @@ class HASLDevice(Entity):
             "manufacturer": DEVICE_MANUFACTURER,
             "model": DEVICE_MODEL,
             "sw_version": HASL_VERSION,
-            "entry_type": DEVICE_TYPE
+            "entry_type": DeviceEntryType.SERVICE
         }
         
 class HASLRouteSensor(HASLDevice):
@@ -255,7 +255,7 @@ class HASLRouteSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         
@@ -436,7 +436,7 @@ class HASLDepartureSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """ Return the sensor attributes ."""
 
         # Initialize the state attributes.
@@ -545,7 +545,11 @@ class HASLDeviationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            return len(self._sensordata["data"])
+            if "data" in self._sensordata:
+                return len(self._sensordata["data"])
+            else:
+                return 'Unknown'
+
 
     @property
     def icon(self):
@@ -563,7 +567,7 @@ class HASLDeviationSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """ Return the sensor attributes."""
         
         val = {}
@@ -640,7 +644,10 @@ class HASLVehicleLocationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            return len(self._sensordata["data"])
+            if "data" in self._sensordata:
+                return len(self._sensordata["data"])
+            else:
+                return 'Unknown'
 
     @property
     def icon(self):
@@ -658,7 +665,7 @@ class HASLVehicleLocationSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         
@@ -762,7 +769,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         return self._scan_interval
         
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         
         val = {}
         

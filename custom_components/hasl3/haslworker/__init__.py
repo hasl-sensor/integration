@@ -102,7 +102,9 @@ class HaslWorker(object):
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
         d2 = datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
-        return abs((d2 - d1).seconds)
+        diff = (d1 - d2).total_seconds()
+        logger.debug(f"[get_minutes_diff] diff {diff}, d1 {d1}, d2 {d2}")
+        return diff
         
     def checksensorstate(self, sensor,state,default=True):
         logger.debug("[check_sensor_state] Entered")          

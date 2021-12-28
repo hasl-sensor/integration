@@ -3,6 +3,7 @@ import logging
 
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import HomeAssistant, State
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util.dt import now
 
 from .const import (
@@ -12,7 +13,6 @@ from .const import (
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
     DEVICE_GUID,
-    DEVICE_TYPE,
     STATE_ON,
     CONF_SENSOR,
     CONF_ANALOG_SENSORS,
@@ -72,7 +72,7 @@ class HASLDevice(Entity):
             "manufacturer": DEVICE_MANUFACTURER,
             "model": DEVICE_MODEL,
             "sw_version": HASL_VERSION,
-            "entry_type": "service"
+            "entry_type": DeviceEntryType.SERVICE
         }
 
 class HASLTrafficProblemSensor(HASLDevice):
@@ -168,7 +168,7 @@ class HASLTrafficProblemSensor(HASLDevice):
         return self._scan_interval
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Attributes."""
         val = {}
         

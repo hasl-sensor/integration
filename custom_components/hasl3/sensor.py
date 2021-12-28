@@ -8,6 +8,7 @@ import time
 from datetime import timedelta
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import HomeAssistant, State
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.util.dt import now
 
 from .const import (
@@ -17,7 +18,6 @@ from .const import (
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
     DEVICE_GUID,
-    DEVICE_TYPE,
     SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
@@ -182,7 +182,7 @@ class HASLDevice(Entity):
             "manufacturer": DEVICE_MANUFACTURER,
             "model": DEVICE_MODEL,
             "sw_version": HASL_VERSION,
-            "entry_type": DEVICE_TYPE
+            "entry_type": DeviceEntryType.SERVICE
         }
         
 class HASLRouteSensor(HASLDevice):
@@ -545,7 +545,7 @@ class HASLDeviationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            if self._sensordata["data"]:
+            if "data" in self._sensordata:
                 return len(self._sensordata["data"])
             else:
                 return 'Unknown'
@@ -644,7 +644,7 @@ class HASLVehicleLocationSensor(HASLDevice):
         if self._sensordata == []:
             return 'Unknown'
         else:
-            if self._sensordata["data"]:
+            if "data" in self._sensordata:
                 return len(self._sensordata["data"])
             else:
                 return 'Unknown'

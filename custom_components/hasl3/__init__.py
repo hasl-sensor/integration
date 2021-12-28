@@ -6,6 +6,7 @@ import asyncio
 from datetime import datetime
 from custom_components.hasl3.haslworker import HaslWorker
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 
@@ -15,8 +16,7 @@ from .const import (
     DEVICE_NAME,
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
-    DEVICE_GUID,
-    DEVICE_TYPE
+    DEVICE_GUID
 )
 
 from custom_components.hasl3.slapi import (
@@ -247,7 +247,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             model=DEVICE_MODEL,
             sw_version=HASL_VERSION,
             manufacturer=DEVICE_MANUFACTURER,
-            entry_type=DEVICE_TYPE
+            entry_type=DeviceEntryType.SERVICE
         )    
         logger.debug("[setup_entry] Created device")
     except Exception as e:

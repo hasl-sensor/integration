@@ -1,4 +1,4 @@
-![maintained](https://img.shields.io/maintenance/yes/2021.svg)
+![maintained](https://img.shields.io/maintenance/yes/2022.svg)
 [![hacs_badge](https://img.shields.io/badge/hacs-default-green.svg)](https://github.com/custom-components/hacs)
 [![ha_version](https://img.shields.io/badge/home%20assistant-2021.12%2B-green.svg)](https://www.home-assistant.io)
 ![version](https://img.shields.io/badge/version-3.0.0_beta.4-lightgrey.svg)

@@ -1,45 +1,52 @@
 ![maintained](https://img.shields.io/maintenance/yes/2022.svg)
 [![hacs_badge](https://img.shields.io/badge/hacs-default-green.svg)](https://github.com/custom-components/hacs)
 [![ha_version](https://img.shields.io/badge/home%20assistant-2021.12%2B-green.svg)](https://www.home-assistant.io)
-![version](https://img.shields.io/badge/version-3.0.0_beta.4-lightgrey.svg)
-![stability-alpha](https://img.shields.io/badge/stability-beta-lightgrey.svg)
+![version](https://img.shields.io/badge/version-3.0.0-green.svg)
+![stability-alpha](https://img.shields.io/badge/stability-stable-green.svg)
 [![maintainer](https://img.shields.io/badge/maintainer-dsorlov-blue.svg)](https://github.com/DSorlov)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Home Assistant SL Integration (HASLv3)
-======================================
+Home Assistant SL Integration (HASL)
+====================================
 
-This is a updated integration of HASL. It like its predecessor provide multiple sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). This integration beeing updated also to use the new API from SL. The legacy version (HASL) will NOT be upgraded to use the new API.
+This is an Home Assistant integration providing sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring using the SL official APIs. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). This integration supports modern configuration and are beeing updated also to use the newest APIs from SL.
 
-Documentation is available for HASL at http://hasl.sorlov.com, for HASLv3 (this project) it will be available once HASLv3 leaves beta, and then at the same location, until then this page serves as documentation.
+Documentation is available for HASL at http://hasl.sorlov.com.
 
 ## Install using HACS
 
-First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want are ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
+First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account.
 
-Then go into HACS and search for HASLv3 under the Integrations headline (HASL is the legacy version, see below).
+They provide multiple APIs, the ones you want is
+1. ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4)
+2. ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2)
 
-You will need to restart Home Assistant to finish the process. Once that is done reload your GUI (caching issues preventing the integration to be shown).
+Optionally you can also register for
+1. ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors.
 
-Goto Integrations and add HASLv3
+If you haven't already you must have [HACS installed](https://hacs.xyz/docs/setup/download).
+
+Go into HACS and search for HASL under the Integrations headline.
+
+You will need to restart Home Assistant to finish the process.
+
+Once that is done reload your GUI (caching issues preventing the integration to be shown).
+
+Goto Integrations and add HASL integrations.
+
+Location IDs can be found using [SL Platsuppslag v1](https://developer.trafiklab.se/api/sl-platsuppslag/konsol)
 
 ## Manual installation (not advised and not supported)
 
 The integration can be installed manually by copying some files from this repo to your install. Also you will need to create API key and config as outlined in the previous section. 
 
-Note that HASLv3 will not automatically update as newer versions are released so you need to keep track of that yourself. We recomend using HACSv3 as outlined above in the previous section.
+Note that HASL will not automatically update as newer versions are released so you need to keep track of that yourself. We recomend using HACS as outlined above in the previous section.
 
-Please copy all files fron the `custom_components\hasl3` files into the `<config>/custom_components/hasl3/` directory. You need to restart Home Assistant and reload the GUI to make sure the integration is available.Goto Integrations and add HASLv3.
+Please copy all files fron the `custom_components\hasl3` files into the `<config>/custom_components/hasl3/` directory. You need to restart Home Assistant and reload the GUI to make sure the integration is available. Goto Integrations and add HASL.
 
 where `<config>` is your Home Assistant configuration directory.
 
-## Legacy version will soon die but not yet..
-
-HASL is still available from https://github.com/DSorlov/hasl-platform and will be for some time to support those who are afraid of progressing and learning new things and for those who prefer the old yaml configuration method and the old sensor architechture. Or atleast to the planned SL API-changes are made. Then it will die. There have been some updates to HomeAssistant API which will speed this process along also (december 2021). So it is nolonger recomended to use the old HASL version.
-
 ## Visualisation
-
-None of the existing lovelace cards have been tested with HASLv3. It will be updated as soon as time permits.
 
 The sensors should be able to be used multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
 
@@ -47,7 +54,7 @@ The sensors should be able to be used multiple cards in hasl-cards ([departure-c
 
 ## Sensors
 
-One objective during rewrite have been to not touch the existing sensors so much to make sure it is compatible as far as possible. This table also contains differances between v2.x (Legacy) and HASLv3.
+One objective during development have been to not touch the existing sensors so much to make sure it is compatible as far as possible with the older versions. This table also contains differances between v2.x (Legacy) and current release.
 
 | HASL | HASLv3 | Sensor Name | Description | Notes |
 | -- | -- | -- | -- | -- |
@@ -59,7 +66,7 @@ One objective during rewrite have been to not touch the existing sensors so much
 
 ## Services and events
 
-HASLv3 implements some services that can be useful for accessing data and using for automations or whatnot. Anyway. There are five services that can be used. They return data by triggering an event on the `hasl3_response` topic.
+HASL implements some services that can be useful for accessing data and using for automations or whatnot. Anyway; there are five services that can be used. They return data by triggering an event on the `hasl3_response` topic.
 
 - `dump_cache` No arguments. Dumps the cache to a file in the Home Assistant configuration directory. Returns the filename of the created file in an event.
 - `get_cache` No arguments. Returns the cache of the created file in an event.
@@ -69,7 +76,7 @@ HASLv3 implements some services that can be useful for accessing data and using 
 
 ## Debugging and logging
 
-HASLv3 is using the standard logging facilities in Home Assistant. There is some logging of normal operations but it have been built to be as quiet as possible. Keys and APIs will mostly just log a failure to debug and retry next time. Such things do occur from time to time due to API or just Internet. However setup and other more defining actions are logged as errors to make sure you see them. However you can tweak logging:
+HASL is using the standard logging facilities in Home Assistant. There is some logging of normal operations but it have been built to be as quiet as possible. Keys and APIs will mostly just log a failure to debug and retry next time. Such things do occur from time to time due to API or just Internet. However setup and other more defining actions are logged as errors to make sure you see them. However you can tweak logging:
 
 ````
 logger:

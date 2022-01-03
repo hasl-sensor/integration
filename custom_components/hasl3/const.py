@@ -6,7 +6,7 @@ from homeassistant.const import (
     STATE_OFF
 )
 
-HASL_VERSION = "3.0.0-beta.4"
+HASL_VERSION = "3.0.0"
 DOMAIN = "hasl3"
 NAME = "SL Integration (HASL)"
 
@@ -14,7 +14,6 @@ DEVICE_NAME = "SL API Communications Device"
 DEVICE_MANUFACTURER = "hasl.sorlov.com"
 DEVICE_MODEL = f"slapi-v{SLAPI_VERSION}"
 DEVICE_GUID = "10ba5386-5fad-49c6-8f03-c7a047cd5aa5-6a618956-520c-41d2-9a10-6d7e7353c7f5"
-DEVICE_TYPE = "service"
 
 SENSOR_STANDARD = 'Departures'
 SENSOR_STATUS = 'Traffic Status'

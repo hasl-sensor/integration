@@ -1,9 +1,14 @@
 ﻿# ha-sensor-sl
 
-Changelog for HomeAssistant SL Sensor (HASLv3).
+Changelog for HomeAssistant SL Sensor (HASL).
 
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
+
+## [3.0.0] (2022-01-03)
+
+Official first release of version 3 branch.
+This also means that version 2 and older is now deprecated.
 
 ## [3.0.0-beta.4] (2021-12-28)
 
@@ -14,7 +19,7 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 - Fixed errors in SLAPI causing requests to fail
 - Fixed broken data validation on some sensor data types
 
-### Changed (summarized)
+### Changes
 - Raised the required HA version to 2021.12
 
 ## [3.0.0-beta.3] (2021-06-21)
@@ -301,6 +306,8 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.0.0]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.4...3.0.0
+[3.0.0-beta.4]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.3...3.0.0-beta.4
 [3.0.0-beta.3]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.2...3.0.0-beta.3
 [3.0.0-beta.2]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...3.0.0-beta.2
 [3.0.0-beta.1]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.1...DSorlov:2.2.7

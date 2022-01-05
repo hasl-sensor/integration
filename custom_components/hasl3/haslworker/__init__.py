@@ -197,12 +197,29 @@ class HaslWorker(object):
                 try:
 
                     apidata = {}
-                    if "," in positions[0] or "," in positions[1]:
+
+                    srcLocID = ''
+                    dstLocID = ''
+                    srcLocLat = ''
+                    srcLocLng = ''
+                    dstLocLat = ''
+                    dstLocLng = ''
+
+                    if "," in positions[0]:
                         srcLoc = positions[0].split(',')
-                        dstLoc = positions[1].split(',')
-                        apidata = await api.request('', '', srcLoc[0], srcLoc[1], dstLoc[0], dstLoc[1])                             
+                        srcLocLat = srcLoc[0]
+                        srcLocLng = srcLoc[1]
                     else:
-                        apidata = await api.request(positions[0], positions[1], '', '', '', '')                             
+                        srcLocID = positions[0]
+
+                    if "," in positions[1]:
+                        dstLoc = positions[1].split(',')
+                        dstLocLat = dstLoc[0]
+                        dstLocLng = dstLoc[1]
+                    else:
+                        dstLocID = positions[0]
+
+                    apidata = await api.request(srcLocID, dstLocID, srcLocLat, srcLocLng, dstLocLat, dstLocLng)                             
                     newdata['trips'] = []
                     
                     #Parse every trip

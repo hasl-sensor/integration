@@ -416,7 +416,7 @@ class HASLDepartureSensor(HASLDevice):
         return departure["direction"] == self._direction
 
     def filter_lines(self, departure):
-        if self._lines == []:
+        if not self._lines or self._lines == []:
             return True
         return departure["line"] in self._lines
 
@@ -474,12 +474,13 @@ class HASLDepartureSensor(HASLDevice):
             return val
 
         departures = self._sensordata["data"]
-        direction_filtered = list(filter(self.filter_direction, departures))
-        lines_filtered = list(filter(self.filter_lines, direction_filtered))
+        departures = list(filter(self.filter_direction, departures))
+        departures = list(filter(self.filter_lines, departures))
 
         try:
             val['attribution'] = self._sensordata["attribution"]
-            val['departures'] = lines_filtered
+            val['departures'] = departures
+            val['unfiltered'] = self._sensordata["data"]
             val['deviations'] = self._sensordata["deviations"]
             val['last_refresh'] = self._sensordata["last_updated"]
             val['next_departure_minutes'] = expected_minutes

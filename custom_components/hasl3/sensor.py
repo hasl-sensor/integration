@@ -480,7 +480,6 @@ class HASLDepartureSensor(HASLDevice):
         try:
             val['attribution'] = self._sensordata["attribution"]
             val['departures'] = departures
-            val['unfiltered'] = self._sensordata["data"]
             val['deviations'] = self._sensordata["deviations"]
             val['last_refresh'] = self._sensordata["last_updated"]
             val['next_departure_minutes'] = expected_minutes

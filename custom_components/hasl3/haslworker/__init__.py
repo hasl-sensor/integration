@@ -143,7 +143,7 @@ class HaslWorker(object):
             self.data.rp3keys[key]["trips"] = listvalue
         else:
             logger.debug("[assert_rp3] Amending to trip key")
-            self.data.rp3keys[key]["trips"] = f"{currentvalue},{listvalue}"
+            self.data.rp3keys[key]["trips"] = f"{currentvalue}|{listvalue}"
 
         if not listvalue in self.data.rp3:
             logger.debug("[assert_rp3] Creating default values")
@@ -189,13 +189,20 @@ class HaslWorker(object):
             logger.debug(f"[process_rp3] Processing key {rp3key}")
             rp3data = self.data.rp3keys[rp3key]
             api = slapi_rp3(rp3key)
-            for tripname in ','.join(set(rp3data["trips"].split(','))).split(','):
+            for tripname in '|'.join(set(rp3data["trips"].split('|'))).split('|'):
                 logger.debug(f"[process_rp3] Processing trip {tripname}")
                 newdata = self.data.rp3[tripname]
                 positions = tripname.split('-')
                 
                 try:
-                    apidata = await api.request(positions[0], positions[1], '', '', '', '')                             
+
+                    apidata = {}
+                    if "," in positions[0] or "," in positions[1]:
+                        srcLoc = positions[0].split(',')
+                        dstLoc = positions[1].split(',')
+                        apidata = await api.request('', '', srcLoc[0], srcLoc[1], dstLoc[0], dstLoc[1])                             
+                    else:
+                        apidata = await api.request(positions[0], positions[1], '', '', '', '')                             
                     newdata['trips'] = []
                     
                     #Parse every trip
@@ -232,7 +239,7 @@ class HaslWorker(object):
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"                        
                             newtrip['legs'].append(newleg)
                             
-                        #Make some shortcuts for data    
+                        #Make some shortcuts for data
                         newtrip['first_leg'] = newtrip['legs'][0]['name']
                         newtrip['time'] = newtrip['legs'][0]['time']
                         newtrip['price'] = newtrip['fares'][0]['price']
@@ -241,11 +248,28 @@ class HaslWorker(object):
                         newdata['trips'].append(newtrip)
                     
                     #Add shortcuts to info in the first trip if it exists
-                    newdata['transfers'] = newdata['trips'][0]['transfers'] or 0
+                    firstLegFirstTrip = next((x for x in newdata['trips'][0]['legs'] if x["category"] != "WALK"), [])
+                    lastLegLastTrip = next((x for x in reversed(newdata['trips'][0]['legs']) if x["category"] != "WALK"), [])
+                    newdata['transfers'] = sum(p["category"] != "WALK" for p in newdata['trips'][0]['legs'])-1 or 0
                     newdata['price'] = newdata['trips'][0]['price'] or ''
                     newdata['time'] = newdata['trips'][0]['time'] or ''
                     newdata['duration'] = newdata['trips'][0]['duration'] or ''
-                    newdata['first_leg'] = newdata['trips'][0]['first_leg'] or ''
+                    newdata['from'] = newdata['trips'][0]['legs'][0]['from'] or ''
+                    newdata['to'] = newdata['trips'][0]['legs'][len(newdata['trips'][0]['legs'])-1]['to'] or ''
+                    newdata['first_leg'] = firstLegFirstTrip["name"] or ''
+                    newdata['first_line'] = firstLegFirstTrip["line"] or ''
+                    newdata['first_direction'] = firstLegFirstTrip["direction"] or ''
+                    newdata['first_category'] = firstLegFirstTrip["category"] or ''
+                    newdata['first_time'] = firstLegFirstTrip["time"] or ''
+                    newdata['first_from'] = firstLegFirstTrip["from"] or ''
+                    newdata['first_to'] = firstLegFirstTrip["to"] or ''
+                    newdata['last_leg'] = lastLegLastTrip["name"] or ''
+                    newdata['last_line'] = lastLegLastTrip["line"] or ''
+                    newdata['last_direction'] = lastLegLastTrip["direction"] or ''
+                    newdata['last_category'] = lastLegLastTrip["category"] or ''
+                    newdata['last_time'] = lastLegLastTrip["time"] or ''
+                    newdata['last_from'] = lastLegLastTrip["from"] or ''
+                    newdata['last_to'] = lastLegLastTrip["to"] or ''
                     
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')

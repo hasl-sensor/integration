@@ -2,6 +2,7 @@ import logging
 import jsonpickle
 import isodate
 import time
+import sys
 
 from datetime import datetime, timedelta
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
@@ -143,7 +144,7 @@ class HaslWorker(object):
             self.data.rp3keys[key]["trips"] = listvalue
         else:
             logger.debug("[assert_rp3] Amending to trip key")
-            self.data.rp3keys[key]["trips"] = f"{currentvalue}|{listvalue}"
+            self.data.rp3keys[key]["trips"] = f"{currentvalue},{listvalue}"
 
         if not listvalue in self.data.rp3:
             logger.debug("[assert_rp3] Creating default values")
@@ -189,57 +190,84 @@ class HaslWorker(object):
             logger.debug(f"[process_rp3] Processing key {rp3key}")
             rp3data = self.data.rp3keys[rp3key]
             api = slapi_rp3(rp3key)
-            for tripname in '|'.join(set(rp3data["trips"].split('|'))).split('|'):
+            for tripname in ','.join(set(rp3data["trips"].split(','))).split(','):
                 logger.debug(f"[process_rp3] Processing trip {tripname}")
                 newdata = self.data.rp3[tripname]
                 positions = tripname.split('-')
                 
                 try:
-
-                    apidata = {}
-
-                    srcLocID = ''
-                    dstLocID = ''
-                    srcLocLat = ''
-                    srcLocLng = ''
-                    dstLocLat = ''
-                    dstLocLng = ''
-
-                    if "," in positions[0]:
-                        srcLoc = positions[0].split(',')
-                        srcLocLat = srcLoc[0]
-                        srcLocLng = srcLoc[1]
-                    else:
-                        srcLocID = positions[0]
-
-                    if "," in positions[1]:
-                        dstLoc = positions[1].split(',')
-                        dstLocLat = dstLoc[0]
-                        dstLocLng = dstLoc[1]
-                    else:
-                        dstLocID = positions[0]
-
-                    apidata = await api.request(srcLocID, dstLocID, srcLocLat, srcLocLng, dstLocLat, dstLocLng)                             
+                    apidata = await api.request(positions[0], positions[1], '', '', '', '')                             
                     newdata['trips'] = []
                     
                     #Parse every trip
                     for trip in apidata["Trip"]:
+                        if not trip:
+                            continue
+
                         newtrip = {
                             'fares': [],
                             'legs': []
                         }
                                     
                         # Loop all fares and add
-                        for fare in trip['TariffResult']['fareSetItem'][0]['fareItem']:
-                            newfare = {}
-                            newfare['name'] = fare['name']
-                            newfare['desc'] = fare['desc']
-                            newfare['price'] = int(fare['price'])/100
-                            newtrip['fares'].append(newfare)
+                        if trip and trip.get('TariffResult', {}).get('fareSetItem'):
+                            for fare in trip['TariffResult']['fareSetItem'][0]['fareItem']:
+                                newfare = {}
+                                newfare['name'] = fare['name']
+                                newfare['desc'] = fare['desc']
+                                newfare['price'] = int(fare['price'])/100
+                                newtrip['fares'].append(newfare)
                         
                         # Add legs to trips
                         for leg in trip['LegList']['Leg']:
-                            newleg = {}
+                            newleg = {'origin': {}, 'destination': {}, 'messages': []}
+                            
+                            newleg['origin']['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
+                            if leg['Origin'].get('rtDate') and leg['Origin'].get('rtTime'):
+                                newleg['origin']['real_time'] = f"{leg['Origin']['rtDate']} {leg['Origin']['rtTime']}"
+                            else:
+                                newleg['origin']['real_time'] = None
+                            newleg['origin']['name'] = leg['Origin']['name']
+                            newleg['origin']['type'] = leg['Origin']['type']
+                            newleg['origin']['lon'] = leg['Origin']['lon']
+                            newleg['origin']['lat'] = leg['Origin']['lat']
+                            newleg['origin']['prognosis_type'] = leg['Origin'].get('prognosisType')
+                            newleg['origin']['track'] = leg['Origin'].get('track')
+                            newleg['origin']['real_track'] = leg['Origin'].get('rtTrack')
+
+                            newleg['destination']['time'] = f"{leg['Destination']['date']} {leg['Destination']['time']}"
+                            if leg['Destination'].get('rtDate') and leg['Destination'].get('rtTime'):
+                                newleg['destination']['real_time'] = f"{leg['Destination']['rtDate']} {leg['Destination']['rtTime']}"
+                            else:
+                                newleg['destination']['real_time'] = None
+                            newleg['destination']['name'] = leg['Destination']['name']
+                            newleg['destination']['type'] = leg['Destination']['type']
+                            newleg['destination']['lon'] = leg['Destination']['lon']
+                            newleg['destination']['lat'] = leg['Destination']['lat']
+                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')
+                            newleg['destination']['track'] = leg['Destination'].get('track')
+                            newleg['destination']['real_track'] = leg['Destination'].get('rtTrack')
+                            
+                            if leg.get('Messages', {}).get('Message'):
+                                for _message in leg['Messages']['Message']:
+                                    message = {}
+                                    message['head'] = _message.get('head', '')
+                                    message['text'] = _message.get('text', '')
+                                    message['category'] = _message.get('category')
+                                    message['priority'] = _message.get('priority')
+                                    message['active'] = _message.get('act')
+
+                                    if _message.get('sDate') and _message.get('sTime'):
+                                        message['start_time'] = f"{_message['sDate']} {_message['sTime']}"
+                                    else:
+                                        message['start_time'] = None
+                                    
+                                    if _message.get('eDate') and _message.get('eTime'):
+                                        message['end_time'] = f"{_message['eDate']} {_message['eTime']}"
+                                    else:
+                                        message['end_time'] = None
+                                    newleg['messages'].append(message)
+
                             #Walking is done by humans. And robots. Robots are scary.
                             if leg["type"]=="WALK":
                                 newleg['name'] = leg['name']
@@ -249,57 +277,77 @@ class HaslWorker(object):
                             else:
                                 newleg['name'] = leg['Product']['name']
                                 newleg['line'] = leg['Product']['line']                            
+                                newleg['operator_code'] = leg['Product'].get('operatorCode')
+                                newleg['operator'] = leg['Product'].get('operator')               
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
-                            newleg['prognosis'] = leg['prognosisType']
-                            newleg['from'] = leg['Origin']['name']
-                            newleg['to'] = leg['Destination']['name']
-                            newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 
+                            newleg['type'] = leg['type']
+
+                            if leg.get('duration'):
+                                newleg['duration'] = str(isodate.parse_duration(leg['duration']))
+                            else:
+                                newleg['duration'] = None
+                            newleg['distance'] = leg.get('dist')
+
+                            # Parse color
+                            newleg['color'] = None
+                            if newleg['category'] == 'MET':
+                                if newleg['line'] in ('10', '11'):
+                                     newleg['color'] = 'blue'
+                                elif newleg['line'] in ('13', '14'):
+                                     newleg['color'] = 'red'
+                                elif newleg['line'] in ('17', '18', '19'):
+                                     newleg['color'] = 'red'
+                            elif newleg['category'] == 'BUS':
+                                #check if value contains blå
+                                if 'blåbuss' in newleg['name']:
+                                    newleg['color'] = 'blue'
+                                else:
+                                    newleg['color'] = 'red'
 
                             if 'Stops' in leg:
-                                newtrip['Stops']
-                                for stop in leg['Stops']['Stop']:
+                                for stop in leg['Stops'].get('Stop', []):
                                     newleg['stops'].append(stop)
 
+                            #Leaving backwards complatible
+                            newleg['from'] = newleg['origin']['name']
+                            newleg['to'] = newleg['destination']['name']
+                            newleg['time'] = newleg['origin']['time']
                             newtrip['legs'].append(newleg)
                             
                         #Make some shortcuts for data
-                        newtrip['first_leg'] = newtrip['legs'][0]['name']
-                        newtrip['time'] = newtrip['legs'][0]['time']
-                        newtrip['price'] = newtrip['fares'][0]['price']
-                        newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
-                        newtrip['transfers'] = trip['transferCount']
+                        newtrip['transfer_count'] = trip.get('transferCount', 0)
+                        newtrip['transfers'] = newtrip['transfer_count']
+                        if trip.get('duration'):
+                            newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
+                        else:
+                            newtrip['duration'] = None
+                        if len(newtrip['legs']) > 0:
+                            newtrip['first_leg'] = newtrip['legs'][0]['name']
+                            newtrip['time'] = newtrip['legs'][0]['time']
+                            if newtrip.get('fares'):
+                                newtrip['price'] = newtrip['fares'][0]['price']
+                            else:
+                                newtrip['price'] = None
+                            newtrip['operator'] = newtrip['legs'][0]['operator']
                         newdata['trips'].append(newtrip)
                     
                     #Add shortcuts to info in the first trip if it exists
-                    firstLegFirstTrip = next((x for x in newdata['trips'][0]['legs'] if x["category"] != "WALK"), [])
-                    lastLegLastTrip = next((x for x in reversed(newdata['trips'][0]['legs']) if x["category"] != "WALK"), [])
-                    newdata['transfers'] = sum(p["category"] != "WALK" for p in newdata['trips'][0]['legs'])-1 or 0
-                    newdata['price'] = newdata['trips'][0]['price'] or ''
-                    newdata['time'] = newdata['trips'][0]['time'] or ''
-                    newdata['duration'] = newdata['trips'][0]['duration'] or ''
-                    newdata['from'] = newdata['trips'][0]['legs'][0]['from'] or ''
-                    newdata['to'] = newdata['trips'][0]['legs'][len(newdata['trips'][0]['legs'])-1]['to'] or ''
-                    newdata['first_leg'] = firstLegFirstTrip["name"] or ''
-                    newdata['first_line'] = firstLegFirstTrip["line"] or ''
-                    newdata['first_direction'] = firstLegFirstTrip["direction"] or ''
-                    newdata['first_category'] = firstLegFirstTrip["category"] or ''
-                    newdata['first_time'] = firstLegFirstTrip["time"] or ''
-                    newdata['first_from'] = firstLegFirstTrip["from"] or ''
-                    newdata['first_to'] = firstLegFirstTrip["to"] or ''
-                    newdata['last_leg'] = lastLegLastTrip["name"] or ''
-                    newdata['last_line'] = lastLegLastTrip["line"] or ''
-                    newdata['last_direction'] = lastLegLastTrip["direction"] or ''
-                    newdata['last_category'] = lastLegLastTrip["category"] or ''
-                    newdata['last_time'] = lastLegLastTrip["time"] or ''
-                    newdata['last_from'] = lastLegLastTrip["from"] or ''
-                    newdata['last_to'] = lastLegLastTrip["to"] or ''
-                    
-                    newdata['attribution'] = "Stockholms Lokaltrafik"
+                    if len(newdata['trips']) > 0:
+                        logger.debug(f"[process_rp3] inside trips")
+                        newdata['transfers'] = newdata['trips'][0]['transfer_count'] or 0
+                        newdata['price'] = newdata['trips'][0]['price'] or ''
+                        newdata['time'] = newdata['trips'][0]['time'] or ''
+                        newdata['duration'] = newdata['trips'][0]['duration'] or ''
+                        newdata['first_leg'] = newdata['trips'][0]['first_leg'] or ''
+                        newdata['attribution'] = newdata['trips'][0]['operator'] or ''
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                 except Exception as e:
-                    logger.debug(f"[process_rp3] Error occured: {str(e)}")
+                    exception_type, exception_object, exception_traceback = sys.exc_info()
+                    filename = exception_traceback.tb_frame.f_code.co_filename
+                    line_number = exception_traceback.tb_lineno
+                    logger.debug(f"[process_rp3] Error occured: {filename} #{str(line_number)} str({exception_type}) {str(e)}")
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
             

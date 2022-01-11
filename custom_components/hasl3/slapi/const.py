@@ -14,6 +14,6 @@ PU1_URL = TRAFIKLAB_URL + 'typeahead.json?key={}&searchstring={}' \
 RP3_URL = TRAFIKLAB_URL + 'TravelplannerV3_1/trip.json?key={}&originExtId={}' \
                           '&destExtId={}&originCoordLat={}' \
                           '&originCoordLong={}&destCoordLat={}' \
-                          '&destCoordLong={}'
+                          '&destCoordLong={}&Passlist=1'
 
 USER_AGENT = "hasl-slapi/"+VERSION

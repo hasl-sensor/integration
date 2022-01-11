@@ -251,9 +251,16 @@ class HaslWorker(object):
                                 newleg['line'] = leg['Product']['line']                            
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
+                            newleg['prognosis'] = leg['prognosisType']
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
-                            newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"                        
+                            newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 
+
+                            if 'Stops' in leg:
+                                newtrip['Stops']
+                                for stop in leg['Stops']['Stop']:
+                                    newleg['stops'].append(stop)
+
                             newtrip['legs'].append(newleg)
                             
                         #Make some shortcuts for data

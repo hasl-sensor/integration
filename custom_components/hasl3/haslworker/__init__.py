@@ -2,6 +2,7 @@ import logging
 import jsonpickle
 import isodate
 import time
+import sys
 
 from datetime import datetime, timedelta
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
@@ -239,7 +240,54 @@ class HaslWorker(object):
                         
                         # Add legs to trips
                         for leg in trip['LegList']['Leg']:
-                            newleg = {}
+                            newleg = {'origin': {}, 'destination': {}, 'messages': []}
+                            # New Format
+                            newleg['origin']['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
+                            if leg['Origin'].get('rtDate') and leg['Origin'].get('rtTime'):
+                                newleg['origin']['real_time'] = f"{leg['Origin']['rtDate']} {leg['Origin']['rtTime']}"
+                            else:
+                                newleg['origin']['real_time'] = None
+                            newleg['origin']['name'] = leg['Origin']['name']
+                            newleg['origin']['type'] = leg['Origin']['type']
+                            newleg['origin']['lon'] = leg['Origin']['lon']
+                            newleg['origin']['lat'] = leg['Origin']['lat']
+                            newleg['origin']['prognosis_type'] = leg['Origin'].get('prognosisType')
+                            newleg['origin']['track'] = leg['Origin'].get('track')
+                            newleg['origin']['real_track'] = leg['Origin'].get('rtTrack')
+
+                            newleg['destination']['time'] = f"{leg['Destination']['date']} {leg['Destination']['time']}"
+                            if leg['Destination'].get('rtDate') and leg['Destination'].get('rtTime'):
+                                newleg['destination']['real_time'] = f"{leg['Destination']['rtDate']} {leg['Destination']['rtTime']}"
+                            else:
+                                newleg['destination']['real_time'] = None
+                            newleg['destination']['name'] = leg['Destination']['name']
+                            newleg['destination']['type'] = leg['Destination']['type']
+                            newleg['destination']['lon'] = leg['Destination']['lon']
+                            newleg['destination']['lat'] = leg['Destination']['lat']
+                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')
+                            newleg['destination']['track'] = leg['Destination'].get('track')
+                            newleg['destination']['real_track'] = leg['Destination'].get('rtTrack')
+                            
+                            if leg.get('Messages', {}).get('Message'):
+                                for _message in leg['Messages']['Message']:
+                                    message = {}
+                                    message['head'] = _message.get('head', '')
+                                    message['text'] = _message.get('text', '')
+                                    message['category'] = _message.get('category')
+                                    message['priority'] = _message.get('priority')
+                                    message['active'] = _message.get('act')
+
+                                    if _message.get('sDate') and _message.get('sTime'):
+                                        message['start_time'] = f"{_message['sDate']} {_message['sTime']}"
+                                    else:
+                                        message['start_time'] = None
+                                    
+                                    if _message.get('eDate') and _message.get('eTime'):
+                                        message['end_time'] = f"{_message['eDate']} {_message['eTime']}"
+                                    else:
+                                        message['end_time'] = None
+                                    newleg['messages'].append(message)                            
+                            
                             #Walking is done by humans. And robots. Robots are scary.
                             if leg["type"]=="WALK":
                                 newleg['name'] = leg['name']
@@ -248,14 +296,39 @@ class HaslWorker(object):
                                 newleg['category'] = 'WALK'
                             else:
                                 newleg['name'] = leg['Product']['name']
-                                newleg['line'] = leg['Product']['line']                            
+                                newleg['line'] = leg['Product']['line']
+                                newleg['operator_code'] = leg['Product'].get('operatorCode')
+                                newleg['operator'] = leg['Product'].get('operator')
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
+                            newleg['type'] = leg['type']
                             newleg['prognosis'] = leg['prognosisType']
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 
 
+                            if leg.get('duration'):
+                                newleg['duration'] = str(isodate.parse_duration(leg['duration']))
+                            else:
+                                newleg['duration'] = None
+                            newleg['distance'] = leg.get('dist')
+
+                            # Parse color
+                            newleg['color'] = None
+                            if newleg['category'] == 'MET':
+                                if newleg['line'] in ('10', '11'):
+                                     newleg['color'] = 'blue'
+                                elif newleg['line'] in ('13', '14'):
+                                     newleg['color'] = 'red'
+                                elif newleg['line'] in ('17', '18', '19'):
+                                     newleg['color'] = 'red'
+                            elif newleg['category'] == 'BUS':
+                                #check if value contains blå
+                                if 'blåbuss' in newleg['name']:
+                                    newleg['color'] = 'blue'
+                                else:
+                                    newleg['color'] = 'red'                            
+                            
                             if 'Stops' in leg:
                                 newtrip['Stops']
                                 for stop in leg['Stops']['Stop']:
@@ -267,7 +340,10 @@ class HaslWorker(object):
                         newtrip['first_leg'] = newtrip['legs'][0]['name']
                         newtrip['time'] = newtrip['legs'][0]['time']
                         newtrip['price'] = newtrip['fares'][0]['price']
-                        newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
+                        if trip.get('duration'):
+                            newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
+                        else:
+                            newtrip['duration'] = None
                         newtrip['transfers'] = trip['transferCount']
                         newdata['trips'].append(newtrip)
                     
@@ -295,11 +371,14 @@ class HaslWorker(object):
                     newdata['last_from'] = lastLegLastTrip["from"] or ''
                     newdata['last_to'] = lastLegLastTrip["to"] or ''
                     
-                    newdata['attribution'] = "Stockholms Lokaltrafik"
+                    newdata['attribution'] = newdata['trips'][0]['operator'] or ''
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                 except Exception as e:
-                    logger.debug(f"[process_rp3] Error occured: {str(e)}")
+                    exception_type, exception_object, exception_traceback = sys.exc_info()
+                    filename = exception_traceback.tb_frame.f_code.co_filename
+                    line_number = exception_traceback.tb_lineno
+                    logger.debug(f"[process_rp3] Error occured: {filename} #{str(line_number)} str({exception_type}) {str(e)}")
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
             

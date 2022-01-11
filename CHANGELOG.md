@@ -5,6 +5,23 @@ Changelog for HomeAssistant SL Sensor (HASL).
 The format is based on [Keep a Changelog][keep-a-changelog]
 <!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
 
+## [3.0.2] (2022-01-11)
+
+### Added
+- Added first and last leg details as attributes for route sensor
+- Added possibility to use longitude,latitude pairs as locations in route sensor
+- Starting address/location is detailed in attributes for route sensor
+- Swedish translation for GUI
+- Added stoplists to results for RP3 for route planner
+- Added prognosisType for each leg and stoplist in haslworker for route planner
+
+### Fixes
+- Fixed broken counter for number of transfers in route sensor
+
+### Changes
+- Combining location id and longitude,latitude pars as locations in route sensor
+- Route sensor total time does include estimated walking time however walking is not shown as first or last leg in route sensor
+
 ## [3.0.1] (2022-01-05)
 
 ### Fixes
@@ -311,6 +328,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.0.2]: https://github.com/hasl-sensor/integration/compare/3.0.1...3.0.2
 [3.0.1]: https://github.com/hasl-sensor/integration/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.4...3.0.0
 [3.0.0-beta.4]: https://github.com/hasl-sensor/integration/compare/3.0.0-beta.3...3.0.0-beta.4

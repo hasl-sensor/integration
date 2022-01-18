@@ -39,7 +39,7 @@ class HASLData(object):
     si2keys = {}
     ri4keys = {}
     fp = {}
-    
+
     def dump(self):
         return {
             'si2keys': self.si2keys,
@@ -48,7 +48,7 @@ class HASLData(object):
             'si2': self.si2,
             'ri4': self.ri4,
             'fp': self.fp
-        }    
+        }
 
 class HASLInstances(object):
     """The instance holder object object"""
@@ -71,7 +71,7 @@ class HASLInstances(object):
             logger.debug(f"Error occured while unregistering listener {str(e)}")
 
     def count(self):
-        return self.instanceCount  
+        return self.instanceCount
 
 class HaslWorker(object):
     """HaslWorker."""
@@ -81,14 +81,14 @@ class HaslWorker(object):
     status = HASLStatus()
     data = HASLData()
     instances = HASLInstances()
-    
+
     @staticmethod
     def init(hass,configuration):
         """Return a initialized HaslWorker object."""
         return HaslWorker()
 
     def debugdump(self, data):
-        logger.debug("[debug_dump] Entered")          
+        logger.debug("[debug_dump] Entered")
 
         try:
             timestring = time.strftime("%Y%m%d%H%M%S")
@@ -96,9 +96,9 @@ class HaslWorker(object):
             jsonFile = open(outputfile, "w")
             jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
             jsonFile.close()
-            logger.debug("[debug_dump] Completed")          
+            logger.debug("[debug_dump] Completed")
         except:
-            logger.debug("[debug_dump] A processing error occured")          
+            logger.debug("[debug_dump] A processing error occured")
 
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
@@ -106,9 +106,9 @@ class HaslWorker(object):
         diff = (d1 - d2).total_seconds()
         logger.debug(f"[get_minutes_diff] diff {diff}, d1 {d1}, d2 {d2}")
         return diff
-        
+
     def checksensorstate(self, sensor,state,default=True):
-        logger.debug("[check_sensor_state] Entered")          
+        logger.debug("[check_sensor_state] Entered")
         if not sensor is None and not sensor == "":
             try:
                 sensor_state = self.hass.states.get(sensor)
@@ -120,10 +120,10 @@ class HaslWorker(object):
                     return False
             except:
                 logger.debug("[check_sensor_state] An error occured, default will be returned")
-                return default          
+                return default
         else:
             logger.debug("[check_sensor_state] No sensor specified, will return default")
-            return default        
+            return default
 
     async def assert_rp3(self, key, source, destination):
         logger.debug("[assert_rp3] Entered")
@@ -137,8 +137,8 @@ class HaslWorker(object):
             }
         else:
             logger.debug("[assert_rp3] Key already present")
-            
-        currentvalue = self.data.rp3keys[key]['trips']    
+
+        currentvalue = self.data.rp3keys[key]['trips']
         if currentvalue=="":
             logger.debug("[assert_rp3] Creating trip key")
             self.data.rp3keys[key]["trips"] = listvalue
@@ -180,12 +180,12 @@ class HaslWorker(object):
         except Exception as e:
             ##TODO LOG EXCEPTION
             return
-        return        
-        
-        
+        return
+
+
     async def process_rp3(self):
         logger.debug("[process_rp3] Entered")
-    
+
         for rp3key in list(self.data.rp3keys):
             logger.debug(f"[process_rp3] Processing key {rp3key}")
             rp3data = self.data.rp3keys[rp3key]
@@ -194,7 +194,7 @@ class HaslWorker(object):
                 logger.debug(f"[process_rp3] Processing trip {tripname}")
                 newdata = self.data.rp3[tripname]
                 positions = tripname.split('-')
-                
+
                 try:
 
                     apidata = {}
@@ -220,16 +220,16 @@ class HaslWorker(object):
                     else:
                         dstLocID = positions[1]
 
-                    apidata = await api.request(srcLocID, dstLocID, srcLocLat, srcLocLng, dstLocLat, dstLocLng)                             
+                    apidata = await api.request(srcLocID, dstLocID, srcLocLat, srcLocLng, dstLocLat, dstLocLng)
                     newdata['trips'] = []
-                    
+
                     #Parse every trip
                     for trip in apidata["Trip"]:
                         newtrip = {
                             'fares': [],
                             'legs': []
                         }
-                                    
+
                         # Loop all fares and add
                         for fare in trip['TariffResult']['fareSetItem'][0]['fareItem']:
                             newfare = {}
@@ -237,7 +237,7 @@ class HaslWorker(object):
                             newfare['desc'] = fare['desc']
                             newfare['price'] = int(fare['price'])/100
                             newtrip['fares'].append(newfare)
-                        
+
                         # Add legs to trips
                         for leg in trip['LegList']['Leg']:
                             newleg = {'origin': {}, 'destination': {}, 'messages': []}
@@ -264,10 +264,9 @@ class HaslWorker(object):
                             newleg['destination']['type'] = leg['Destination']['type']
                             newleg['destination']['lon'] = leg['Destination']['lon']
                             newleg['destination']['lat'] = leg['Destination']['lat']
-                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')
-                            newleg['destination']['track'] = leg['Destination'].get('track')
+                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')                            newleg['destination']['track'] = leg['Destination'].get('track')
                             newleg['destination']['real_track'] = leg['Destination'].get('rtTrack')
-                            
+
                             if leg.get('Messages', {}).get('Message'):
                                 for _message in leg['Messages']['Message']:
                                     message = {}
@@ -281,13 +280,13 @@ class HaslWorker(object):
                                         message['start_time'] = f"{_message['sDate']} {_message['sTime']}"
                                     else:
                                         message['start_time'] = None
-                                    
+
                                     if _message.get('eDate') and _message.get('eTime'):
                                         message['end_time'] = f"{_message['eDate']} {_message['eTime']}"
                                     else:
                                         message['end_time'] = None
-                                    newleg['messages'].append(message)                            
-                            
+                                    newleg['messages'].append(message)
+
                             #Walking is done by humans. And robots. Robots are scary.
                             if leg["type"]=="WALK":
                                 newleg['name'] = leg['name']
@@ -301,11 +300,11 @@ class HaslWorker(object):
                                 newleg['operator'] = leg['Product'].get('operator')
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
-                            newleg['type'] = leg['type']
-                            newleg['prognosis'] = leg['prognosis_type']
-                            newleg['from'] = leg['Origin']['name']
-                            newleg['to'] = leg['Destination']['name']
-                            newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 
+                            newleg['type'] = newleg['origin']['type']
+                            newleg['prognosis'] = newleg['origin']['prognosis_type']
+                            newleg['from'] = newleg['origin']['name']
+                            newleg['to'] = newleg['destination']['name']
+                            newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
 
                             if leg.get('duration'):
                                 newleg['duration'] = str(isodate.parse_duration(leg['duration']))
@@ -327,15 +326,16 @@ class HaslWorker(object):
                                 if 'blåbuss' in newleg['name']:
                                     newleg['color'] = 'blue'
                                 else:
-                                    newleg['color'] = 'red'                            
-                            
-                            if 'Stops' in leg:
-                                newtrip['Stops']
-                                for stop in leg['Stops']['Stop']:
-                                    newleg['stops'].append(stop)
+                                    newleg['color'] = 'red'
+
+                            if leg.get('Stops'):
+                                if leg['Stops'].get('Stop', {}):
+                                    newleg['stops'] = []
+                                    for stop in leg.get('Stops', {}).get('Stop', {}):
+                                        newleg['stops'].append(stop)
 
                             newtrip['legs'].append(newleg)
-                            
+
                         #Make some shortcuts for data
                         newtrip['first_leg'] = newtrip['legs'][0]['name']
                         newtrip['time'] = newtrip['legs'][0]['time']
@@ -346,7 +346,7 @@ class HaslWorker(object):
                             newtrip['duration'] = None
                         newtrip['transfers'] = trip['transferCount']
                         newdata['trips'].append(newtrip)
-                    
+
                     #Add shortcuts to info in the first trip if it exists
                     firstLegFirstTrip = next((x for x in newdata['trips'][0]['legs'] if x["category"] != "WALK"), [])
                     lastLegLastTrip = next((x for x in reversed(newdata['trips'][0]['legs']) if x["category"] != "WALK"), [])
@@ -370,8 +370,8 @@ class HaslWorker(object):
                     newdata['last_time'] = lastLegLastTrip["time"] or ''
                     newdata['last_from'] = lastLegLastTrip["from"] or ''
                     newdata['last_to'] = lastLegLastTrip["to"] or ''
-                    
-                    newdata['attribution'] = newdata['trips'][0]['operator'] or ''
+
+                    newdata['attribution'] = firstLegFirstTrip['operator'] or ''
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                 except Exception as e:
@@ -381,7 +381,7 @@ class HaslWorker(object):
                     logger.debug(f"[process_rp3] Error occured: {filename} #{str(line_number)} str({exception_type}) {str(e)}")
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-            
+
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.rp3[tripname] = newdata
 
@@ -404,13 +404,13 @@ class HaslWorker(object):
             }
         else:
             logger.debug(f"[assert_fp] {traintype} already registered")
-            
+
         logger.debug("[assert_fp] Completed")
         return
-        
+
     async def process_fp(self, notarealarg=None):
         logger.debug("[process_rp3] Entered")
-        
+
         api = slapi_fp()
         for traintype in list(self.data.fp):
             logger.debug(f"[process_rp3] Processing {traintype}")
@@ -426,7 +426,7 @@ class HaslWorker(object):
                 newdata['api_result'] = "Error"
                 newdata['api_error'] = str(e)
                 logger.debug(f"[process_rp3] Error occured for {traintype}: {str(e)}")
-            
+
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.fp[traintype] = newdata
         logger.debug("[process_rp3] Completed")
@@ -437,7 +437,7 @@ class HaslWorker(object):
     async def assert_si2_line(self, key, line):
         await self.assert_si2(key,f"line_{line}","lines",line)
 
-    async def assert_si2(self, key, datakey, listkey, listvalue):   
+    async def assert_si2(self, key, datakey, listkey, listvalue):
         logger.debug("[assert_si2] Entered")
 
         if not key in self.data.si2keys:
@@ -456,7 +456,7 @@ class HaslWorker(object):
         else:
             logger.debug("[assert_si2] Appending to trip key")
             self.data.si2keys[key][listkey] = f"{self.data.si2keys[key][listkey]},{listvalue}"
-            
+
         if not datakey in self.data.si2:
             logger.debug("[assert_si2] Creating default values")
             self.data.si2[datakey] = {
@@ -464,13 +464,13 @@ class HaslWorker(object):
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
-            
+
         logger.debug("[assert_si2] Completed")
         return
-        
+
     async def process_si2(self, notarealarg=None):
         logger.debug("[process_si2] Entered")
-    
+
         for si2key in list(self.data.si2keys):
             logger.debug(f"[process_si2] Processing key {si2key}")
             si2data = self.data.si2keys[si2key]
@@ -482,7 +482,7 @@ class HaslWorker(object):
 
                 try:
                     deviationdata = await api.request(stop,'')
-                    deviationdata = deviationdata['ResponseData']   
+                    deviationdata = deviationdata['ResponseData']
 
                     deviations = []
                     for (idx, value) in enumerate(deviationdata):
@@ -495,21 +495,21 @@ class HaslWorker(object):
                             'sortOrder': value['SortOrder'],
                             })
 
-                    newdata['data'] = sorted(deviations, key=lambda k: k['sortOrder'])      
+                    newdata['data'] = sorted(deviations, key=lambda k: k['sortOrder'])
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                     logger.debug(f"[process_si2] Processing stop {stop} completed")
                 except Exception as e:
                     newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)                
+                    newdata['api_error'] = str(e)
                     logger.debug(f"[process_si2] An error occured during processing of stop {stop}")
 
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"stop_{stop}"] = newdata
                 logger.debug(f"[process_si2] Completed processing of stop {stop}")
-                
+
             for line in ','.join(set(si2data["lines"].split(','))).split(','):
                 logger.debug(f"[process_si2] Processing line {line}")
                 newdata = self.data.si2[f"line_{line}"]
@@ -517,7 +517,7 @@ class HaslWorker(object):
 
                 try:
                     deviationdata = await api.request('',line)
-                    deviationdata = deviationdata['ResponseData']   
+                    deviationdata = deviationdata['ResponseData']
 
                     deviations = []
                     for (idx, value) in enumerate(deviationdata):
@@ -530,14 +530,14 @@ class HaslWorker(object):
                             'sortOrder': value['SortOrder'],
                             })
 
-                    newdata['data'] = sorted(deviations, key=lambda k: k['sortOrder'])      
+                    newdata['data'] = sorted(deviations, key=lambda k: k['sortOrder'])
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                     logger.debug(f"[process_si2] Processing line {line} completed")
                 except Exception as e:
                     newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)                
+                    newdata['api_error'] = str(e)
                     logger.debug(f"[process_si2] An error occured during processing of line {line}")
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
@@ -552,7 +552,7 @@ class HaslWorker(object):
     async def assert_ri4(self, key, stop):
         logger.debug("[assert_ri4] Entered")
         stopkey = str(stop)
-    
+
         if not key in self.data.ri4keys:
             logger.debug("[assert_ri4] Registering key and stop")
             self.data.ri4keys[key] = {
@@ -562,7 +562,7 @@ class HaslWorker(object):
         else:
             logger.debug("[assert_ri4] Adding stop to existing key")
             self.data.ri4keys[key]["stops"] = f"{self.data.ri4keys[key]['stops']},{stopkey}"
-            
+
         if not stop in self.data.ri4:
             logger.debug("[assert_ri4] Creating default data")
             self.data.ri4[stopkey] = {
@@ -570,10 +570,10 @@ class HaslWorker(object):
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending"
             }
-            
+
         logger.debug("[assert_ri4] Completed")
         return
-        
+
     async def process_ri4(self, notarealarg=None):
         logger.debug("[process_ri4] Entered")
 
@@ -593,7 +593,7 @@ class HaslWorker(object):
                 logger.debug(f"[process_ri4] Processing stop {stop}")
                 newdata = self.data.ri4[stop]
                 #TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
-                
+
                 try:
                     departures = []
                     departuredata = await api.request(stop)
@@ -625,7 +625,7 @@ class HaslWorker(object):
                                 'icon': icon,
                                 })
 
-                    newdata['data'] = sorted(departures, key=lambda k: k['time'])      
+                    newdata['data'] = sorted(departures, key=lambda k: k['time'])
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
@@ -634,7 +634,7 @@ class HaslWorker(object):
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
                     logger.debug(f"[process_ri4] Error occured during update {stop}")
-                
+
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.ri4[stop] = newdata
                 logger.debug(f"[process_ri4] Completed stop {stop}")
@@ -663,12 +663,12 @@ class HaslWorker(object):
 
     async def process_tl2(self, notarealarg=None):
         logger.debug("[process_tl2] Entered")
-        
+
         for tl2key in list(self.data.tl2):
             logger.debug(f"[process_tl2] Processing {tl2key}")
-            
+
             newdata = self.data.tl2[tl2key]
-            
+
             statuses = {
                 'EventGood': 'Good',
                 'EventMinor': 'Minor',
@@ -684,11 +684,11 @@ class HaslWorker(object):
                 'EventPlanned': 'mdi:triangle-outline'
             }
 
-            try:         
-        
+            try:
+
                 api = slapi_tl2(tl2key)
                 apidata = await api.request()
-                apidata = apidata['ResponseData']['TrafficTypes']    
+                apidata = apidata['ResponseData']['TrafficTypes']
 
                 responselist = {}
                 for response in apidata:
@@ -698,7 +698,7 @@ class HaslWorker(object):
                         event['Status'] = statuses.get(event['StatusIcon'])
                         event['StatusIcon'] = \
                             statusIcons.get(event['StatusIcon'])
-                    
+
                     responsedata = {
                         'status': statuses.get(response['StatusIcon']),
                         'status_icon': statusIcons.get(response['StatusIcon']),
@@ -716,10 +716,10 @@ class HaslWorker(object):
                 newdata['api_result'] = "Error"
                 newdata['api_error'] = str(e)
                 logger.debug(f"[process_tl2] Update of {tl2key} failed")
-           
+
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.tl2[tl2key] = newdata
             logger.debug(f"[process_tl2] Completed {tl2key}")
-            
+
         logger.debug(f"[process_tl2] Completed")
-        return            
+        return

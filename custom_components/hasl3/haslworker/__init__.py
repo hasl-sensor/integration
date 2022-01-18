@@ -218,7 +218,7 @@ class HaslWorker(object):
                         dstLocLat = dstLoc[0]
                         dstLocLng = dstLoc[1]
                     else:
-                        dstLocID = positions[0]
+                        dstLocID = positions[1]
 
                     apidata = await api.request(srcLocID, dstLocID, srcLocLat, srcLocLng, dstLocLat, dstLocLng)                             
                     newdata['trips'] = []
@@ -302,7 +302,7 @@ class HaslWorker(object):
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
                             newleg['type'] = leg['type']
-                            newleg['prognosis'] = leg['prognosisType']
+                            newleg['prognosis'] = leg['prognosis_type']
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 

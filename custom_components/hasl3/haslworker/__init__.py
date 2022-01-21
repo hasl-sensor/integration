@@ -251,7 +251,7 @@ class HaslWorker(object):
                                 newleg['line'] = leg['Product']['line']                            
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
-                            newleg['prognosis'] = leg['prognosisType']
+                            newleg['prognosis'] = leg['prognosis_type']
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}" 

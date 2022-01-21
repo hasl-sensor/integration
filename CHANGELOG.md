@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ### Fixes
 - Fixed broken counter for number of transfers in route sensor
+- [#26](https://github.com/hasl-sensor/integration/issues/26) version number fixed in hacs.json
+- Fixed broken prognosisType for route sensor (thanks @clearminds)
+- Fixed broken stoplist for route sensor (thanks @clearminds)
 
 ### Changes
 - Combining location id and longitude,latitude pars as locations in route sensor

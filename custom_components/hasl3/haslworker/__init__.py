@@ -264,7 +264,8 @@ class HaslWorker(object):
                             newleg['destination']['type'] = leg['Destination']['type']
                             newleg['destination']['lon'] = leg['Destination']['lon']
                             newleg['destination']['lat'] = leg['Destination']['lat']
-                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')                            newleg['destination']['track'] = leg['Destination'].get('track')
+                            newleg['destination']['prognosis_type'] = leg['Destination'].get('prognosisType')
+                            newleg['destination']['track'] = leg['Destination'].get('track')
                             newleg['destination']['real_track'] = leg['Destination'].get('rtTrack')
 
                             if leg.get('Messages', {}).get('Message'):

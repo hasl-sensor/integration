@@ -301,6 +301,7 @@ class HaslWorker(object):
                                 newleg['operator'] = leg['Product'].get('operator')
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
+                            
                             newleg['type'] = newleg['origin']['type']
                             newleg['prognosis'] = newleg['origin']['prognosis_type']
                             newleg['from'] = newleg['origin']['name']

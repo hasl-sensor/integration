@@ -3,7 +3,6 @@ import jsonpickle
 import time
 import asyncio
 
-from datetime import datetime
 from custom_components.hasl3.haslworker import HaslWorker
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceEntryType
@@ -22,25 +21,24 @@ from .const import (
 from custom_components.hasl3.slapi import (
     slapi_rp3,
     slapi_pu1,
-) 
+)
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
-serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")       
+serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
+
 
 @asyncio.coroutine
 async def async_setup(hass, config):
     """Set up HASL integration"""
     logger.debug("[setup] Entering")
 
-    ##########################################################################################
-    ## SERVICE FUNCTIONS
-    ##########################################################################################
+    # SERVICE FUNCTIONS
     @callback
     async def dump_cache(service):
         serviceLogger.debug("[dump_cache] Entered")
         timestring = time.strftime("%Y%m%d%H%M%S")
         outputfile = hass.config.path(f"hasl_data_{timestring}.json")
-        
+
         serviceLogger.debug(f"[dump_cache] Will dump to {outputfile}")
 
         try:
@@ -121,13 +119,13 @@ async def async_setup(hass, config):
 
         try:
             rp3api = slapi_rp3(api_key)
-            requestResult = await rp3api.request('', '', olat, olon, dlat, dlon)   
+            requestResult = await rp3api.request('', '', olat, olon, dlat, dlon)
             serviceLogger.debug("[find_trip_pos] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos","state": "success", "result": requestResult})
+            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos", "state": "success", "result": requestResult})
             return True
         except Exception as e:
             serviceLogger.debug("[find_trip_pos] Lookup failed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos","state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
@@ -157,19 +155,14 @@ async def async_setup(hass, config):
             serviceLogger.debug("[eventListener] Dispatched to find_trip_id")
             return True
 
-        hass.bus.fire(f"{DOMAIN}_response", {"source": "service", "state": "error", "result": f"No or empty cmd specified"})
+        hass.bus.fire(f"{DOMAIN}_response", {"source": "service", "state": "error", "result": "No or empty cmd specified"})
         serviceLogger.debug("[eventListener] No cmd found")
 
-
-
-    ##########################################################################################
-    ##########################################################################################
-
     try:
-        if not DOMAIN in hass.data:
-            hass.data.setdefault(DOMAIN,{})
+        if DOMAIN not in hass.data:
+            hass.data.setdefault(DOMAIN, {})
 
-        if not "worker" in hass.data[DOMAIN]:
+        if "worker" not in hass.data[DOMAIN]:
             logger.debug("[setup] No worker present")
             worker = HaslWorker()
             worker.hass = hass
@@ -177,9 +170,9 @@ async def async_setup(hass, config):
                 "worker": worker
             }
             logger.debug("[setup] Worker created")
-    except Exception as e:
-            logger.error("[setup] Could not get worker")
-            return False
+    except:
+        logger.error("[setup] Could not get worker")
+        return False
 
     logger.debug("[setup] Registering services")
     try:
@@ -189,19 +182,20 @@ async def async_setup(hass, config):
         hass.services.async_register(DOMAIN, 'find_trip_pos', find_trip_pos)
         hass.services.async_register(DOMAIN, 'find_trip_id', find_trip_id)
         logger.debug("[setup] Service registration completed")
-    except Exception as e:
+    except:
         logger.error("[setup] Service registration failed")
 
     logger.debug("[setup] Registering event listeners")
     try:
         hass.bus.async_listen(f"{DOMAIN}_execute", eventListener)
         logger.debug("[setup] Registering event listeners completed")
-    except Exception as e:
+    except:
         logger.error("[setup] Registering event listeners failed")
 
     hass.data[DOMAIN]["worker"].status.startup_in_progress = False
     logger.debug("[setup] Completed")
     return True
+
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
     logger.debug("[migrate_entry] Entered")
@@ -220,18 +214,17 @@ async def reload_entry(hass, entry):
     try:
         await async_unload_entry(hass, entry)
         logger.debug("[reload_entry] Unload succeeded")
-    except Exception as e:
+    except:
         logger.error("[reload_entry] Unload failed")
 
     try:
         await async_setup_entry(hass, entry)
         logger.debug("[reload_entry] Setup succeeded")
-    except Exception as e:
+    except:
         logger.error("[reload_entry] Setup failed")
 
     logger.debug("[reload_entry] Completed")
 
-    
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up HASL entries"""
@@ -248,9 +241,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             sw_version=HASL_VERSION,
             manufacturer=DEVICE_MANUFACTURER,
             entry_type=DeviceEntryType.SERVICE
-        )    
+        )
         logger.debug("[setup_entry] Created device")
-    except Exception as e:
+    except:
         logger.error("[setup_entry] Failed to create device")
         return False
 
@@ -258,14 +251,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, "sensor"))
         hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, "binary_sensor"))
         logger.debug("[setup_entry] Forward entry setup succeeded")
-    except Exception as e:
+    except:
         logger.error("[setup_entry] Forward entry setup failed")
         return False
 
     updater = None
     try:
         updater = entry.add_update_listener(reload_entry)
-    except Exception as e:
+    except:
         logger.error("[setup_entry] Update listener setup failed")
         return False
 
@@ -274,7 +267,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         logger.debug("[setup_entry] Worker registration succeeded")
     except Exception as e:
         logger.error(f"[setup_entry] Worker registration failed: {str(e)}")
-        return False        
+        return False
 
     logger.debug("[setup_entry] Completed")
 
@@ -289,18 +282,16 @@ async def async_unload_entry(hass, entry):
 
         hass.async_add_job(hass.config_entries.async_forward_entry_unload(entry, "sensor"))
         hass.async_add_job(hass.config_entries.async_forward_entry_unload(entry, "binary_sensor"))
-    except Exception as e:
+    except:
         logger.error("[unload_entry] Forward entry unload failed")
         return False
 
     try:
         hass.data[DOMAIN]["worker"].instances.remove(entry.entry_id)
         logger.debug("[unload_entry] Worker deregistration succeeded")
-    except Exception as e:
+    except:
         logger.error("[unload_entry] Worker deregistration failed")
         return False
 
     logger.debug("[unload_entry] Completed")
     return True
-
-

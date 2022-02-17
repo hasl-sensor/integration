@@ -1,11 +1,10 @@
-﻿# ha-sensor-sl
+﻿# Changelog
+All notable changes to this project will be documented in this file.
 
-Changelog for HomeAssistant SL Sensor (HASL).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The format is based on [Keep a Changelog][keep-a-changelog]
-<!-- and this project adheres to [Semantic Versioning][semantic-versioning]. -->
-
-## [3.0.2] (2022-01-11)
+## [3.0.2] (2022-02-17)
 
 ### Added
 - Added first and last leg details as attributes for route sensor
@@ -17,7 +16,8 @@ The format is based on [Keep a Changelog][keep-a-changelog]
 
 ### Fixes
 - Fixed broken counter for number of transfers in route sensor
-- [#26](https://github.com/hasl-sensor/integration/issues/26) version number fixed in hacs.json
+- Fixes [#26](https://github.com/hasl-sensor/integration/issues/26): version number fixed in hacs.json
+- Fixes [#29](https://github.com/hasl-sensor/integration/issues/29): filtering in departure sensor updated
 - Fixed broken prognosisType for route sensor (thanks @clearminds)
 - Fixed broken stoplist for route sensor (thanks @clearminds)
 

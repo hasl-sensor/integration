@@ -331,6 +331,10 @@ class HASLDepartureSensor(HASLDevice):
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
         self._worker = hass.data[DOMAIN]["worker"]
 
+
+        if (not isinstance(self._lines,list)):
+            self._lines = self._lines.split(',');
+
     async def async_update(self):
         """Update the sensor."""
 
@@ -429,7 +433,7 @@ class HASLDepartureSensor(HASLDevice):
         return departure["direction"] == self._direction
 
     def filter_lines(self, departure):
-        if not self._lines or self._lines == []:
+        if not self._lines or len(self._lines) == 0:
             return True
         return departure["line"] in self._lines
 

@@ -39,7 +39,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = HASL_VERSION
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    #FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
+    # FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
     async def validate_input(self, data):
         """Validate input in step user"""
 
@@ -48,47 +48,45 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return data
 
-
     async def async_step_user(self, user_input):
-            """Handle the initial step."""
-            logger.debug("[setup_integration] Entered")
-            errors = {}
+        """Handle the initial step."""
+        logger.debug("[setup_integration] Entered")
+        errors = {}
 
-            if user_input is None:
-                logger.debug("[async_step_user] No user input so showing creation form")
-                return self.async_show_form(step_id="user",data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)))
+        if user_input is None:
+            logger.debug("[async_step_user] No user input so showing creation form")
+            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)))
 
-            try:
-                user_input = await self.validate_input(user_input)
-            except InvalidIntegrationType:
-                errors["base"] = "invalid_integration_type"
-                logger.debug("[setup_integration(validate)] Invalid integration type")
-            except InvalidIntegrationName:
-                errors["base"] = "invalid_integration_name"
-                logger.debug("[setup_integration(validate)] Invalid integration type")
-            except Exception:  # pylint: disable=broad-except
-                errors["base"] = "unknown_exception"
-                logger.debug("[setup_integration(validate)] Unknown exception occured")
-            else:
+        try:
+            user_input = await self.validate_input(user_input)
+        except InvalidIntegrationType:
+            errors["base"] = "invalid_integration_type"
+            logger.debug("[setup_integration(validate)] Invalid integration type")
+            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)), errors=errors)
+        except InvalidIntegrationName:
+            errors["base"] = "invalid_integration_name"
+            logger.debug("[setup_integration(validate)] Invalid integration type")
+            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)), errors=errors)
+        except Exception:  # pylint: disable=broad-except
+            errors["base"] = "unknown_exception"
+            logger.debug("[setup_integration(validate)] Unknown exception occured")
+            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)), errors=errors)
 
-                id = str(uuid.uuid4())
-                await self.async_set_unique_id(id)
-                user_input[CONF_INTEGRATION_ID] = id#
-            
-                name = user_input[CONF_NAME]
-                del user_input[CONF_NAME]
+        id = str(uuid.uuid4())
+        await self.async_set_unique_id(id)
+        user_input[CONF_INTEGRATION_ID] = id
 
-                logger.debug(f"[setup_integration] Creating entry '{name}' with id {id}")
-                try:
-                    tempResult = self.async_create_entry(title=name, data=user_input)
-                    logger.debug(f"[setup_integration] Entry creating succeeded")
-                    return tempResult
-                except Exception as e:
-                    logger.error(f"[setup_integration] Entry creation failed for '{name}' with id {id}")
-                    return self.async_abort(reason="not_supported")
+        name = user_input[CONF_NAME]
+        del user_input[CONF_NAME]
 
-            logger.debug("[setup_integration] Validation errors encountered so showing creation form again")
-            return self.async_show_form(step_id="user",data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)),errors=errors)
+        logger.debug(f"[setup_integration] Creating entry '{name}' with id {id}")
+        try:
+            tempResult = self.async_create_entry(title=name, data=user_input)
+            logger.debug("[setup_integration] Entry creating succeeded")
+            return tempResult
+        except:
+            logger.error(f"[setup_integration] Entry creation failed for '{name}' with id {id}")
+            return self.async_abort(reason="not_supported")
 
     @staticmethod
     @callback
@@ -109,29 +107,29 @@ class OptionsFlow(config_entries.OptionsFlow):
 
     async def validate_input(self, data):
         """Validate input in step user"""
-        #FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
+        # FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
 
-        return data        
+        return data
 
     async def async_step_user(self, user_input):
         """Handle a flow initialized by the user."""
         logger.debug("[integration_options] Entered")
         errors = {}
 
-        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:            
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
             schema = standard_config_option_schema(self.config_entry.options)
-        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:            
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
             schema = status_config_option_schema(self.config_entry.options)
-        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:            
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
             schema = vehiclelocation_config_option_schema(self.config_entry.options)
-        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:            
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
             schema = deviation_config_option_schema(self.config_entry.options)
-        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:            
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
             schema = route_config_option_schema(self.config_entry.options)
 
         logger.debug(f"[integration_options] Schema is {self.config_entry.data[CONF_INTEGRATION_TYPE]}")
 
-        #FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
+        # FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
         if user_input is not None:
             try:
                 user_input = await self.validate_input(user_input)
@@ -141,15 +139,13 @@ class OptionsFlow(config_entries.OptionsFlow):
             else:
                 try:
                     tempresult = self.async_create_entry(title=self.config_entry.title, data=user_input)
-                    logger.debug(f"[integration_options] Entry update succeeded")
+                    logger.debug("[integration_options] Entry update succeeded")
                     return tempresult
-                except Exception as e:
+                except:
                     logger.error("[integration_options] Unknown exception occured")
 
-
             logger.debug("[integration_options] Validation errors encountered so showing options form again")
-            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(schema),errors=errors)    
-            
+            return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(schema), errors=errors)
 
         logger.debug("[integration_options] No user input so showing options form")
         return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(schema))
@@ -160,4 +156,4 @@ class InvalidIntegrationType(HomeAssistantError):
 
 
 class InvalidIntegrationName(HomeAssistantError):
-    """Error to indicate that the name is not a legal name."""      
+    """Error to indicate that the name is not a legal name."""

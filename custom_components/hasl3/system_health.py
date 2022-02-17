@@ -4,8 +4,6 @@ import logging
 
 from homeassistant.components import system_health
 from homeassistant.core import HomeAssistant, callback
-from itertools import chain
-from collections import deque
 
 from .const import (
     DOMAIN,
@@ -14,6 +12,7 @@ from .const import (
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
+
 
 def get_size(obj, seen=None):
     """Recursively finds size of objects"""
@@ -34,6 +33,7 @@ def get_size(obj, seen=None):
         size += sum([get_size(i, seen) for i in obj])
     return size
 
+
 @callback
 def async_register(
     hass: HomeAssistant, register: system_health.SystemHealthRegistration
@@ -45,9 +45,8 @@ def async_register(
         register.domain = DOMAIN
         register.async_register_info(system_health_info, "/config/integrations")
         logger.debug("[system_health_register] System health registration succeeded")
-    except Exception as e:
+    except:
         logger.error("[system_health_register] System health registration failed")
-
 
 
 async def system_health_info(hass):
@@ -66,7 +65,7 @@ async def system_health_info(hass):
         }
         logger.debug("[system_health_info] Information gather succeeded")
         return statusObject
-    except Exception as e:
+    except:
         logger.debug("[system_health_info] Information gather Failed")
         return {
             "Core Version": HASL_VERSION,
@@ -76,5 +75,3 @@ async def system_health_info(hass):
             "Startup in progress": "(worker_failed)",
             "Running tasks": "(worker_failed)"
         }
-
-

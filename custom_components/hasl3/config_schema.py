@@ -1,6 +1,5 @@
 """HASL Configuration Database."""
 import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
 
 from .const import (
     CONF_NAME,
@@ -9,7 +8,6 @@ from .const import (
     CONF_TL2_KEY,
     CONF_RP3_KEY,
     CONF_SITE_ID,
-    CONF_DEBUG,
     CONF_FP_PT,
     CONF_FP_RB,
     CONF_FP_TVB,
@@ -40,6 +38,7 @@ from .const import (
     CONF_DESTINATION,
     CONF_SOURCE
 )
+
 
 def hasl_base_config_schema(config: dict = {}, config_flow: bool = False) -> dict:
     """Shcema configuration dict that is common with all integration types."""
@@ -74,6 +73,7 @@ def standard_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
 
+
 def deviation_config_option_schema(options: dict = {}) -> dict:
     """Deviation sensor options."""
     if not options:
@@ -86,12 +86,14 @@ def deviation_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
 
+
 CONF_METRO = "metro"
 CONF_TRAIN = "train"
 CONF_LOCAL = "local"
 CONF_TRAM = "tram"
 CONF_BUS = "bus"
 CONF_FERRY = "ferry"
+
 
 def status_config_option_schema(options: dict = {}) -> dict:
     """Status sensor options."""
@@ -110,6 +112,7 @@ def status_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
 
+
 def vehiclelocation_config_option_schema(options: dict = {}) -> dict:
     """The schema used for train location service"""
     if not options:
@@ -127,7 +130,8 @@ def vehiclelocation_config_option_schema(options: dict = {}) -> dict:
         vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
-    
+
+
 def route_config_option_schema(options: dict = {}) -> dict:
     """Deviation sensor options."""
     if not options:
@@ -139,4 +143,3 @@ def route_config_option_schema(options: dict = {}) -> dict:
         vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
-    

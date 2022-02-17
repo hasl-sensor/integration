@@ -3,7 +3,11 @@ import httpx
 import time
 import logging
 
-from .exceptions import *
+from .exceptions import (
+    SLAPI_Error,
+    SLAPI_HTTP_Error,
+    SLAPI_API_Error
+)
 from .const import (
     __version__,
     FORDONSPOSITION_URL,
@@ -15,7 +19,8 @@ from .const import (
     USER_AGENT
 )
 
-logger = logging.getLogger(f"custom_components.hasl3.slapi")
+logger = logging.getLogger("custom_components.hasl3.slapi")
+
 
 class slapi_fp(object):
     def __init__(self, timeout=None):
@@ -26,20 +31,20 @@ class slapi_fp(object):
 
     async def request(self, vehicletype):
 
-        logger.debug("Will call FP API")          
+        logger.debug("Will call FP API")
         if vehicletype not in ('PT', 'RB', 'TVB', 'SB', 'LB',
-                        'SpvC', 'TB1', 'TB2', 'TB3'):
+                               'SpvC', 'TB1', 'TB2', 'TB3'):
             raise SLAPI_Error(-1, "Vehicle type is not valid",
-                                 "Must be one of 'PT','RB','TVB','SB',"
-                                 "'LB','SpvC','TB1','TB2','TB3'")
+                                  "Must be one of 'PT','RB','TVB','SB',"
+                                  "'LB','SpvC','TB1','TB2','TB3'")
 
         try:
             async with httpx.AsyncClient() as client:
                 request = await client.get(FORDONSPOSITION_URL.format(vehicletype,
-                                                              time.time()),
-                                   headers={"User-agent": USER_AGENT},
-                                   follow_redirects=True,
-                                   timeout=self._timeout)
+                                                                      time.time()),
+                                           headers={"User-agent": USER_AGENT},
+                                           follow_redirects=True,
+                                           timeout=self._timeout)
         except Exception as e:
             error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
             logger.debug(e)
@@ -53,7 +58,7 @@ class slapi_fp(object):
         for trip in response['Trips']:
             result.append(trip)
 
-        logger.debug("Call completed")          
+        logger.debug("Call completed")
         return result
 
 
@@ -70,14 +75,14 @@ class slapi(object):
         api_errors = {
             1001: 'API key is over qouta',
             1002: 'API key is invalid',
-            }
+        }
 
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url,
-                                headers={"User-agent": USER_AGENT},
-                                follow_redirects=True,
-                                timeout=self._timeout)
+                                        headers={"User-agent": USER_AGENT},
+                                        follow_redirects=True,
+                                        timeout=self._timeout)
         except Exception as e:
             error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
             logger.debug(e)
@@ -99,31 +104,30 @@ class slapi(object):
         if 'StatusCode' in jsonResponse:
 
             if jsonResponse['StatusCode'] == 0:
-                logger.debug("Call completed")          
+                logger.debug("Call completed")
                 return jsonResponse
 
             apiErrorText = api_errors.get(jsonResponse['StatusCode'])
 
             if apiErrorText:
                 error = SLAPI_API_Error(jsonResponse['StatusCode'],
-                                     apiErrorText,
-                                     jsonResponse['Message'])
+                                        apiErrorText,
+                                        jsonResponse['Message'])
                 logger.debug(error)
                 raise error
             else:
                 error = SLAPI_API_Error(jsonResponse['StatusCode'],
-                                     "Unknown API-response code encountered",
-                                     jsonResponse['Message'])
+                                        "Unknown API-response code encountered",
+                                        jsonResponse['Message'])
                 logger.debug(error)
                 raise error
 
-
         elif 'Trip' in jsonResponse:
-            logger.debug("Call completed")          
+            logger.debug("Call completed")
             return jsonResponse
 
         elif 'Sites' in jsonResponse:
-            logger.debug("Call completed")          
+            logger.debug("Call completed")
             return jsonResponse
 
         else:
@@ -138,7 +142,7 @@ class slapi_pu1(slapi):
         self._api_token = api_token
 
     async def request(self, searchstring):
-        logger.debug("Will call PU1 API")          
+        logger.debug("Will call PU1 API")
         return await self._get(PU1_URL.format(self._api_token, searchstring))
 
 
@@ -148,10 +152,9 @@ class slapi_rp3(slapi):
         self._api_token = api_token
 
     async def request(self, origin, destination, orgLat, orgLong, destLat, destLong):
-        logger.debug("Will call RP3 API")          
+        logger.debug("Will call RP3 API")
         return await self._get(RP3_URL.format(self._api_token, origin, destination,
-                                        orgLat, orgLong, destLat, destLong))
-
+                                              orgLat, orgLong, destLat, destLong))
 
 
 class slapi_ri4(slapi):
@@ -162,9 +165,9 @@ class slapi_ri4(slapi):
         self._window = window
 
     async def request(self, siteid):
-        logger.debug("Will call RI4 API")          
+        logger.debug("Will call RI4 API")
         return await self._get(RI4_URL.format(self._api_token,
-                                        siteid, self._window))
+                                              siteid, self._window))
 
 
 class slapi_si2(slapi):
@@ -174,9 +177,9 @@ class slapi_si2(slapi):
         self._api_token = api_token
 
     async def request(self, siteid, lines):
-        logger.debug("Will call SI2 API")          
+        logger.debug("Will call SI2 API")
         return await self._get(SI2_URL.format(self._api_token,
-                                        siteid, lines))
+                                              siteid, lines))
 
 
 class slapi_tl2(slapi):
@@ -185,5 +188,5 @@ class slapi_tl2(slapi):
         self._api_token = api_token
 
     async def request(self):
-        logger.debug("Will call TL2 API")          
+        logger.debug("Will call TL2 API")
         return await self._get(TL2_URL.format(self._api_token))

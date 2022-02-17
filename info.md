@@ -1,17 +1,23 @@
 Home Assistant SL Integration (HASL)
-======================================
+====================================
 
-This is an integration that provides multiple sensors for Stockholms Lokaltrafik in Stockholm, Sweden. It provides intelligent sensors for Departures, Deviations, Vehicle Locations and Traffic Status. It also provides services for Location ID lookup and Trip Planing.
+This is an Home Assistant integration providing sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring using the SL official APIs. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). This integration supports modern configuration and are beeing updated also to use the newest APIs from SL.
 
-The integration should be pretty self explanatory but if you need assistance please find documentation at https://hasl.sorlov.com
+Full and detailed documentation is available [http://hasl.sorlov.com](http://hasl.sorlov.com).
 
 ## Install using HACS
 
-First, visit [https://www.trafiklab.se/api](https://www.trafiklab.se/api) and create a free account. They provide multiple APIs, the ones you want are ["SL Trafikinformation 4"](https://www.trafiklab.se/api/sl-realtidsinformation-4) and ["SL Störningsinformation 2"](https://www.trafiklab.se/api/sl-storningsinformation-2), optionally you can also register for ["SL Trafikläget 2"](https://www.trafiklab.se/api/sl-trafiklaget-2) to get status sensors. When you have your API keys, you're ready to add the component to your Home Assistant.
+* If you haven't already you must have [HACS installed](https://hacs.xyz/docs/setup/download).
+* Go into HACS and search for HASL under the Integrations headline. You will need to restart Home Assistant to finish the process.
+* Once that is done reload your GUI (caching issues preventing the integration to be shown).
+* Goto Integrations and add HASL integrations.
+* Get API-keys at TrafikLab, read details in [documentation](https://hasl.sorlov.com/trafiklab)
+* Location IDs can be found using [SL Platsuppslag v1](https://developer.trafiklab.se/api/sl-platsuppslag/konsol)
+* Perhaps add some GUI/Lovelace components as examples shows in the [documentation](https://hasl.sorlov.com/lovelace_cards)
+* Enjoy!
 
 ## Visualisation
 
-The sensors should be able to be used multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type.
+The sensors should be able to be used multiple cards in hasl-cards ([departure-card](https://github.com/hasl-platform/lovelace-hasl-departure-card), [traffic-status-card](https://github.com/hasl-platform/lovelace-hasl-traffic-status-card)) . There are several cards for different sensors and presentation options for each sensor type. [More examples](https://hasl.sorlov.com/lovelace_cards) can be found in the [documentation](https://hasl.sorlov.com/).
 
 ![card](https://user-images.githubusercontent.com/8133650/56198334-0a150f00-603b-11e9-9e93-92be212d7f7b.PNG)
-

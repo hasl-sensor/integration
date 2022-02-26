@@ -1,4 +1,4 @@
-__version__ = '3.0.2'
+__version__ = '3.0.3'
 VERSION = __version__
 
 FORDONSPOSITION_URL = 'https://api.sl.se/fordonspositioner/GetData?' \

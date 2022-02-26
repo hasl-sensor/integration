@@ -247,7 +247,6 @@ class HaslWorker(object):
                                 newleg['line'] = leg['Product']['line']
                                 newleg['direction'] = leg['direction']
                                 newleg['category'] = leg['category']
-                            newleg['prognosis'] = leg['prognosis_type']
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
@@ -285,7 +284,6 @@ class HaslWorker(object):
                     newdata['origin']['time'] = firstLegFirstTrip["time"] or ''
                     newdata['origin']['from'] = firstLegFirstTrip["from"] or ''
                     newdata['origin']['to'] = firstLegFirstTrip["to"] or ''
-                    newdata['origin']['prognosis'] = lastLegLastTrip["origin"] or ''
                     newdata['destination'] = {}
                     newdata['destination']['leg'] = lastLegLastTrip["name"] or ''
                     newdata['destination']['line'] = lastLegLastTrip["line"] or ''
@@ -294,7 +292,6 @@ class HaslWorker(object):
                     newdata['destination']['time'] = lastLegLastTrip["time"] or ''
                     newdata['destination']['from'] = lastLegLastTrip["from"] or ''
                     newdata['destination']['to'] = lastLegLastTrip["to"] or ''
-                    newdata['destination']['prognosis'] = lastLegLastTrip["prognosis"] or ''
 
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')

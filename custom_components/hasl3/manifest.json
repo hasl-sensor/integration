@@ -9,12 +9,12 @@
   "dependencies": [],
   "after_dependencies": [],
   "config_flow": true,
-  "version": "3.0.3",
+  "version": "3.0.4",
   "iot_class": "cloud_polling",
   "quality_scale": "silver",
   "requirements": [
-	  "httpx==0.12.1",
-	  "jsonpickle==2.0.0",
-	  "isodate==0.6.0"
+	  "httpx>0.12.1",
+	  "jsonpickle>2.0.0",
+	  "isodate>0.6.0"
   ]
 }

@@ -112,7 +112,7 @@ async def setup_hasl_sensor(hass, config):
     try:
         logger.debug("[setup_hasl_sensor] Setting up TL2 sensors..")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-            if config.options[CONF_ANALOG_SENSORS]:
+            if CONF_ANALOG_SENSORS in config.options:
                 if CONF_TL2_KEY in config.options:
                     await worker.assert_tl2(config.options[CONF_TL2_KEY])
 

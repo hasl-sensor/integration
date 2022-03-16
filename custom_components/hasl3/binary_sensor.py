@@ -41,7 +41,7 @@ async def setup_hasl_sensor(hass, config):
 
     logger.debug("[setup_binary_sensor] Processing sensors")
     if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-        if not config.options[CONF_ANALOG_SENSORS]:
+        if not CONF_ANALOG_SENSORS in config.options:
             if CONF_TL2_KEY in config.options:
                 await hass.data[DOMAIN]["worker"].assert_tl2(config.options[CONF_TL2_KEY])
                 for sensortype in CONF_TRANSPORT_MODE_LIST:

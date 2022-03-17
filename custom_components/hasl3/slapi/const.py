@@ -1,5 +1,4 @@
-__version__ = '3.0.4'
-VERSION = __version__
+__version__ = '3.0.5'
 
 FORDONSPOSITION_URL = 'https://api.sl.se/fordonspositioner/GetData?' \
                       'type={}&pp=false&cacheControl={}'
@@ -16,4 +15,4 @@ RP3_URL = TRAFIKLAB_URL + 'TravelplannerV3_1/trip.json?key={}&originExtId={}' \
                           '&originCoordLong={}&destCoordLat={}' \
                           '&destCoordLong={}&Passlist=1'
 
-USER_AGENT = "hasl-slapi/" + VERSION
+USER_AGENT = "hasl-slapi/" + __version__

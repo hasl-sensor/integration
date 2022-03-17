@@ -12,6 +12,7 @@ from homeassistant.helpers import device_registry as dr
 from .const import (
     DOMAIN,
     HASL_VERSION,
+    SCHEMA_VERSION,
     DEVICE_NAME,
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
@@ -200,12 +201,21 @@ async def async_setup(hass, config):
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
     logger.debug("[migrate_entry] Entered")
 
-    logger.debug("[migrate_entry] Nothing to do from version %s to version %s", config_entry.version, HASL_VERSION)
+    logger.debug("[migrate_entry] Migrating configuration from schema version %s to version %s", config_entry.version, SCHEMA_VERSION)
 
-    logger.debug("[migrate_entry] Completed")
+    data = {**config_entry.data}   
+    for option in config_entry.options:
+        logger.debug(f"[migrate_entry] set {option} = {config_entry.options[option]}")
+        data[option]=config_entry.options[option]
+
+    try:
+        hass.config_entries.async_update_entry(config_entry, data=data)
+        logger.debug("[migrate_entry] Completed")
+    except Exception as e:
+        logger.error(f"[migrate_entry] Failed: {str(e)}")
+        return False
 
     return True
-
 
 async def reload_entry(hass, entry):
     """Reload HASL."""

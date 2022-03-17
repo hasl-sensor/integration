@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     DOMAIN,
     HASL_VERSION,
-    SLAPI_VERSION
+    SCHEMA_VERSION
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
@@ -56,8 +56,8 @@ async def system_health_info(hass):
 
     try:
         statusObject = {
-            "Core Version": HASL_VERSION,
-            "Slapi Version": SLAPI_VERSION,
+            "Version": HASL_VERSION,
+            "Schema": SCHEMA_VERSION,
             "Instances": worker.instances.count(),
             "Database Size": f"{get_size(worker.data)} bytes",
             "Startup in progress": worker.status.startup_in_progress,
@@ -68,8 +68,8 @@ async def system_health_info(hass):
     except:
         logger.debug("[system_health_info] Information gather Failed")
         return {
-            "Core Version": HASL_VERSION,
-            "Slapi Version": SLAPI_VERSION,
+            "Version": HASL_VERSION,
+            "Schema": SCHEMA_VERSION,
             "Instances": "(worker_failed)",
             "Database Size": "(worker_failed)",
             "Startup in progress": "(worker_failed)",

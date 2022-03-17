@@ -9,7 +9,7 @@ from homeassistant.core import callback
 
 from .const import (
     DOMAIN,
-    HASL_VERSION,
+    SCHEMA_VERSION,
     CONF_NAME,
     SENSOR_STANDARD,
     SENSOR_STATUS,
@@ -36,7 +36,7 @@ logger = logging.getLogger(f"custom_components.{DOMAIN}.config")
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for HASL."""
 
-    VERSION = HASL_VERSION
+    VERSION = SCHEMA_VERSION
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     # FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
@@ -45,6 +45,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if not data[CONF_INTEGRATION_TYPE] in CONF_INTEGRATION_LIST:
             raise InvalidIntegrationType
+
+        return data
+
+    async def validate_config(self, data):
+        """Validate input in step config"""
 
         return data
 
@@ -75,18 +80,66 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         id = str(uuid.uuid4())
         await self.async_set_unique_id(id)
         user_input[CONF_INTEGRATION_ID] = id
+        self._userdata = user_input
 
-        name = user_input[CONF_NAME]
-        del user_input[CONF_NAME]
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
+            schema = standard_config_option_schema()
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
+            schema = status_config_option_schema()
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
+            schema = vehiclelocation_config_option_schema()
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
+            schema = deviation_config_option_schema()
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
+            schema = route_config_option_schema()
 
-        logger.debug(f"[setup_integration] Creating entry '{name}' with id {id}")
-        try:
-            tempResult = self.async_create_entry(title=name, data=user_input)
-            logger.debug("[setup_integration] Entry creating succeeded")
-            return tempResult
-        except:
-            logger.error(f"[setup_integration] Entry creation failed for '{name}' with id {id}")
-            return self.async_abort(reason="not_supported")
+        return self.async_show_form(step_id="config", data_schema=voluptuous.Schema(schema), errors=errors)
+
+    async def async_step_config(self, user_input):
+        """Handle a flow initialized by the user."""
+        logger.debug("[setup_integration_config] Entered")
+        errors = {}
+
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
+            schema = standard_config_option_schema(user_input)
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
+            schema = status_config_option_schema(user_input)
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
+            schema = vehiclelocation_config_option_schema(user_input)
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
+            schema = deviation_config_option_schema(user_input)
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
+            schema = route_config_option_schema(user_input)
+
+        logger.debug(f"[setup_integration_config] Schema is {self._userdata[CONF_INTEGRATION_TYPE]}")
+
+        # FIXME: DOES NOT ACTUALLY VALIDATE ANYTHING! WE NEED THIS! =)
+        if user_input is not None:
+            try:
+                user_input = await self.validate_config(user_input)
+            except Exception:  # pylint: disable=broad-except
+                errors["base"] = "unknown_exception"
+                logger.debug("[setup_integration_config(validate)] Unknown exception occured")
+            else:
+                try:
+                    name = self._userdata[CONF_NAME]
+                    del self._userdata[CONF_NAME]
+                    logger.debug(f"[setup_integration_config] Creating entry '{name}' with id {self._userdata[CONF_INTEGRATION_ID]}")
+
+                    self._userdata.update(user_input)
+
+                    tempresult = self.async_create_entry(title=name, data=self._userdata)
+                    logger.debug("[setup_integration_config] Entry creating succeeded")
+                    return tempresult
+                except:
+                    logger.error(f"[setup_integration] Entry creation failed for '{name}' with id {self._userdata[CONF_INTEGRATION_ID]}")
+                    return self.async_abort(reason="not_supported")
+
+            logger.debug("[setup_integration_config] Validation errors encountered so showing options form again")
+            return self.async_show_form(step_id="config", data_schema=voluptuous.Schema(schema), errors=errors)
+
+        logger.debug("[setup_integration_config] No user input so showing options form")
+        return self.async_show_form(step_id="config", data_schema=voluptuous.Schema(schema))
 
     @staticmethod
     @callback
@@ -117,15 +170,15 @@ class OptionsFlow(config_entries.OptionsFlow):
         errors = {}
 
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
-            schema = standard_config_option_schema(self.config_entry.options)
+            schema = standard_config_option_schema(self.config_entry.data)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-            schema = status_config_option_schema(self.config_entry.options)
+            schema = status_config_option_schema(self.config_entry.data)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
-            schema = vehiclelocation_config_option_schema(self.config_entry.options)
+            schema = vehiclelocation_config_option_schema(self.config_entry.data)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
-            schema = deviation_config_option_schema(self.config_entry.options)
+            schema = deviation_config_option_schema(self.config_entry.data)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
-            schema = route_config_option_schema(self.config_entry.options)
+            schema = route_config_option_schema(self.config_entry.data)
 
         logger.debug(f"[integration_options] Schema is {self.config_entry.data[CONF_INTEGRATION_TYPE]}")
 

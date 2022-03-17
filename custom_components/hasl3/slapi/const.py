@@ -1,4 +1,4 @@
-from ..const import HASL_VERSION as __version__
+__version__ = '3.0.5'
 
 FORDONSPOSITION_URL = 'https://api.sl.se/fordonspositioner/GetData?' \
                       'type={}&pp=false&cacheControl={}'

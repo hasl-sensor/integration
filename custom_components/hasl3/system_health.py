@@ -8,7 +8,6 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     DOMAIN,
     HASL_VERSION,
-    SLAPI_VERSION,
     SCHEMA_VERSION
 )
 

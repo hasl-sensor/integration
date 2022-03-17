@@ -6,7 +6,7 @@ from homeassistant.const import (
     STATE_OFF
 )
 
-HASL_VERSION = "3.0.2"
+HASL_VERSION = "3.0.5"
 SCHEMA_VERSION = "2"
 DOMAIN = "hasl3"
 NAME = "SL Integration (HASL)"

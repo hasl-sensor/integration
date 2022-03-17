@@ -250,6 +250,12 @@ class HASLRouteSensor(HASLDevice):
         return self._scan_interval
 
     @property
+    def available(self):
+        """Return true if value is valid."""
+        return self._sensordata != []
+
+
+    @property
     def extra_state_attributes(self):
 
         val = {}
@@ -454,6 +460,14 @@ class HASLDepartureSensor(HASLDevice):
         return self._scan_interval
 
     @property
+    def available(self):
+        """Return true if value is valid."""
+        if self._sensordata == [] or self._sensordata is None:
+            return False
+        else:
+            return True
+
+    @property
     def extra_state_attributes(self):
         """ Return the sensor attributes ."""
 
@@ -583,6 +597,11 @@ class HASLDeviationSensor(HASLDevice):
         return self._scan_interval
 
     @property
+    def available(self):
+        """Return true if value is valid."""
+        return self._sensordata != []
+
+    @property
     def extra_state_attributes(self):
         """ Return the sensor attributes."""
 
@@ -680,6 +699,11 @@ class HASLVehicleLocationSensor(HASLDevice):
     def scan_interval(self):
         """Return the unique id."""
         return self._scan_interval
+
+    @property
+    def available(self):
+        """Return true if value is valid."""
+        return self._sensordata != []
 
     @property
     def extra_state_attributes(self):
@@ -783,6 +807,14 @@ class HASLTrafficStatusSensor(HASLDevice):
     def scan_interval(self):
         """Return the unique id."""
         return self._scan_interval
+
+    @property
+    def available(self):
+        """Return true if value is valid."""
+        if not self._sensordata or not 'data' in self._sensordata:
+            return False
+        else:
+            return True
 
     @property
     def extra_state_attributes(self):

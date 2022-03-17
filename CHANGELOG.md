@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.5] (2022-03-17)
+
+### Fixes
+- Fixes [hasl-sensor/integration#36](https://github.com/hasl-sensor/integration/issues/36) introduced in 3.0.3
+- Fixes [hasl-sensor/integration#35](https://github.com/hasl-sensor/integration/issues/35) anoying log message due to stupidity
+
+### Changes
+- Sensor will now show unavailable until sensor data is initiated
+- Configuration now stored in data and not options inside of configuration object
+- Implemented separate configuration schema versioning (restarting with schema version 2. Everyting earlier is to be treated as version 1)
+- Now configures integration in one step when adding new integration
+- Harmonizing version settings between slapi and core as theese will never differ anymore
+
 ## [3.0.4] (2022-03-07)
 
 ### Fixes
@@ -341,6 +354,8 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.0.5]: https://github.com/hasl-sensor/integration/compare/3.0.4...3.0.5
+[3.0.4]: https://github.com/hasl-sensor/integration/compare/3.0.3...3.0.4
 [3.0.3]: https://github.com/hasl-sensor/integration/compare/3.0.2...3.0.3
 [3.0.2]: https://github.com/hasl-sensor/integration/compare/3.0.1...3.0.2
 [3.0.1]: https://github.com/hasl-sensor/integration/compare/3.0.0...3.0.1

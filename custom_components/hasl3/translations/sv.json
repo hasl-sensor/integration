@@ -8,7 +8,49 @@
                     "name": "Namn på integrationen",
                     "sensortype": "Vilken sorts integration är det?"
                 }
-            }
+            },
+            "config": {
+                "title": "SL Integration",
+                "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
+                "data": {
+					"scan_interval": "Hur många sekunder mellan uppdateringar?",
+					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
+
+                    "ri4key": "Realtidsinformation 4 API-nyckel",
+                    "siteid": "Plats ID",
+					"direction": "Riktning",
+					"property": "Primäregenskap för sensorn",
+					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
+
+                    "si2key": "Störningsinformation 2 API-nyckel",
+					"lines": "Linjer (kommaseparerad lista)",
+					"stops": "Plats IDn (kommaseparerad lista)",
+
+                    "tl2key": "Trafikläget 2 API-nyckel",
+					"analog": "Skapa sensorer istället för binära sensorer (rekomenderas ej)",
+					
+                    "rp3key": "Reseplaneraren 3.1 API-nyckel",
+                    "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
+					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
+
+                    "fppt": "Pendeltåg",
+                    "fprb": "Roslagsbanan",
+                    "fptvb": "Tvärbanan",
+                    "fplb": "Lidingöbanen",
+                    "fpsb": "Saltsjöbanan",
+                    "fpspvc": "Spårväg City",
+                    "fptb1": "Gröna Linjen",
+                    "fptb2": "Röda linjen",
+                    "fptb3": "Blåa linjen",
+
+                    "metro": "Tunnelbana",
+                    "train": "Pendeltåg",
+                    "local": "Lokaltåg",
+                    "tram": "Spårvagn",
+                    "bus": "Bussar",
+                    "ferry": "Färjor"                    
+				}
+            }            
         }
     },
     "options": {

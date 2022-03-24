@@ -203,7 +203,7 @@ class HASLRouteSensor(HASLDevice):
 
         if self._worker.data.rp3[self._trip]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.rp3[self._trip]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.rp3[self._trip]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_rp3()
                         logger.debug("[async_update] Update processed")
@@ -349,7 +349,7 @@ class HASLDepartureSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.ri4[self._siteid]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.ri4[self._siteid]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_ri4()
                         logger.debug("[async_update] Update processed")
@@ -547,7 +547,7 @@ class HASLDeviationSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_si2()
                         logger.debug("[async_update] Update processed")
@@ -651,7 +651,7 @@ class HASLVehicleLocationSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.fp[self._vehicletype]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.fp[self._vehicletype]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_fp()
                         logger.debug("[async_update] Update processed")
@@ -754,7 +754,7 @@ class HASLTrafficStatusSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")

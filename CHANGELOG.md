@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.6] (2022-03-xx)
 
+### Added
+- Errors are now logged to error and not just to debug so you know whats wrong when it fails
+- If sensor data is empty, force refresh even if intervall is not up yet
+
 ### Fixes
 - Added missing translation from GUI for new wizard
-
-### Changes
-- If sensor data is empty, force refresh even if intervall is not up yet
+- Fixes [hasl-sensor/integration#38](https://github.com/hasl-sensor/integration/issues/38)) broken logging
 
 ## [3.0.5] (2022-03-17)
 

@@ -46,9 +46,9 @@ class slapi_fp(object):
                                            follow_redirects=True,
                                            timeout=self._timeout)
         except Exception as e:
-            error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
+            error = SLAPI_HTTP_Error(997, "A HTTP error occured (Vechicle Locations)", str(e))
             logger.debug(e)
-            logger.debug(error)
+            logger.error(error)
             raise error
 
         response = json.loads(request.json())
@@ -70,11 +70,18 @@ class slapi(object):
     def version(self):
         return __version__
 
-    async def _get(self, url):
+    async def _get(self, url, api):
 
         api_errors = {
-            1001: 'API key is over qouta',
-            1002: 'API key is invalid',
+            1001: 'No API key supplied in request',
+            1002: 'The supplied API key is not valid',
+            1003: 'Specified API is not valid',
+            1004: 'The API is not avaliable for this key',
+            1005: 'Key exists but is not for requested API',
+            1006: 'To many request per minute (qouta exceeded for key)',
+            1007: 'To many request per month (qouta exceeded for key)',
+            4002: 'Date filter is not valid',
+            5000: 'Parameter invalid',
         }
 
         try:
@@ -84,21 +91,21 @@ class slapi(object):
                                         follow_redirects=True,
                                         timeout=self._timeout)
         except Exception as e:
-            error = SLAPI_HTTP_Error(997, "A HTTP error occured", str(e))
+            error = SLAPI_HTTP_Error(997, f"A HTTP error occured ({api})", str(e))
             logger.debug(e)
-            logger.debug(error)
+            logger.error(error)
             raise error
 
         try:
             jsonResponse = resp.json()
         except Exception as e:
-            error = SLAPI_API_Error(998, "A parsing error occured", str(e))
+            error = SLAPI_API_Error(998, f"A parsing error occured ({api})", str(e))
             logger.debug(error)
             raise error
 
         if not jsonResponse:
-            error = SLAPI_Error(999, "Internal error", "jsonResponse is empty")
-            logger.debug(error)
+            error = SLAPI_Error(999, "Internal error", f"jsonResponse is empty ({api})")
+            logger.error(error)
             raise error
 
         if 'StatusCode' in jsonResponse:
@@ -107,19 +114,19 @@ class slapi(object):
                 logger.debug("Call completed")
                 return jsonResponse
 
-            apiErrorText = api_errors.get(jsonResponse['StatusCode'])
+            apiErrorText = f"{api_errors.get(jsonResponse['StatusCode'])} ({api})"
 
             if apiErrorText:
                 error = SLAPI_API_Error(jsonResponse['StatusCode'],
                                         apiErrorText,
                                         jsonResponse['Message'])
-                logger.debug(error)
+                logger.error(error)
                 raise error
             else:
                 error = SLAPI_API_Error(jsonResponse['StatusCode'],
-                                        "Unknown API-response code encountered",
+                                        "Unknown API-response code encountered ({api})",
                                         jsonResponse['Message'])
-                logger.debug(error)
+                logger.error(error)
                 raise error
 
         elif 'Trip' in jsonResponse:
@@ -131,8 +138,8 @@ class slapi(object):
             return jsonResponse
 
         else:
-            error = SLAPI_Error(-100, "ResponseType is not known")
-            logger.debug(error)
+            error = SLAPI_Error(-100, f"ResponseType is not ({api})")
+            logger.error(error)
             raise error
 
 
@@ -143,7 +150,7 @@ class slapi_pu1(slapi):
 
     async def request(self, searchstring):
         logger.debug("Will call PU1 API")
-        return await self._get(PU1_URL.format(self._api_token, searchstring))
+        return await self._get(PU1_URL.format(self._api_token, searchstring),"Location Lookup")
 
 
 class slapi_rp3(slapi):
@@ -154,7 +161,7 @@ class slapi_rp3(slapi):
     async def request(self, origin, destination, orgLat, orgLong, destLat, destLong):
         logger.debug("Will call RP3 API")
         return await self._get(RP3_URL.format(self._api_token, origin, destination,
-                                              orgLat, orgLong, destLat, destLong))
+                                              orgLat, orgLong, destLat, destLong),"Route")
 
 
 class slapi_ri4(slapi):
@@ -167,7 +174,7 @@ class slapi_ri4(slapi):
     async def request(self, siteid):
         logger.debug("Will call RI4 API")
         return await self._get(RI4_URL.format(self._api_token,
-                                              siteid, self._window))
+                                              siteid, self._window),"Departures")
 
 
 class slapi_si2(slapi):
@@ -179,7 +186,7 @@ class slapi_si2(slapi):
     async def request(self, siteid, lines):
         logger.debug("Will call SI2 API")
         return await self._get(SI2_URL.format(self._api_token,
-                                              siteid, lines))
+                                              siteid, lines),"Deviations")
 
 
 class slapi_tl2(slapi):
@@ -189,4 +196,4 @@ class slapi_tl2(slapi):
 
     async def request(self):
         logger.debug("Will call TL2 API")
-        return await self._get(TL2_URL.format(self._api_token))
+        return await self._get(TL2_URL.format(self._api_token),"Traffic Status")

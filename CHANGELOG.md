@@ -4,8 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] (2022-03-xx)
+## [3.1.0b1] (2022-03-25)
 
+Project will change name to `Swedish Public Transit Sensor (HASL)` because resrobot supports the whole country however for Stockholm region it is still recomended to use SL-specific apis since they contain alot of extra data.
+
+### Breaking Changes
+- Service find_location renamed to `sl_find_location`
+- Service find_trip_id renamed to `sl_find_trip_id`
+- Service find_trip_pos renamed to `sl_find_trip_pos`
+
+### Added
+- API Communication for Resrobot 2.1
+- Departure sensor using Resrobot API
+- Arrival sensor using Resrobot API
+- Route sensor using Resrobot API
+- Lookup service for resrobot locations
+
+### Changed
+- Updated translation for names ad descriptions and strings where applicable
 
 ## [3.0.6] (2022-03-25)
 
@@ -367,7 +383,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[3.1.0]: https://github.com/hasl-sensor/integration/compare/3.0.6...3.1.0
+[3.1.0b1]: https://github.com/hasl-sensor/integration/compare/3.0.6...3.1.0b1
 [3.0.6]: https://github.com/hasl-sensor/integration/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/hasl-sensor/integration/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/hasl-sensor/integration/compare/3.0.3...3.0.4

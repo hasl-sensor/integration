@@ -99,7 +99,7 @@ class HASLTrafficProblemSensor(HASLDevice):
         logger.debug(f"[async_update] Processing {self._name}")
         if self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")

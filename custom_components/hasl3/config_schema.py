@@ -2,9 +2,13 @@
 import voluptuous as vol
 
 from .const import (
+    CONF_DESTINATION_ID,
     CONF_NAME,
     CONF_RI4_KEY,
+    CONF_RRARR_PROPERTY_LIST,
+    CONF_RRDEP_PROPERTY_LIST,
     CONF_SI2_KEY,
+    CONF_SOURCE_ID,
     CONF_TL2_KEY,
     CONF_RP3_KEY,
     CONF_SITE_ID,
@@ -36,7 +40,8 @@ from .const import (
     CONF_DEVIATION_LINES,
     CONF_DIRECTION_LIST,
     CONF_DESTINATION,
-    CONF_SOURCE
+    CONF_SOURCE,
+    CONF_RR_KEY
 )
 
 
@@ -143,3 +148,45 @@ def route_config_option_schema(options: dict = {}) -> dict:
         vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
     }
+
+
+def rrdep_config_option_schema(options: dict = {}) -> dict:
+    """Options for resrobot departure sensor."""
+    if not options:
+        options = {CONF_SENSOR: "", CONF_RR_KEY: "", CONF_SITE_ID: "", CONF_SENSOR: "", CONF_LINES: "", CONF_DIRECTION: DEFAULT_DIRECTION, CONF_SENSOR_PROPERTY: DEFAULT_SENSOR_PROPERTY, CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL, CONF_TIMEWINDOW: DEFAULT_TIMEWINDOW}
+    return {
+        vol.Required(CONF_RR_KEY, default=options.get(CONF_RR_KEY)): str,
+        vol.Required(CONF_SITE_ID, default=options.get(CONF_SITE_ID)): int,
+        vol.Required(CONF_SENSOR_PROPERTY, default=options.get(CONF_SENSOR_PROPERTY)): vol.In(CONF_RRDEP_PROPERTY_LIST),
+        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
+        vol.Required(CONF_TIMEWINDOW, default=options.get(CONF_TIMEWINDOW)): int,
+        vol.Optional(CONF_LINES, default=options.get(CONF_LINES)): str,
+        vol.Optional(CONF_DIRECTION, default=options.get(CONF_DIRECTION)): vol.In(CONF_DIRECTION_LIST),
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
+    }
+
+def rrarr_config_option_schema(options: dict = {}) -> dict:
+    """Options for resrobot arrival sensor."""
+    if not options:
+        options = {CONF_SENSOR: "", CONF_RR_KEY: "", CONF_SITE_ID: "", CONF_SENSOR: "", CONF_LINES: "", CONF_DIRECTION: DEFAULT_DIRECTION, CONF_SENSOR_PROPERTY: DEFAULT_SENSOR_PROPERTY, CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL, CONF_TIMEWINDOW: DEFAULT_TIMEWINDOW}
+    return {
+        vol.Required(CONF_RR_KEY, default=options.get(CONF_RR_KEY)): str,
+        vol.Required(CONF_SITE_ID, default=options.get(CONF_SITE_ID)): int,
+        vol.Required(CONF_SENSOR_PROPERTY, default=options.get(CONF_SENSOR_PROPERTY)): vol.In(CONF_RRARR_PROPERTY_LIST),
+        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
+        vol.Required(CONF_TIMEWINDOW, default=options.get(CONF_TIMEWINDOW)): int,
+        vol.Optional(CONF_LINES, default=options.get(CONF_LINES)): str,
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
+    }    
+
+def rrroute_config_option_schema(options: dict = {}) -> dict:
+    """Deviation sensor options."""
+    if not options:
+        options = {CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL, CONF_SENSOR: "", CONF_RR_KEY: "", CONF_SOURCE_ID: "", CONF_DESTINATION_ID: ""}
+    return {
+        vol.Required(CONF_RR_KEY, default=options.get(CONF_RR_KEY)): str,
+        vol.Required(CONF_SOURCE_ID, default=options.get(CONF_SOURCE)): str,
+        vol.Required(CONF_DESTINATION_ID, default=options.get(CONF_DESTINATION)): str,
+        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
+        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str
+    }    

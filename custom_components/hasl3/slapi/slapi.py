@@ -161,7 +161,7 @@ class slapi_rp3(slapi):
     async def request(self, origin, destination, orgLat, orgLong, destLat, destLong):
         logger.debug("Will call RP3 API")
         return await self._get(RP3_URL.format(self._api_token, origin, destination,
-                                              orgLat, orgLong, destLat, destLong),"Route")
+                                              orgLat, orgLong, destLat, destLong),"Route Planner")
 
 
 class slapi_ri4(slapi):
@@ -174,7 +174,7 @@ class slapi_ri4(slapi):
     async def request(self, siteid):
         logger.debug("Will call RI4 API")
         return await self._get(RI4_URL.format(self._api_token,
-                                              siteid, self._window),"Departures")
+                                              siteid, self._window),"Departure Board")
 
 
 class slapi_si2(slapi):

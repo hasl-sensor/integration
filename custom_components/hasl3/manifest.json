@@ -3,13 +3,13 @@
 	  "@DSorlov"
   ],
   "domain": "hasl3",
-  "name": "SL Integration (HASL)",
+  "name": "Swedish Public Transport Sensor (HASL)",
   "documentation": "https://hasl.sorlov.com",
   "issue_tracker": "https://github.com/hasl-sensor/integration/issues",
   "dependencies": [],
   "after_dependencies": [],
   "config_flow": true,
-  "version": "3.0.6",
+  "version": "3.1.0",
   "iot_class": "cloud_polling",
   "quality_scale": "silver",
   "requirements": [

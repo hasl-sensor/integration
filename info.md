@@ -1,7 +1,9 @@
-Home Assistant SL Integration (HASL)
-====================================
+Swedish Public Transport Sensor (HASL)
+======================================
 
-This is an Home Assistant integration providing sensors for Stockholms Lokaltrafik in Stockholms Län, Sweden. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring using the SL official APIs. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). This integration supports modern configuration and are beeing updated also to use the newest APIs from SL.
+## Project formerly known as "Home Assistant SL integration"
+
+This is an Home Assistant integration providing sensors for Stockholms Lokaltrafik primaryly however it does support Resrobot and travels in the whole country. It provides intelligent sensors for departures, deviations, vehicle locations, traffic status and route monitoring using the SL official APIs and departures, arrivals and route monitoring using Resrobot. It also provides services for Location ID lookup and Trip Planing. You will still need to get your own API keys from SL / Trafiklab (se docs for [HASL](https://hasl.sorlov.com)). 
 
 Full and detailed documentation is available [http://hasl.sorlov.com](http://hasl.sorlov.com).
 
@@ -12,7 +14,7 @@ Full and detailed documentation is available [http://hasl.sorlov.com](http://has
 * Once that is done reload your GUI (caching issues preventing the integration to be shown).
 * Goto Integrations and add HASL integrations.
 * Get API-keys at TrafikLab, read details in [documentation](https://hasl.sorlov.com/trafiklab)
-* Location IDs can be found using [SL Platsuppslag v1](https://developer.trafiklab.se/api/sl-platsuppslag/konsol)
+* [Location IDs](https://hasl.sorlov.com/locationid) can be found using services
 * Perhaps add some GUI/Lovelace components as examples shows in the [documentation](https://hasl.sorlov.com/lovelace_cards)
 * Enjoy!
 

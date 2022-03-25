@@ -11,6 +11,9 @@ from .const import (
     DOMAIN,
     SCHEMA_VERSION,
     CONF_NAME,
+    SENSOR_RRARR,
+    SENSOR_RRROUTE,
+    SENSOR_RRDEP,
     SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
@@ -18,7 +21,7 @@ from .const import (
     SENSOR_ROUTE,
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
-    CONF_INTEGRATION_LIST
+    CONF_INTEGRATION_LIST,
 )
 
 from .config_schema import (
@@ -27,7 +30,10 @@ from .config_schema import (
     status_config_option_schema,
     vehiclelocation_config_option_schema,
     deviation_config_option_schema,
-    route_config_option_schema
+    route_config_option_schema,
+    rrdep_config_option_schema,
+    rrarr_config_option_schema,
+    rrroute_config_option_schema
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.config")
@@ -92,6 +98,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             schema = deviation_config_option_schema()
         if user_input[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
             schema = route_config_option_schema()
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP:
+            schema = rrdep_config_option_schema()         
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_RRARR:
+            schema = rrarr_config_option_schema()         
+        if user_input[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
+            schema = rrroute_config_option_schema()         
 
         return self.async_show_form(step_id="config", data_schema=voluptuous.Schema(schema), errors=errors)
 
@@ -110,6 +122,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             schema = deviation_config_option_schema(user_input)
         if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
             schema = route_config_option_schema(user_input)
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP:
+            schema = rrdep_config_option_schema(user_input)         
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_RRARR:
+            schema = rrarr_config_option_schema(user_input)         
+        if self._userdata[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
+            schema = rrroute_config_option_schema(user_input)         
 
         logger.debug(f"[setup_integration_config] Schema is {self._userdata[CONF_INTEGRATION_TYPE]}")
 
@@ -179,6 +197,12 @@ class OptionsFlow(config_entries.OptionsFlow):
             schema = deviation_config_option_schema(self.config_entry.data)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
             schema = route_config_option_schema(self.config_entry.data)
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP:
+            schema = rrdep_config_option_schema(self.config_entry.data)         
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRARR:
+            schema = rrarr_config_option_schema(self.config_entry.data)         
+        if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
+            schema = rrroute_config_option_schema(self.config_entry.data)         
 
         logger.debug(f"[integration_options] Schema is {self.config_entry.data[CONF_INTEGRATION_TYPE]}")
 

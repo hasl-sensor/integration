@@ -16,12 +16,22 @@ from .const import (
     DEVICE_NAME,
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
-    DEVICE_GUID
+    DEVICE_GUID,
+    CONF_INTEGRATION_TYPE,
+    SENSOR_STANDARD,
+    SENSOR_STATUS,
+    SENSOR_VEHICLE_LOCATION,
+    SENSOR_DEVIATION,
+    SENSOR_ROUTE,
 )
 
 from custom_components.hasl3.slapi import (
     slapi_rp3,
     slapi_pu1,
+)
+
+from custom_components.hasl3.rrapi import (
+    rrapi_sl
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
@@ -47,11 +57,11 @@ async def async_setup(hass, config):
             jsonFile.write(jsonpickle.dumps(worker.data.dump(), 4, unpicklable=False))
             jsonFile.close()
             serviceLogger.debug("[dump_cache] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "dump_cache", "state": "success", "result": outputfile})
+            hass.bus.fire(DOMAIN, {"source": "dump_cache", "state": "success", "result": outputfile})
             return True
         except Exception as e:
             serviceLogger.debug("[dump_cache] Failed to take a dump")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "dump_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "dump_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
@@ -60,73 +70,92 @@ async def async_setup(hass, config):
 
         try:
             dataDump = jsonpickle.dump(worker.data.dump(), 4, unpicklable=False)
-            serviceLogger.debug("[dump_cache] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "get_cache", "state": "success", "result": dataDump})
+            serviceLogger.debug("[get_cache] Completed")
+            hass.bus.fire(DOMAIN, {"source": "get_cache", "state": "success", "result": dataDump})
             return True
         except Exception as e:
             serviceLogger.debug("[get_cache] Failed to get dump")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "get_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "get_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
-    async def find_location(service):
-        serviceLogger.debug("[find_location] Entered")
+    async def sl_find_location(service):
+        serviceLogger.debug("[sl_find_location] Entered")
         search_string = service.data.get('search_string')
         api_key = service.data.get('api_key')
 
-        serviceLogger.debug(f"[find_location] Looking for '{search_string}' with key {api_key}")
+        serviceLogger.debug(f"[sl_find_location] Looking for '{search_string}' with key {api_key}")
 
         try:
             pu1api = slapi_pu1(api_key)
             requestResult = await pu1api.request(search_string)
-            serviceLogger.debug("[find_location] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_location", "state": "success", "result": requestResult})
+            serviceLogger.debug("[sl_find_location] Completed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_location", "state": "success", "result": requestResult})
             return True
         except Exception as e:
-            serviceLogger.debug("[find_location] Lookup failed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            serviceLogger.debug("[sl_find_location] Lookup failed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
-    async def find_trip_id(service):
-        serviceLogger.debug("[find_trip_id] Entered")
+    async def rr_find_location(service):
+        serviceLogger.debug("[rr_find_location] Entered")
+        search_string = service.data.get('search_string')
+        api_key = service.data.get('api_key')
+
+        serviceLogger.debug(f"[rr_find_location] Looking for '{search_string}' with key {api_key}")
+
+        try:
+            rrapi = rrapi_sl(api_key)
+            requestResult = await rrapi.request(search_string)
+            serviceLogger.debug("[rr_find_location] Completed")
+            hass.bus.fire(DOMAIN, {"source": "rr_find_location", "state": "success", "result": requestResult})
+            return True
+        except Exception as e:
+            serviceLogger.debug("[rr_find_location] Lookup failed")
+            hass.bus.fire(DOMAIN, {"source": "rr_find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            return True            
+
+    @callback
+    async def sl_find_trip_id(service):
+        serviceLogger.debug("[sl_find_trip_id] Entered")
         origin = service.data.get('org')
         destination = service.data.get('dest')
         api_key = service.data.get('api_key')
 
-        serviceLogger.debug(f"[find_trip_id] Finding from '{origin}' to '{destination}' with key {api_key}")
+        # serviceLogger.debug(f"[sl_Availablefind_trip_id] Finding from '{origin}' to '{destination}' with key {api_key}")
 
         try:
             rp3api = slapi_rp3(api_key)
             requestResult = await rp3api.request(origin, destination, '', '', '', '')
-            serviceLogger.debug("[find_trip_id] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_id", "state": "success", "result": requestResult})
+            serviceLogger.debug("[sl_find_trip_id] Completed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_id", "state": "success", "result": requestResult})
             return True
         except Exception as e:
-            serviceLogger.debug("[find_trip_id] Lookup failed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_id", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            serviceLogger.debug("[sl_find_trip_id] Lookup failed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_id", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
-    async def find_trip_pos(service):
-        serviceLogger.debug("[find_trip_pos] Entered")
+    async def sl_find_trip_pos(service):
+        serviceLogger.debug("[sl_find_trip_pos] Entered")
         olat = service.data.get('orig_lat')
         olon = service.data.get('orig_long')
         dlat = service.data.get('dest_lat')
         dlon = service.data.get('dest_long')
         api_key = service.data.get('api_key')
 
-        serviceLogger.debug(f"[find_trip_pos] Finding from '{olat} {olon}' to '{dlat} {dlon}' with key {api_key}")
+        serviceLogger.debug(f"[sl_find_trip_pos] Finding from '{olat} {olon}' to '{dlat} {dlon}' with key {api_key}")
 
         try:
             rp3api = slapi_rp3(api_key)
             requestResult = await rp3api.request('', '', olat, olon, dlat, dlon)
-            serviceLogger.debug("[find_trip_pos] Completed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos", "state": "success", "result": requestResult})
+            serviceLogger.debug("[sl_find_trip_pos] Completed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_pos", "state": "success", "result": requestResult})
             return True
         except Exception as e:
-            serviceLogger.debug("[find_trip_pos] Lookup failed")
-            hass.bus.fire(f"{DOMAIN}_response", {"source": "find_trip_pos", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            serviceLogger.debug("[sl_find_trip_pos] Lookup failed")
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_pos", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
             return True
 
     @callback
@@ -143,21 +172,22 @@ async def async_setup(hass, config):
             get_cache(service)
             serviceLogger.debug("[eventListener] Dispatched to get_cache")
             return True
-        if command == "find_location":
-            find_location(service)
-            serviceLogger.debug("[eventListener] Dispatched to find_location")
+        if command == "sl_find_location":
+            sl_find_location(service)
+            serviceLogger.debug("[eventListener] Dispatched to sl_find_location")
             return True
-        if command == "find_trip_pos":
-            find_trip_pos(service)
-            serviceLogger.debug("[eventListener] Dispatched to find_trip_pos")
+        if command == "rr_find_location":
+            rr_find_location(service)
+            serviceLogger.debug("[eventListener] Dispatched to rr_find_location")
             return True
-        if command == "find_trip_id":
-            find_trip_id(service)
-            serviceLogger.debug("[eventListener] Dispatched to find_trip_id")
+        if command == "sl_find_trip_pos":
+            sl_find_trip_pos(service)
+            serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_pos")
             return True
-
-        hass.bus.fire(f"{DOMAIN}_response", {"source": "service", "state": "error", "result": "No or empty cmd specified"})
-        serviceLogger.debug("[eventListener] No cmd found")
+        if command == "sl_find_trip_id":
+            sl_find_trip_id(service)
+            serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_id")
+            return True
 
     try:
         if DOMAIN not in hass.data:
@@ -179,16 +209,17 @@ async def async_setup(hass, config):
     try:
         hass.services.async_register(DOMAIN, 'dump_cache', dump_cache)
         hass.services.async_register(DOMAIN, 'get_cache', get_cache)
-        hass.services.async_register(DOMAIN, 'find_location', find_location)
-        hass.services.async_register(DOMAIN, 'find_trip_pos', find_trip_pos)
-        hass.services.async_register(DOMAIN, 'find_trip_id', find_trip_id)
+        hass.services.async_register(DOMAIN, 'sl_find_location', sl_find_location)
+        hass.services.async_register(DOMAIN, 'rr_find_location', rr_find_location)
+        hass.services.async_register(DOMAIN, 'sl_find_trip_pos', sl_find_trip_pos)
+        hass.services.async_register(DOMAIN, 'sl_find_trip_id', sl_find_trip_id)
         logger.debug("[setup] Service registration completed")
     except:
         logger.error("[setup] Service registration failed")
 
     logger.debug("[setup] Registering event listeners")
     try:
-        hass.bus.async_listen(f"{DOMAIN}_execute", eventListener)
+        hass.bus.async_listen(DOMAIN, eventListener)
         logger.debug("[setup] Registering event listeners completed")
     except:
         logger.error("[setup] Registering event listeners failed")
@@ -203,10 +234,29 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
     logger.debug("[migrate_entry] Migrating configuration from schema version %s to version %s", config_entry.version, SCHEMA_VERSION)
 
-    data = {**config_entry.data}   
-    for option in config_entry.options:
-        logger.debug(f"[migrate_entry] set {option} = {config_entry.options[option]}")
-        data[option]=config_entry.options[option]
+    data = {**config_entry.data}
+
+    if config_entry.version != "1" and config_entry.version != "2" and config_entry.version != "3":
+        for option in config_entry.options:
+            logger.debug(f"[migrate_entry] set {option} = {config_entry.options[option]}")
+            data[option] = config_entry.options[option]
+
+    if config_entry.version == "2" and SCHEMA_VERSION == "3":
+        if data[CONF_INTEGRATION_TYPE] == "Departures":
+            data[CONF_INTEGRATION_TYPE] = SENSOR_STANDARD
+            logger.debug(f"[migrate_entry] migrate from Departures to {SENSOR_STANDARD}")
+        if data[CONF_INTEGRATION_TYPE] == "Traffic Status":
+            data[CONF_INTEGRATION_TYPE] = SENSOR_STATUS
+            logger.debug(f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}")
+        if data[CONF_INTEGRATION_TYPE] == "Vehicle Locations":
+            data[CONF_INTEGRATION_TYPE] = SENSOR_VEHICLE_LOCATION
+            logger.debug(f"[migrate_entry] migrate from Vehicle Locations to {SENSOR_VEHICLE_LOCATION}")
+        if data[CONF_INTEGRATION_TYPE] == "Deviations":
+            data[CONF_INTEGRATION_TYPE] = SENSOR_DEVIATION
+            logger.debug(f"[migrate_entry] migrate from Deviations to {SENSOR_DEVIATION}")
+        if data[CONF_INTEGRATION_TYPE] == "Route":
+            data[CONF_INTEGRATION_TYPE] = SENSOR_ROUTE
+            logger.debug(f"[migrate_entry] migrate from Route to {SENSOR_ROUTE}")
 
     try:
         hass.config_entries.async_update_entry(config_entry, data=data)
@@ -216,6 +266,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         return False
 
     return True
+
 
 async def reload_entry(hass, entry):
     """Reload HASL."""

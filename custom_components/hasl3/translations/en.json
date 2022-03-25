@@ -1,17 +1,18 @@
 {
+    "title": "Swedish Public Transport Sensor (HASL)",
     "config": {
         "step": {
             "user": {
-                "title": "SL Integration",
-                "description": "Enter a friendly name for your HASL integration to get started.",
+                "title": "Swedish Public Transport Sensor (HASL)",
+                "description": "Enter a friendly name for your integration to get started.",
                 "data": {
                     "name": "Integration friendly name",
                     "sensortype": "Which kind of integration?"
                 }
             },
             "config": {
-                "title": "SL Integration",
-                "description": "Change SL Integration parameters. More info on https://hasl.sorlov.com",
+                "title": "Swedish Public Transport Sensor (HASL)",
+                "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
@@ -32,6 +33,10 @@
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
 					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
+
+                    "rrkey": "Resrobot 2.1 API Key",
+                    "fromid": "From Location ID",
+					"toid": "Destination Location ID",
 
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",
@@ -56,8 +61,8 @@
     "options": {
         "step": {
             "user": {
-                "title": "SL Integration",
-                "description": "Change SL Integration parameters. More info on https://hasl.sorlov.com",
+                "title": "Swedish Public Transport Sensor (HASL)",
+                "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
@@ -78,6 +83,10 @@
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
 					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
+
+                    "rrkey": "Resrobot 2.1 API Key",
+                    "fromid": "From Location ID",
+					"toid": "Destination Location ID",
 
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",

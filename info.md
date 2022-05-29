@@ -16,7 +16,7 @@ Full and detailed documentation is available [http://hasl.sorlov.com](http://has
 * Get API-keys at TrafikLab, read details in [documentation](https://hasl.sorlov.com/trafiklab)
 * [Location IDs](https://hasl.sorlov.com/locationid) can be found using services
 * Perhaps add some GUI/Lovelace components as examples shows in the [documentation](https://hasl.sorlov.com/lovelace_cards)
-* Enjoy!
+* Enjoy and [buy me a coffee](https://www.buymeacoffee.com/sorlov) if you like my work
 
 ## Visualisation
 

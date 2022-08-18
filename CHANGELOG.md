@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0b2] (2022-08-18)
+
+### Fixes
+- Fixes [hasl-sensor/integration#43](https://github.com/hasl-sensor/integration/issues/43) Warning on deprecated 'async_get_registry' being used
+
 ## [3.1.0b1] (2022-03-25)
 
 Project will change name to `Swedish Public Transit Sensor (HASL)` because resrobot supports the whole country however for Stockholm region it is still recomended to use SL-specific apis since they contain alot of extra data.
@@ -31,7 +36,7 @@ Project will change name to `Swedish Public Transit Sensor (HASL)` because resro
 
 ### Fixes
 - Added missing translation from GUI for new wizard
-- Fixes [hasl-sensor/integration#38](https://github.com/hasl-sensor/integration/issues/38)) broken logging
+- Fixes [hasl-sensor/integration#38](https://github.com/hasl-sensor/integration/issues/38) broken logging
 
 ## [3.0.5] (2022-03-17)
 
@@ -383,6 +388,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
+[3.1.0b2]: https://github.com/hasl-sensor/integration/compare/3.1.0b1...3.1.0b2
 [3.1.0b1]: https://github.com/hasl-sensor/integration/compare/3.0.6...3.1.0b1
 [3.0.6]: https://github.com/hasl-sensor/integration/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/hasl-sensor/integration/compare/3.0.4...3.0.5

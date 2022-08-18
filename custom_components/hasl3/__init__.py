@@ -293,7 +293,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     logger.debug(f"[setup_entry] Entering for {entry.entry_id}")
 
     try:
-        device_registry = await dr.async_get_registry(hass)
+        device_registry = dr.async_get(hass)
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, DEVICE_GUID)},
@@ -304,8 +304,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             entry_type=DeviceEntryType.SERVICE
         )
         logger.debug("[setup_entry] Created device")
-    except:
-        logger.error("[setup_entry] Failed to create device")
+    except Exception as e:
+        logger.error(f"[setup_entry] Failed to create device: {str(e)}")        
         return False
 
     try:

@@ -3,7 +3,6 @@
     "config": {
         "step": {
             "user": {
-                "title": "Swedish Public Transport Sensor (HASL)",
                 "description": "Enter a friendly name for your integration to get started.",
                 "data": {
                     "name": "Integration friendly name",
@@ -11,7 +10,6 @@
                 }
             },
             "config": {
-                "title": "Swedish Public Transport Sensor (HASL)",
                 "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "How many seconds between refresh",

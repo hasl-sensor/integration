@@ -3,7 +3,6 @@
     "config": {
         "step": {
             "user": {
-                "title": "Svensk Kollektivtrafikssensor (HASL)",
                 "description": "Ange ett namn för denna integration",
                 "data": {
                     "name": "Namn på integrationen",
@@ -11,7 +10,6 @@
                 }
             },
             "config": {
-                "title": "Svensk Kollektivtrafikssensor (HASL)",
                 "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "Hur många sekunder mellan uppdateringar?",

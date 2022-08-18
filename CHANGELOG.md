@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 - Fixes [hasl-sensor/integration#43](https://github.com/hasl-sensor/integration/issues/43) Warning on deprecated 'async_get_registry' being used
+- Removed localized titles in en.json and sv.json due to hassfest validation failing
 
 ## [3.1.0b1] (2022-03-25)
 

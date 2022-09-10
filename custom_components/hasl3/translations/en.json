@@ -59,7 +59,6 @@
     "options": {
         "step": {
             "user": {
-                "title": "Swedish Public Transport Sensor (HASL)",
                 "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "How many seconds between refresh",

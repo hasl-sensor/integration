@@ -5,7 +5,7 @@ from homeassistant.const import (
     STATE_OFF
 )
 
-HASL_VERSION = "3.1.0b2"
+HASL_VERSION = "3.1.0"
 SCHEMA_VERSION = "3"
 DOMAIN = "hasl3"
 NAME = "Swedish Public Transport Sensor (HASL)"

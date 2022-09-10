@@ -1,4 +1,4 @@
-__version__ = '3.1.0b2'
+__version__ = '3.1.0'
 
 BASE_URL = 'https://api.resrobot.se/v2.1/'
 STOP_LOOKUP_URL = '{}location.name?input={}&format=json&accessId={}'

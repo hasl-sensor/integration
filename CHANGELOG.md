@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1] (2022-09-10)
+
+This is major relase adding Resrobot functionallity BUT with some known upgrade issues due to some bad decisions earlier in development. During some cases the automatic upgrade of sensors might fail and to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
+
+### BREAKING CHANGES
+- During some cases the automatic upgrade of sensors might fail, to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
+- Service find_location renamed to `sl_find_location`
+- Service find_trip_id renamed to `sl_find_trip_id`
+- Service find_trip_pos renamed to `sl_find_trip_pos`
+
+### ADDED
+- API Communication for Resrobot 2.1
+- Departure sensor using Resrobot API
+- Arrival sensor using Resrobot API
+- Route sensor using Resrobot API
+- Lookup services for resrobot locations
+
 ## [3.1.0b2] (2022-08-18)
 
 ### Fixes

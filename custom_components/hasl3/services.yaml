@@ -1,45 +1,114 @@
 # Describes the format for available hasl3 services
 dump_cache:
-  description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created
+  description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created. Response will be triggered as event on the bus (topic is hasl3).
 
 get_cache:
-  description: Returns all data downloaded and cached in the HASL worker for manual processing
+  description: Returns all data downloaded and cached in the HASL worker for manual processing. Response will be triggered as event on the bus (topic is hasl3).
 
-find_location:
-  description: Searches for a SL location id using a freetext string
+sl_find_location:
+  description: Searches for a SL location id using a freetext string. Response will be triggered as event on the bus (topic is hasl3).
   fields:
     api_key:
-      description: The Platsuppslag 1 API key to use for the query
+      name: API Key
+      advanced: false
+      required: true
+      description: The SL Platsuppslag 1 API key to use for the query
+      selector:
+        text:
     search_string:
       description: Enter the location to find id
+      advanced: false
+      name: Location
+      required: true
       example: 'Slussen'
+      selector:
+        text:
 
-find_trip_id:
-  description: Search for a trip between two places using either SL orgigin and destination locations
+rr_find_location:
+  description: Searches for a Resrobot location id using a freetext string. Response will be triggered as event on the bus (topic is hasl3).
   fields:
     api_key:
+      name: API Key
+      advanced: false
+      required: true
+      description: The Resrobot API key to use for the query
+      selector:
+        text:
+    search_string:
+      description: Enter the location to find id
+      advanced: false
+      name: Location
+      required: true
+      example: 'Götaplatsen'
+      selector:
+        text:
+
+sl_find_trip_id:
+  description: Search for a trip between two places using either SL orgigin and destination locations. Response will be triggered as event on the bus (topic is hasl3).
+  fields:
+    api_key:
+      name: API Key
+      advanced: false
+      required: true
       description: The Reseplaneraren 3.1 API key to use for the query
+      selector:
+        text:
     org:
+      name: Origin ID
+      advanced: false
+      required: true
       description: The origin for the trip
       example: 4243
+      selector:
+        text:
     dest:
+      name: Destination ID
+      advanced: false
+      required: true
       description: The destination for the trip
       example: 2412
+      selector:
+        text:
 
-find_trip_pos:
-  description: Search for a trip between two placings using longitude and latitude
+sl_find_trip_pos:
+  description: Search for a trip between two placings using longitude and latitude. Response will be triggered as event on the bus (topic is hasl3).
   fields:
     api_key:
-      description: The Reseplaneraren 3.1 API key to use for the query
+      name: API Key
+      advanced: false
+      required: true
+      description: The SL Reseplaneraren 3.1 API key to use for the query
+      selector:
+        text:
     orig_lat:
+      name: Origin Latitude
+      advanced: false
+      required: true
       description: The origin location for the trip
       example: '20.20'
+      selector:
+        text:
     orig_long:
+      name: Origin Longitude
+      advanced: false
+      required: true
       description: The origin location for the trip
       example: '10.20'
+      selector:
+        text:
     dest_lat:
+      name: Destination Latitude
+      advanced: false
+      required: true
       description: The destination location for the trip
       example: '20.20'
+      selector:
+        text:
     dest_long:
+      name: Destination Longitude
+      advanced: false
+      required: true
       description: The destination location for the trip
       example: '10.20'
+      selector:
+        text:

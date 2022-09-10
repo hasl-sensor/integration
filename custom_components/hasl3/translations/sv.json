@@ -1,8 +1,8 @@
 {
+    "title": "Svensk Kollektivtrafikssensor (HASL)",
     "config": {
         "step": {
             "user": {
-                "title": "SL Integration",
                 "description": "Ange ett namn för denna integration",
                 "data": {
                     "name": "Namn på integrationen",
@@ -10,28 +10,31 @@
                 }
             },
             "config": {
-                "title": "SL Integration",
                 "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "Hur många sekunder mellan uppdateringar?",
 					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
 
-                    "ri4key": "Realtidsinformation 4 API-nyckel",
+                    "ri4key": "SL Realtidsinformation 4 API-nyckel",
                     "siteid": "Plats ID",
 					"direction": "Riktning",
 					"property": "Primäregenskap för sensorn",
 					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
 
-                    "si2key": "Störningsinformation 2 API-nyckel",
+                    "si2key": "SL Störningsinformation 2 API-nyckel",
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
-                    "tl2key": "Trafikläget 2 API-nyckel",
+                    "tl2key": "SL Trafikläget 2 API-nyckel",
 					"analog": "Skapa sensorer istället för binära sensorer (rekomenderas ej)",
 					
-                    "rp3key": "Reseplaneraren 3.1 API-nyckel",
+                    "rp3key": "SL Reseplaneraren 3.1 API-nyckel",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
 					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
+
+                    "rrkey": "Resrobot 2.1 API-nyckel",
+                    "fromid": "Från med plats id",
+					"toid": "Till med plats id",
 
                     "fppt": "Pendeltåg",
                     "fprb": "Roslagsbanan",
@@ -56,28 +59,31 @@
     "options": {
         "step": {
             "user": {
-                "title": "SL Integration",
                 "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
                 "data": {
 					"scan_interval": "Hur många sekunder mellan uppdateringar?",
 					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
 
-                    "ri4key": "Realtidsinformation 4 API-nyckel",
+                    "ri4key": "SL Realtidsinformation 4 API-nyckel",
                     "siteid": "Plats ID",
 					"direction": "Riktning",
 					"property": "Primäregenskap för sensorn",
 					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
 
-                    "si2key": "Störningsinformation 2 API-nyckel",
+                    "si2key": "SL Störningsinformation 2 API-nyckel",
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
-                    "tl2key": "Trafikläget 2 API-nyckel",
+                    "tl2key": "SL Trafikläget 2 API-nyckel",
 					"analog": "Skapa sensorer istället för binära sensorer (rekomenderas ej)",
 					
-                    "rp3key": "Reseplaneraren 3.1 API-nyckel",
+                    "rp3key": "SL Reseplaneraren 3.1 API-nyckel",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
 					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
+
+                    "rrkey": "Resrobot 2.1 API-nyckel",
+                    "fromid": "Från med plats id",
+					"toid": "Till med plats id",
 
                     "fppt": "Pendeltåg",
                     "fprb": "Roslagsbanan",

@@ -4,6 +4,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1] (2022-09-10)
+
+This is major relase adding Resrobot functionallity BUT with some known upgrade issues due to some bad decisions earlier in development. During some cases the automatic upgrade of sensors might fail and to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
+
+### BREAKING CHANGES
+- During some cases the automatic upgrade of sensors might fail, to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
+- Service find_location renamed to `sl_find_location`
+- Service find_trip_id renamed to `sl_find_trip_id`
+- Service find_trip_pos renamed to `sl_find_trip_pos`
+
+### ADDED
+- API Communication for Resrobot 2.1
+- Departure sensor using Resrobot API
+- Arrival sensor using Resrobot API
+- Route sensor using Resrobot API
+- Lookup services for resrobot locations
+
+## [3.1.0b2] (2022-08-18)
+
+### Fixes
+- Fixes [hasl-sensor/integration#43](https://github.com/hasl-sensor/integration/issues/43) Warning on deprecated 'async_get_registry' being used
+- Removed localized titles in en.json and sv.json due to hassfest validation failing
+
+## [3.1.0b1] (2022-03-25)
+
+Project will change name to `Swedish Public Transit Sensor (HASL)` because resrobot supports the whole country however for Stockholm region it is still recomended to use SL-specific apis since they contain alot of extra data.
+
+### Breaking Changes
+- Service find_location renamed to `sl_find_location`
+- Service find_trip_id renamed to `sl_find_trip_id`
+- Service find_trip_pos renamed to `sl_find_trip_pos`
+
+### Added
+- API Communication for Resrobot 2.1
+- Departure sensor using Resrobot API
+- Arrival sensor using Resrobot API
+- Route sensor using Resrobot API
+- Lookup service for resrobot locations
+
+### Changed
+- Updated translation for names ad descriptions and strings where applicable
+
 ## [3.0.6] (2022-03-25)
 
 ### Added
@@ -12,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 - Added missing translation from GUI for new wizard
-- Fixes [hasl-sensor/integration#38](https://github.com/hasl-sensor/integration/issues/38)) broken logging
+- Fixes [hasl-sensor/integration#38](https://github.com/hasl-sensor/integration/issues/38) broken logging
 
 ## [3.0.5] (2022-03-17)
 
@@ -364,7 +406,9 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - This is a great day indeed.
 
 [keep-a-changelog]: http://keepachangelog.com/en/1.0.0/
-[3.0.6]: https://github.com/hasl-sensor/integration/compare/3.0.4...3.0.5
+[3.1.0b2]: https://github.com/hasl-sensor/integration/compare/3.1.0b1...3.1.0b2
+[3.1.0b1]: https://github.com/hasl-sensor/integration/compare/3.0.6...3.1.0b1
+[3.0.6]: https://github.com/hasl-sensor/integration/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/hasl-sensor/integration/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/hasl-sensor/integration/compare/3.0.3...3.0.4
 [3.0.3]: https://github.com/hasl-sensor/integration/compare/3.0.2...3.0.3

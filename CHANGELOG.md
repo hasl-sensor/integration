@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] (2023-09-10)
+
+### Fixes
+Fixes [hasl-sensor/integration#56](https://github.com/hasl-sensor/integration/issues/56) Setup fails with Home Assistant 2023.6.0, thanks @morlic
+
 ## [3.1] (2022-09-10)
 
 This is major relase adding Resrobot functionallity BUT with some known upgrade issues due to some bad decisions earlier in development. During some cases the automatic upgrade of sensors might fail and to restore a broken sensor it must be fully removed and then recreated manually. Sorry.

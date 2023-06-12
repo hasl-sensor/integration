@@ -38,7 +38,6 @@ logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
 
 
-@asyncio.coroutine
 async def async_setup(hass, config):
     """Set up HASL integration"""
     logger.debug("[setup] Entering")

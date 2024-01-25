@@ -234,6 +234,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     logger.debug("[migrate_entry] Migrating configuration from schema version %s to version %s", config_entry.version, SCHEMA_VERSION)
 
     data = {**config_entry.data}
+    options = {**config_entry.options}
 
     if config_entry.version != "1" and config_entry.version != "2" and config_entry.version != "3":
         for option in config_entry.options:
@@ -257,8 +258,19 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             data[CONF_INTEGRATION_TYPE] = SENSOR_ROUTE
             logger.debug(f"[migrate_entry] migrate from Route to {SENSOR_ROUTE}")
 
+    if config_entry.version == 3 and SCHEMA_VERSION == "4":
+        # split data into static and configurable part
+        new_data = {
+            k: v
+            for k, v in data.items()
+            if k in (CONF_INTEGRATION_ID, CONF_INTEGRATION_TYPE)
+        }
+        options = {k: v for k, v in data.items() if k not in new_data}
+        data = new_data
+        config_entry.version = 4
+
     try:
-        hass.config_entries.async_update_entry(config_entry, data=data)
+        hass.config_entries.async_update_entry(config_entry, data=data, options=options)
         logger.debug("[migrate_entry] Completed")
     except Exception as e:
         logger.error(f"[migrate_entry] Failed: {str(e)}")

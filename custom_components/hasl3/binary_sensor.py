@@ -41,11 +41,11 @@ async def setup_hasl_sensor(hass, config):
 
     logger.debug("[setup_binary_sensor] Processing sensors")
     if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-        if not CONF_ANALOG_SENSORS in config.data:
-            if CONF_TL2_KEY in config.data:
-                await hass.data[DOMAIN]["worker"].assert_tl2(config.data[CONF_TL2_KEY])
+        if not CONF_ANALOG_SENSORS in config.options:
+            if CONF_TL2_KEY in config.options:
+                await hass.data[DOMAIN]["worker"].assert_tl2(config.options[CONF_TL2_KEY])
                 for sensortype in CONF_TRANSPORT_MODE_LIST:
-                    if sensortype in config.data and config.data[sensortype]:
+                    if sensortype in config.data and config.options[sensortype]:
                         logger.debug("[setup_binary_sensor] Setting up binary problem sensor..")
                         try:
                             sensors.append(HASLTrafficProblemSensor(hass, config, sensortype))
@@ -86,10 +86,10 @@ class HASLTrafficProblemSensor(HASLDevice):
         self._hass = hass
         self._config = config
         self._sensortype = sensortype
-        self._enabled_sensor = config.data[CONF_SENSOR]
+        self._enabled_sensor = config.options[CONF_SENSOR]
         self._name = f"SL {self._sensortype.capitalize()} Problem Sensor ({self._config.title})"
         self._sensordata = []
-        self._scan_interval = self._config.data[CONF_SCAN_INTERVAL] or 300
+        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
         self._worker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
@@ -97,9 +97,9 @@ class HASLTrafficProblemSensor(HASLDevice):
 
         logger.debug("[async_update] Entered")
         logger.debug(f"[async_update] Processing {self._name}")
-        if self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]:
+        if self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]:
             if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]["api_lastrun"]) > self._config.data[CONF_SCAN_INTERVAL]:
+                if self._sensordata == [] or self._worker.getminutesdiff(now().strftime('%Y-%m-%d %H:%M:%S'), self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]["api_lastrun"]) > self._config.options[CONF_SCAN_INTERVAL]:
                     try:
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")
@@ -108,7 +108,7 @@ class HASLTrafficProblemSensor(HASLDevice):
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
-        self._sensordata = self._worker.data.tl2[self._config.data[CONF_TL2_KEY]]
+        self._sensordata = self._worker.data.tl2[self._config.options[CONF_TL2_KEY]]
         logger.debug("[async_update] Completed")
 
     @property

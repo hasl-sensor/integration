@@ -146,7 +146,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                     self._userdata.update(user_input)
 
-                    tempresult = self.async_create_entry(title=name, data=self._userdata)
+                    # split configuration into data and options
+                    data = {
+                        CONF_INTEGRATION_ID: self._userdata[CONF_INTEGRATION_ID],
+                        CONF_INTEGRATION_TYPE: self._userdata[CONF_INTEGRATION_TYPE],
+                    }
+                    options = {k: v for k, v in self._userdata.items() if k not in data}
+
+                    tempresult = self.async_create_entry(title=name, data=data, options=options)
                     logger.debug("[setup_integration_config] Entry creating succeeded")
                     return tempresult
                 except:
@@ -188,21 +195,21 @@ class OptionsFlow(config_entries.OptionsFlow):
         errors = {}
 
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
-            schema = standard_config_option_schema(self.config_entry.data)
+            schema = standard_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-            schema = status_config_option_schema(self.config_entry.data)
+            schema = status_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
-            schema = vehiclelocation_config_option_schema(self.config_entry.data)
+            schema = vehiclelocation_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
-            schema = deviation_config_option_schema(self.config_entry.data)
+            schema = deviation_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
-            schema = route_config_option_schema(self.config_entry.data)
+            schema = route_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP:
-            schema = rrdep_config_option_schema(self.config_entry.data)         
+            schema = rrdep_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRARR:
-            schema = rrarr_config_option_schema(self.config_entry.data)         
+            schema = rrarr_config_option_schema(self.config_entry.options)
         if self.config_entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
-            schema = rrroute_config_option_schema(self.config_entry.data)         
+            schema = rrroute_config_option_schema(self.config_entry.options)
 
         logger.debug(f"[integration_options] Schema is {self.config_entry.data[CONF_INTEGRATION_TYPE]}")
 

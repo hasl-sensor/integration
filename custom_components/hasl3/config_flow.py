@@ -80,7 +80,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)), errors=errors)
         except Exception:  # pylint: disable=broad-except
             errors["base"] = "unknown_exception"
-            logger.debug("[setup_integration(validate)] Unknown exception occured")
+            logger.debug("[setup_integration(validate)] Unknown exception occurred")
             return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(hasl_base_config_schema(user_input, True)), errors=errors)
 
         id = str(uuid.uuid4())
@@ -137,7 +137,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 user_input = await self.validate_config(user_input)
             except Exception:  # pylint: disable=broad-except
                 errors["base"] = "unknown_exception"
-                logger.debug("[setup_integration_config(validate)] Unknown exception occured")
+                logger.debug("[setup_integration_config(validate)] Unknown exception occurred")
             else:
                 try:
                     name = self._userdata[CONF_NAME]
@@ -212,14 +212,14 @@ class OptionsFlow(config_entries.OptionsFlow):
                 user_input = await self.validate_input(user_input)
             except Exception:  # pylint: disable=broad-except
                 errors["base"] = "unknown_exception"
-                logger.debug("[integration_options(validate)] Unknown exception occured")
+                logger.debug("[integration_options(validate)] Unknown exception occurred")
             else:
                 try:
                     tempresult = self.async_create_entry(title=self.config_entry.title, data=user_input)
                     logger.debug("[integration_options] Entry update succeeded")
                     return tempresult
                 except:
-                    logger.error("[integration_options] Unknown exception occured")
+                    logger.error("[integration_options] Unknown exception occurred")
 
             logger.debug("[integration_options] Validation errors encountered so showing options form again")
             return self.async_show_form(step_id="user", data_schema=voluptuous.Schema(schema), errors=errors)

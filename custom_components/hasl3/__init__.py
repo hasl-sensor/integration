@@ -60,7 +60,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[dump_cache] Failed to take a dump")
-            hass.bus.fire(DOMAIN, {"source": "dump_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "dump_cache", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True
 
     @callback
@@ -74,7 +74,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[get_cache] Failed to get dump")
-            hass.bus.fire(DOMAIN, {"source": "get_cache", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "get_cache", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True
 
     @callback
@@ -93,7 +93,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[sl_find_location] Lookup failed")
-            hass.bus.fire(DOMAIN, {"source": "sl_find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "sl_find_location", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True
 
     @callback
@@ -112,7 +112,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[rr_find_location] Lookup failed")
-            hass.bus.fire(DOMAIN, {"source": "rr_find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "rr_find_location", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True            
 
     @callback
@@ -132,7 +132,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[sl_find_trip_id] Lookup failed")
-            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_id", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_id", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True
 
     @callback
@@ -154,7 +154,7 @@ async def async_setup(hass, config):
             return True
         except Exception as e:
             serviceLogger.debug("[sl_find_trip_pos] Lookup failed")
-            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_pos", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
+            hass.bus.fire(DOMAIN, {"source": "sl_find_trip_pos", "state": "error", "result": f"Exception occurred during execution: {str(e)}"})
             return True
 
     @callback

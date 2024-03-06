@@ -45,7 +45,7 @@ class rrapi(object):
         try:
             jsonResponse = resp.json()
         except Exception as e:
-            error = RRAPI_API_Error(998, f"A parsing error occured ({api})", str(e))
+            error = RRAPI_API_Error(998, f"A parsing error occurred ({api})", str(e))
             logger.debug(error)
             raise error
 

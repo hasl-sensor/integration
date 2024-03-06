@@ -46,7 +46,7 @@ from .const import (
 
 
 def hasl_base_config_schema(config: dict = {}, config_flow: bool = False) -> dict:
-    """Shcema configuration dict that is common with all integration types."""
+    """Schema configuration dict that is common with all integration types."""
     if not config:
         config = {
             CONF_NAME: "",

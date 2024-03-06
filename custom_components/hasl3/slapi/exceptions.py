@@ -22,12 +22,12 @@ class SLAPI_Error(Exception):
 
 
 class SLAPI_API_Error(SLAPI_Error):
-    """An api-level exception occured."""
+    """An API-level exception occurred."""
     def __str__(self):
         return "SLAPI_API_Error {0}: {1}".format(self._code, self._message)
 
 
 class SLAPI_HTTP_Error(SLAPI_Error):
-    """An http-level exception occured."""
+    """An HTTP-level exception occurred."""
     def __str__(self):
         return "SLAPI_HTTP_Error {0}: {1}".format(self._code, self._message)

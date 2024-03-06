@@ -76,19 +76,19 @@ async def setup_hasl_sensor(hass, config):
     worker = hass.data[DOMAIN]["worker"]
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up RI4 sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up RI4 sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
             if CONF_RI4_KEY in config.data and CONF_SITE_ID in config.data:
                 await worker.assert_ri4(config.data[CONF_RI4_KEY], config.data[CONF_SITE_ID])
                 sensors.append(HASLDepartureSensor(hass, config, config.data[CONF_SITE_ID]))
-            logger.debug("[setup_hasl_sensor] Force proccessing RI4 sensors")
+            logger.debug("[setup_hasl_sensor] Force processing RI4 sensors")
             await worker.process_ri4()
         logger.debug("[setup_hasl_sensor] Completed setting up RI4 sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup RI4 sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up RI4 sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up SI2 sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up SI2 sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
             if CONF_SI2_KEY in config.data:
                 for deviationid in ','.join(set(config.data[CONF_DEVIATION_LINES].split(','))).split(','):
@@ -97,26 +97,26 @@ async def setup_hasl_sensor(hass, config):
                 for deviationid in ','.join(set(config.data[CONF_DEVIATION_STOPS].split(','))).split(','):
                     await worker.assert_si2_stop(config.data[CONF_SI2_KEY], deviationid)
                     sensors.append(HASLDeviationSensor(hass, config, CONF_DEVIATION_STOP, deviationid))
-            logger.debug("[setup_hasl_sensor] Force proccessing SI2 sensors")
+            logger.debug("[setup_hasl_sensor] Force processing SI2 sensors")
             await worker.process_si2()
         logger.debug("[setup_hasl_sensor] Completed setting up SI2 sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup SI2 sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up SI2 sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up RP3 sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up RP3 sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_ROUTE:
             if CONF_RP3_KEY in config.data:
                 await worker.assert_rp3(config.data[CONF_RP3_KEY], config.data[CONF_SOURCE], config.data[CONF_DESTINATION])
                 sensors.append(HASLRouteSensor(hass, config, f"{config.data[CONF_SOURCE]}-{config.data[CONF_DESTINATION]}"))
-            logger.debug("[setup_hasl_sensor] Force proccessing RP3 sensors")
+            logger.debug("[setup_hasl_sensor] Force processing RP3 sensors")
             await worker.process_rp3()
         logger.debug("[setup_hasl_sensor] Completed setting up RP3 sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup RP3 sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up RP3 sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up TL2 sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up TL2 sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
             if CONF_ANALOG_SENSORS in config.data:
                 if CONF_TL2_KEY in config.data:
@@ -126,14 +126,14 @@ async def setup_hasl_sensor(hass, config):
                         if sensortype in config.data and config.data[sensortype]:
                             sensors.append(HASLTrafficStatusSensor(hass, config, sensortype))
 
-                logger.debug("[setup_hasl_sensor] Force proccessing TL2 sensors")
+                logger.debug("[setup_hasl_sensor] Force processing TL2 sensors")
                 await worker.process_tl2()
         logger.debug("[setup_hasl_sensor] Completed setting up TL2 sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup Tl2 sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up TL2 sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up FP sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up FP sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
             if CONF_FP_PT in config.data and config.data[CONF_FP_PT]:
                 await worker.assert_fp("PT")
@@ -162,47 +162,47 @@ async def setup_hasl_sensor(hass, config):
             if CONF_FP_TB2 in config.data and config.data[CONF_FP_TB2]:
                 await worker.assert_fp("TB3")
                 sensors.append(HASLVehicleLocationSensor(hass, config, 'TB3'))
-            logger.debug("[setup_hasl_sensor] Force proccessing FP sensors")
+            logger.debug("[setup_hasl_sensor] Force processing FP sensors")
             await worker.process_fp()
         logger.debug("[setup_hasl_sensor] Completed setting up FP sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup FP sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up FP sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up RRD sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up RRD sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP:
             if CONF_RR_KEY in config.data and CONF_SITE_ID in config.data:
                 await worker.assert_rrd(config.data[CONF_RR_KEY], config.data[CONF_SITE_ID])
                 sensors.append(HASLRRDepartureSensor(hass, config, config.data[CONF_SITE_ID]))
-            logger.debug("[setup_hasl_sensor] Force proccessing RRD sensors")
+            logger.debug("[setup_hasl_sensor] Force processing RRD sensors")
             await worker.process_rrd()
         logger.debug("[setup_hasl_sensor] Completed setting up RRD sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup RRD sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up RRD sensors: {str(e)}")
 
     try:
-        logger.debug("[setup_hasl_sensor] Setting up RRA sensors..")
+        logger.debug("[setup_hasl_sensor] Setting up RRA sensors...")
         if config.data[CONF_INTEGRATION_TYPE] == SENSOR_RRARR:
             if CONF_RR_KEY in config.data and CONF_SITE_ID in config.data:
                 await worker.assert_rra(config.data[CONF_RR_KEY], config.data[CONF_SITE_ID])
                 sensors.append(HASLRRArrivalSensor(hass, config, config.data[CONF_SITE_ID]))
-            logger.debug("[setup_hasl_sensor] Force proccessing RRA sensors")
+            logger.debug("[setup_hasl_sensor] Force processing RRA sensors")
             await worker.process_rra()
         logger.debug("[setup_hasl_sensor] Completed setting up RRA sensors")
     except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup RRA sensors {str(e)}")
+        logger.error(f"[setup_hasl_sensor] Failed to set up RRA sensors: {str(e)}")
 
     #try:
-    logger.debug("[setup_hasl_sensor] Setting up RRR sensors..")
+    logger.debug("[setup_hasl_sensor] Setting up RRR sensors...")
     if config.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
         if CONF_RR_KEY in config.data:
             await worker.assert_rrr(config.data[CONF_RR_KEY], config.data[CONF_SOURCE_ID], config.data[CONF_DESTINATION_ID])
             sensors.append(HASLRRRouteSensor(hass, config, f"{config.data[CONF_SOURCE_ID]}-{config.data[CONF_DESTINATION_ID]}"))
-        logger.debug("[setup_hasl_sensor] Force proccessing RRR sensors")
+        logger.debug("[setup_hasl_sensor] Force processing RRR sensors")
         await worker.process_rrr()
     logger.debug("[setup_hasl_sensor] Completed setting up RRR sensors")
     #except Exception as e:
-    #    logger.error(f"[setup_hasl_sensor] Failed to setup RRR sensors {str(e)}")
+    #    logger.error(f"[setup_hasl_sensor] Failed to set up RRR sensors: {str(e)}")
 
     logger.debug("[setup_hasl_sensor] Completed")
     return sensors
@@ -250,7 +250,7 @@ class HASLRouteSensor(HASLDevice):
                         await self._worker.process_rp3()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -344,7 +344,7 @@ class HASLRouteSensor(HASLDevice):
             val['trip_count'] = len(self._sensordata["trips"])
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val
 
@@ -375,7 +375,7 @@ class HASLRRRouteSensor(HASLDevice):
                         await self._worker.process_rrr()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -468,7 +468,7 @@ class HASLRRRouteSensor(HASLDevice):
             val['trip_count'] = len(self._sensordata["trips"])
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val
 
@@ -521,7 +521,7 @@ class HASLDepartureSensor(HASLDevice):
                         await self._worker.process_ri4()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -587,7 +587,7 @@ class HASLDepartureSensor(HASLDevice):
         if sensorproperty == 'updated':
             return self._sensordata["last_updated"]
 
-        # Failsafe
+        # Fail-safe
         return '-'
 
     def nextDeparture(self):
@@ -645,7 +645,7 @@ class HASLDepartureSensor(HASLDevice):
         if self._sensordata == [] or self._sensordata is None:
             return val
 
-        # Format the next exptected time.
+        # Format the next expected time.
         next_departure = self.nextDeparture()
         if next_departure:
             expected_time = next_departure['expected']
@@ -656,7 +656,7 @@ class HASLDepartureSensor(HASLDevice):
             expected_time = '-'
             expected_minutes = '-'
 
-        # Setup the unit of measure.
+        # Set up the unit of measure.
         if self._unit_of_measure != '':
             val['unit_of_measurement'] = self._unit_of_measure
 
@@ -686,7 +686,7 @@ class HASLDepartureSensor(HASLDevice):
             val['deviation_count'] = len(self._sensordata["deviations"])
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val
 
@@ -736,7 +736,7 @@ class HASLRRDepartureSensor(HASLDevice):
                         await self._worker.process_rrd()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -786,7 +786,7 @@ class HASLRRDepartureSensor(HASLDevice):
         if sensorproperty == 'updated':
             return self._sensordata["last_updated"]
 
-        # Failsafe
+        # Fail-safe
         return '-'
 
     def nextDeparture(self):
@@ -845,7 +845,7 @@ class HASLRRDepartureSensor(HASLDevice):
         if self._sensordata == [] or self._sensordata is None:
             return val
 
-        # Format the next exptected time.
+        # Format the next expected time.
         next_departure = self.nextDeparture()
         if next_departure:
             adjustedDateTime = now()
@@ -858,7 +858,7 @@ class HASLRRDepartureSensor(HASLDevice):
             expected_time = '-'
             expected_minutes = '-'
 
-        # Setup the unit of measure.
+        # Set up the unit of measure.
         if self._unit_of_measure != '':
             val['unit_of_measurement'] = self._unit_of_measure
 
@@ -886,7 +886,7 @@ class HASLRRDepartureSensor(HASLDevice):
             val['next_departure_time'] = expected_time
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val        
 
@@ -936,7 +936,7 @@ class HASLRRArrivalSensor(HASLDevice):
                         await self._worker.process_rra()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
         self._sensordata = self._worker.data.rra[self._siteid]
@@ -994,7 +994,7 @@ class HASLRRArrivalSensor(HASLDevice):
         if sensorproperty == 'updated':
             return self._sensordata["last_updated"]
 
-        # Failsafe
+        # Fail-safe
         return '-'
 
     def nextArrival(self):
@@ -1048,7 +1048,7 @@ class HASLRRArrivalSensor(HASLDevice):
         if self._sensordata == [] or self._sensordata is None:
             return val
 
-        # Format the next exptected time.
+        # Format the next expected time.
         next_arrival = self.nextArrival()
         if next_arrival:
             adjustedDateTime = now()
@@ -1061,7 +1061,7 @@ class HASLRRArrivalSensor(HASLDevice):
             expected_time = '-'
             expected_minutes = '-'
 
-        # Setup the unit of measure.
+        # Set up the unit of measure.
         if self._unit_of_measure != '':
             val['unit_of_measurement'] = self._unit_of_measure
 
@@ -1088,7 +1088,7 @@ class HASLRRArrivalSensor(HASLDevice):
             val['next_arrival_time'] = expected_time
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val        
 
@@ -1122,7 +1122,7 @@ class HASLDeviationSensor(HASLDevice):
                         await self._worker.process_si2()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -1195,7 +1195,7 @@ class HASLDeviationSensor(HASLDevice):
             val['deviation_count'] = len(self._sensordata["data"])
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val
 
@@ -1226,7 +1226,7 @@ class HASLVehicleLocationSensor(HASLDevice):
                         await self._worker.process_fp()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -1298,7 +1298,7 @@ class HASLVehicleLocationSensor(HASLDevice):
             val['vehicle_count'] = len(self._sensordata["data"])
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val
 
@@ -1329,7 +1329,7 @@ class HASLTrafficStatusSensor(HASLDevice):
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -1410,6 +1410,6 @@ class HASLTrafficStatusSensor(HASLDevice):
             val['last_updated'] = self._sensordata["last_updated"]
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val

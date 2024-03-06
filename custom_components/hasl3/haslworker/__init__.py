@@ -78,7 +78,7 @@ class HASLInstances(object):
             del self.instances[id]
         except Exception as e:
             logger.debug(
-                f"Error occured while unregistering listener {str(e)}")
+                f"Error occurred while deregistering listener {str(e)}")
 
     def count(self):
         return self.instanceCount
@@ -109,7 +109,7 @@ class HaslWorker(object):
             jsonFile.close()
             logger.debug("[debug_dump] Completed")
         except:
-            logger.debug("[debug_dump] A processing error occured")
+            logger.debug("[debug_dump] A processing error occurred")
 
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
@@ -130,7 +130,7 @@ class HaslWorker(object):
                     logger.debug("[check_sensor_state] Completed will return FALSE/DISABLED")
                     return False
             except:
-                logger.debug("[check_sensor_state] An error occured, default will be returned")
+                logger.debug("[check_sensor_state] An error occurred, default will be returned")
                 return default
         else:
             logger.debug("[check_sensor_state] No sensor specified, will return default")
@@ -312,7 +312,7 @@ class HaslWorker(object):
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
                 except Exception as e:
-                    logger.debug(f"[process_rp3] Error occured: {str(e)}")
+                    logger.debug(f"[process_rp3] Error occurred: {str(e)}")
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
 
@@ -358,7 +358,7 @@ class HaslWorker(object):
             except Exception as e:
                 newdata['api_result'] = "Error"
                 newdata['api_error'] = str(e)
-                logger.debug(f"[process_rp3] Error occured for {traintype}: {str(e)}")
+                logger.debug(f"[process_rp3] Error occurred for {traintype}: {str(e)}")
 
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.fp[traintype] = newdata
@@ -437,7 +437,7 @@ class HaslWorker(object):
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-                    logger.debug(f"[process_si2] An error occured during processing of stop {stop}")
+                    logger.debug(f"[process_si2] An error occurred during processing of stop {stop}")
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"stop_{stop}"] = newdata
@@ -472,7 +472,7 @@ class HaslWorker(object):
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-                    logger.debug(f"[process_si2] An error occured during processing of line {line}")
+                    logger.debug(f"[process_si2] An error occurred during processing of line {line}")
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.si2[f"line_{line}"] = newdata
@@ -661,12 +661,12 @@ class HaslWorker(object):
                     newdata['attribution'] = "Samtrafiken Resrobot"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
-                    logger.debug(f"[process_rrd] Stop {stop} updated sucessfully")
+                    logger.debug(f"[process_rrd] Stop {stop} updated successfully")
 
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-                    logger.debug(f"[process_rrd] Error occured during update {stop}")
+                    logger.debug(f"[process_rrd] Error occurred during update {stop}")
 
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
@@ -742,12 +742,12 @@ class HaslWorker(object):
                     newdata['attribution'] = "Samtrafiken Resrobot"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
-                    logger.debug(f"[process_rra] Stop {stop} updated sucessfully")
+                    logger.debug(f"[process_rra] Stop {stop} updated successfully")
 
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-                    logger.debug(f"[process_rra] Error occured during update {stop}")
+                    logger.debug(f"[process_rra] Error occurred during update {stop}")
 
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
@@ -919,11 +919,11 @@ class HaslWorker(object):
                     newdata['attribution'] = "Stockholms Lokaltrafik"
                     newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
                     newdata['api_result'] = "Success"
-                    logger.debug(f"[process_ri4] Stop {stop} updated sucessfully")
+                    logger.debug(f"[process_ri4] Stop {stop} updated successfully")
                 except Exception as e:
                     newdata['api_result'] = "Error"
                     newdata['api_error'] = str(e)
-                    logger.debug(f"[process_ri4] Error occured during update {stop}")
+                    logger.debug(f"[process_ri4] Error occurred during update {stop}")
 
                 newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
                 self.data.ri4[stop] = newdata

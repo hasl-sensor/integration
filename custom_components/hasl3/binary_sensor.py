@@ -104,7 +104,7 @@ class HASLTrafficProblemSensor(HASLDevice):
                         await self._worker.process_tl2()
                         logger.debug("[async_update] Update processed")
                     except:
-                        logger.debug("[async_update] Error occured during update")
+                        logger.debug("[async_update] Error occurred during update")
                 else:
                     logger.debug("[async_update] Not due for update, skipping")
 
@@ -199,6 +199,6 @@ class HASLTrafficProblemSensor(HASLDevice):
             val['last_updated'] = self._sensordata["last_updated"]
         except:
             val['error'] = "NoDataYet"
-            logger.debug(f"Data was not avaliable for processing when getting attributes for sensor {self._name}")
+            logger.debug(f"Data was not available for processing when getting attributes for sensor {self._name}")
 
         return val

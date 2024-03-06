@@ -22,12 +22,12 @@ class RRAPI_Error(Exception):
 
 
 class RRAPI_API_Error(RRAPI_Error):
-    """An api-level exception occured."""
+    """An API-level exception occurred."""
     def __str__(self):
         return "RRAPI_API_Error {0}: {1}".format(self._code, self._message)
 
 
 class RRAPI_HTTP_Error(RRAPI_Error):
-    """An http-level exception occured."""
+    """An HTTP-level exception occurred."""
     def __str__(self):
         return "RRAPI_HTTP_Error {0}: {1}".format(self._code, self._message)

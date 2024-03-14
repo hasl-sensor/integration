@@ -17,6 +17,7 @@
 
                     "ri4key": "Realtidsinformation 4 API Key",
                     "siteid": "Location ID",
+                    "line": "Line",
 					"direction": "Direction",
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
@@ -27,7 +28,7 @@
 
                     "tl2key": "Trafikläget 2 API Key",
 					"analog": "Create sensors instead of binary_sensors (not recomended)",
-					
+
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
 					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
@@ -51,7 +52,7 @@
                     "local": "Local trains",
                     "tram": "Trams",
                     "bus": "Buses",
-                    "ferry": "Ferries"                    
+                    "ferry": "Ferries"
 				}
             }
         }
@@ -66,6 +67,7 @@
 
                     "ri4key": "Realtidsinformation 4 API Key",
                     "siteid": "Location ID",
+                    "line": "Line",
 					"direction": "Direction",
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
@@ -76,7 +78,7 @@
 
                     "tl2key": "Trafikläget 2 API Key",
 					"analog": "Create sensors instead of binary_sensors (not recomended)",
-					
+
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
 					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
@@ -100,7 +102,7 @@
                     "local": "Local trains",
                     "tram": "Trams",
                     "bus": "Buses",
-                    "ferry": "Ferries"                    
+                    "ferry": "Ferries"
 				}
             }
         }

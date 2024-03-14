@@ -1,25 +1,27 @@
-import logging
-import jsonpickle
-import isodate
-import time
-
+from dataclasses import dataclass
 from datetime import datetime
-from homeassistant.util.dt import now
+from enum import Enum
+import logging
+import time
+from typing import Generic, List, NamedTuple, Optional, TypeVar
 
+from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
 from custom_components.hasl3.slapi import (
     slapi_fp,
-    slapi_tl2,
     slapi_ri4,
-    slapi_si2,
     slapi_rp3,
+    slapi_si2,
+    slapi_tl2,
 )
+import isodate
+import jsonpickle
+from tsl.clients.transport import TransportClient
+from tsl.models.departures import Departure
 
-from custom_components.hasl3.rrapi import (
-    rrapi_rra,
-    rrapi_rrd,
-    rrapi_rrr
-)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.util.dt import now
 
+from .. import const
 
 logger = logging.getLogger("custom_components.hasl3.worker")
 
@@ -29,6 +31,44 @@ class HASLStatus(object):
     startup_in_progress = True
     running_background_tasks = False
 
+
+# TODO: add forecast and vehicle type to key
+class DepartureKey(NamedTuple):
+    siteid: int
+    direction: Optional[int]
+    forecast: Optional[int]
+    line: Optional[int]
+
+T = TypeVar('T')
+
+class MetaState(str, Enum):
+    PENDING = "Pending"
+    SUCCESS = "Success"
+    ERROR = "Error"
+
+@dataclass(frozen=True)
+class DataWithMeta(Generic[T]):
+    data: Optional[T]
+
+    api_type: str
+    api_lastrun: datetime
+    api_result: MetaState
+    api_error: str = ""
+
+    @classmethod
+    def pending(cls, api_type: str):
+        now_tz = now().tzinfo
+        return cls(data=None, api_type=api_type, api_lastrun=datetime(1970, 1, 1, tzinfo=now_tz), api_result=MetaState.PENDING)
+
+    @classmethod
+    def success(cls, api_type: str, data: T):
+        return cls(data=data, api_type=api_type, api_lastrun=now(), api_result=MetaState.SUCCESS)
+
+    @classmethod
+    def error(cls, api_type: str, error: Exception):
+        return cls(data=None, api_type=api_type, api_lastrun=now(), api_result=MetaState.ERROR, api_error=str(error))
+
+DepartureData = DataWithMeta[List[Departure]]
 
 class HASLData(object):
     tl2 = {}
@@ -43,6 +83,7 @@ class HASLData(object):
     rrr = {}
     rrkeys = {}
     fp = {}
+    departures: dict[DepartureKey, DepartureData] = {}
 
     def dump(self):
         return {
@@ -534,7 +575,7 @@ class HaslWorker(object):
             }
 
         logger.debug("[assert_rrd] Completed")
-        return     
+        return
 
     async def assert_rra(self, key, stop):
         logger.debug("[assert_rra] Entered")
@@ -596,7 +637,7 @@ class HaslWorker(object):
             }
 
         logger.debug("[assert_rp3] Completed")
-        return      
+        return
 
     async def process_rrd(self, notarealarg=None):
         logger.debug("[process_rrd] Entered")
@@ -654,7 +695,7 @@ class HaslWorker(object):
                             'expected': expected,
                             'type': value["ProductAtStop"]["catOut"],
                             'icon': iconswitcher.get(value["ProductAtStop"]["catOut"],'mdi:train-car'),
-                        })                    
+                        })
 
                     newdata['data'] = sorted(departures,
                                                 key=lambda k: k['time'])
@@ -674,9 +715,9 @@ class HaslWorker(object):
                 logger.debug(f"[process_rrd] Completed stop {stop}")
 
             logger.debug(f"[process_rrd] Completed key {rrkey}")
- 
+
         logger.debug("[process_rrd] Completed")
-        return      
+        return
 
     async def process_rra(self, notarealarg=None):
         logger.debug("[process_rra] Entered")
@@ -735,7 +776,7 @@ class HaslWorker(object):
                             'expected': expected,
                             'type': value["ProductAtStop"]["catOut"],
                             'icon': iconswitcher.get(value["ProductAtStop"]["catOut"],'mdi:train-car'),
-                        })                    
+                        })
 
                     newdata['data'] = sorted(arrivals,
                                                 key=lambda k: k['time'])
@@ -755,9 +796,9 @@ class HaslWorker(object):
                 logger.debug(f"[process_rra] Completed stop {stop}")
 
             logger.debug(f"[process_rra] Completed key {rrkey}")
- 
+
         logger.debug("[process_rra] Completed")
-        return 
+        return
 
     async def process_rrr(self):
         logger.debug("[process_rrr] Entered")
@@ -785,7 +826,7 @@ class HaslWorker(object):
                         newtrip = {
                             'legs': []
                         }
-                    
+
                         # Add legs to trips
                         for leg in trip['LegList']['Leg']:
                             newleg = {}
@@ -799,15 +840,15 @@ class HaslWorker(object):
                             newleg['from'] = leg['Origin']['name']
                             newleg['to'] = leg['Destination']['name']
                             newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
-                    
+
                             if leg.get('Stops'):
                                 if leg['Stops'].get('Stop', {}):
                                     newleg['stops'] = []
                                     for stop in leg.get('Stops', {}).get('Stop', {}):
                                         newleg['stops'].append(stop)
-                    
+
                             newtrip['legs'].append(newleg)
-                    
+
                         # Make some shortcuts for data
                         newtrip['first_leg'] = newtrip['legs'][0]['name']
                         newtrip['time'] = newtrip['legs'][0]['time']
@@ -856,7 +897,6 @@ class HaslWorker(object):
             logger.debug(f"[process_rrr] Completed key {rrkey}")
 
         logger.debug("[process_rrr] Completed")
-
 
     async def process_ri4(self, notarealarg=None):
         logger.debug("[process_ri4] Entered")
@@ -1012,3 +1052,31 @@ class HaslWorker(object):
 
         logger.debug("[process_tl2] Completed")
         return
+
+    async def assert_departure(self, config: ConfigEntry):
+        key = DepartureKey(config.options[const.CONF_SITE_ID], config.options[const.CONF_DIRECTION] or None, config.options[const.CONF_TIMEWINDOW] or None, config.options[const.CONF_LINE] or None)
+        if tuple(key) not in self.data.departures:
+            self.data.departures[key] = DataWithMeta.pending("departure")
+
+    async def process_departures(self):
+        pending = (k for k, v in self.data.departures.items() if v.api_result == MetaState.PENDING)
+        for key in list(pending):
+            await self.get_departure_data(DepartureKey(*key))
+
+    async def get_departure_data(self, key: DepartureKey):
+        """Get departure data for a specific stop."""
+
+        client = TransportClient()
+        logger.debug(f"[get_departure_data] Enter for {key}")
+
+        try:
+            response = await client.get_site_departures(key.siteid, direction=key.direction, line=key.line, forecast=key.forecast)
+        except Exception as e:
+            logger.error(f"[get_departure_data] error: {e}")
+            data = DataWithMeta.error("departure", e)
+        else:
+            logger.debug("[get_departure_data] new Data!")
+            data = DataWithMeta.success("departure", response.departures)
+
+        self.data.departures[tuple(key)] = data
+        return data

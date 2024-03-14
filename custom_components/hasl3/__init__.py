@@ -1,22 +1,15 @@
 import logging
 import jsonpickle
 import time
-import asyncio
 
 from custom_components.hasl3.haslworker import HaslWorker
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
     DOMAIN,
-    HASL_VERSION,
     SCHEMA_VERSION,
-    DEVICE_NAME,
-    DEVICE_MANUFACTURER,
-    DEVICE_MODEL,
-    DEVICE_GUID,
     CONF_INTEGRATION_TYPE,
     SENSOR_STANDARD,
     SENSOR_STATUS,
@@ -24,6 +17,7 @@ from .const import (
     SENSOR_DEVIATION,
     SENSOR_ROUTE,
 )
+from .sensors import HASLDevice
 
 from custom_components.hasl3.slapi import (
     slapi_rp3,
@@ -113,7 +107,7 @@ async def async_setup(hass, config):
         except Exception as e:
             serviceLogger.debug("[rr_find_location] Lookup failed")
             hass.bus.fire(DOMAIN, {"source": "rr_find_location", "state": "error", "result": f"Exception occured during execution: {str(e)}"})
-            return True            
+            return True
 
     @callback
     async def sl_find_trip_id(service):
@@ -307,16 +301,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         device_registry = dr.async_get(hass)
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
-            identifiers={(DOMAIN, DEVICE_GUID)},
-            name=DEVICE_NAME,
-            model=DEVICE_MODEL,
-            sw_version=HASL_VERSION,
-            manufacturer=DEVICE_MANUFACTURER,
-            entry_type=DeviceEntryType.SERVICE
+            **HASLDevice.get_device_info()
         )
         logger.debug("[setup_entry] Created device")
     except Exception as e:
-        logger.error(f"[setup_entry] Failed to create device: {str(e)}")        
+        logger.error(f"[setup_entry] Failed to create device: {str(e)}")
         return False
 
     try:

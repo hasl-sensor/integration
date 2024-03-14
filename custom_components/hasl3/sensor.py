@@ -24,6 +24,7 @@ from .const import (
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     SENSOR_DEVIATION,
+    SENSOR_DEPARTURE,
     SENSOR_ROUTE,
     CONF_ANALOG_SENSORS,
     CONF_FP_PT,
@@ -40,6 +41,7 @@ from .const import (
     CONF_RP3_KEY,
     CONF_SITE_ID,
     CONF_SENSOR,
+    CONF_LINE,
     CONF_LINES,
     CONF_INTEGRATION_TYPE,
     CONF_INTEGRATION_ID,
@@ -56,6 +58,7 @@ from .const import (
     STATE_ON,
     CONF_TRANSPORT_MODE_LIST
 )
+from .sensors import TrafikDepartureSensor
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.sensors")
 
@@ -74,6 +77,17 @@ async def setup_hasl_sensor(hass, config):
 
     sensors = []
     worker = hass.data[DOMAIN]["worker"]
+
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up Departure sensor ...")
+        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_DEPARTURE:
+            await worker.assert_departure(config)
+            sensors.append(TrafikDepartureSensor(hass, config))
+            await worker.process_departures()
+
+        logger.debug("[setup_hasl_sensor] Completed setting up Departure sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup Departure sensor {str(e)}")
 
     try:
         logger.debug("[setup_hasl_sensor] Setting up RI4 sensors..")

@@ -112,7 +112,8 @@
     "selector": {
         "type": {
             "options": {
-                "departure_v2": "SL Trafik Departures"
+                "departure_v2": "SL Trafik Departures",
+                "status_v2": "SL Traffic Status"
             }
         },
         "transport": {

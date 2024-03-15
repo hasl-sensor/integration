@@ -63,6 +63,7 @@ from .const import (
     STATE_ON,
 )
 from .sensors.departure import async_setup_entry as setup_departure_sensor
+from .sensors.status import async_setup_entry as setup_status_sensor
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.sensors")
 
@@ -80,8 +81,11 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     type_ = entry.data[CONF_INTEGRATION_TYPE]
-    if type_ == SENSOR_DEPARTURE:
-        await setup_departure_sensor(hass, entry, async_add_entities)
+    if coro := {
+        SENSOR_DEPARTURE: setup_departure_sensor,
+        SENSOR_STATUS: setup_status_sensor,
+    }.get(type_):
+        await coro(hass, entry, async_add_entities)
 
 
 async def setup_hasl_sensor(hass, config):

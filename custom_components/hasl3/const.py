@@ -21,7 +21,7 @@ SENSOR_RRDEP = "Resrobot Departures"
 SENSOR_RRARR = "Resrobot Arrivals"
 SENSOR_RRROUTE = "Resrobot Route Sensor"
 SENSOR_STANDARD = "SL Departures"
-SENSOR_STATUS = "SL Traffic Status"
+SENSOR_STATUS = "status_v2"
 SENSOR_VEHICLE_LOCATION = "SL Vehicle Locations"
 SENSOR_DEVIATION = "SL Deviations"
 SENSOR_ROUTE = "SL Route Sensor"
@@ -34,6 +34,7 @@ CONF_RP3_KEY = "rp3key"
 CONF_RR_KEY = "rrkey"
 
 CONF_SITE_ID = "siteid"
+CONF_SITE_IDS = "siteids"
 CONF_DEBUG = "debug"
 CONF_FP_PT = "fppt"
 CONF_FP_RB = "fprb"
@@ -95,10 +96,10 @@ CONF_SENSOR_PROPERTY_LIST = [
 ]
 CONF_INTEGRATION_LIST = [
     SENSOR_DEPARTURE,
+    SENSOR_STATUS,
     SENSOR_RRDEP,
     SENSOR_RRARR,
     SENSOR_RRROUTE,
-    SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     SENSOR_DEVIATION,
     SENSOR_ROUTE,

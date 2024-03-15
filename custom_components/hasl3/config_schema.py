@@ -56,6 +56,7 @@ from .const import (
     CONF_INTEGRATION_LIST,
 )
 from .sensors.departure import CONFIG_SCHEMA as departure_config_schema
+from .sensors.status import CONFIG_SCHEMA as status_config_schema
 
 
 START_CONFIG_SCHEMA = vol.Schema(
@@ -75,12 +76,14 @@ def schema_by_type(type_: str) -> vol.Schema:
     """Return the schema for the specified type."""
 
     # TODO: remove shortcut
-    if type_ == SENSOR_DEPARTURE:
-        return departure_config_schema
+    if schema := {
+        SENSOR_DEPARTURE: departure_config_schema,
+        SENSOR_STATUS: status_config_schema,
+    }.get(type_):
+        return schema
 
     schema = {
         SENSOR_STANDARD: standard_config_option_schema,
-        SENSOR_STATUS: status_config_option_schema,
         SENSOR_VEHICLE_LOCATION: vehiclelocation_config_option_schema,
         SENSOR_DEVIATION: deviation_config_option_schema,
         SENSOR_ROUTE: route_config_option_schema,
@@ -140,45 +143,6 @@ def deviation_config_option_schema(options: dict = {}) -> dict:
         vol.Optional(
             CONF_DEVIATION_LINES, default=options.get(CONF_DEVIATION_LINES)
         ): str,
-        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
-    }
-
-
-CONF_METRO = "metro"
-CONF_TRAIN = "train"
-CONF_LOCAL = "local"
-CONF_TRAM = "tram"
-CONF_BUS = "bus"
-CONF_FERRY = "ferry"
-
-
-def status_config_option_schema(options: dict = {}) -> dict:
-    """Status sensor options."""
-    if not options:
-        options = {
-            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-            CONF_SENSOR: "",
-            CONF_TL2_KEY: "",
-            CONF_ANALOG_SENSORS: False,
-            CONF_METRO: False,
-            CONF_TRAIN: False,
-            CONF_LOCAL: False,
-            CONF_TRAM: False,
-            CONF_BUS: False,
-            CONF_FERRY: False,
-        }
-    return {
-        vol.Required(CONF_TL2_KEY, default=options.get(CONF_TL2_KEY)): str,
-        vol.Optional(CONF_METRO, default=options.get(CONF_METRO)): bool,
-        vol.Optional(CONF_TRAIN, default=options.get(CONF_TRAIN)): bool,
-        vol.Optional(CONF_LOCAL, default=options.get(CONF_LOCAL)): bool,
-        vol.Optional(CONF_TRAM, default=options.get(CONF_TRAM)): bool,
-        vol.Optional(CONF_BUS, default=options.get(CONF_BUS)): bool,
-        vol.Optional(CONF_FERRY, default=options.get(CONF_FERRY)): bool,
-        vol.Optional(
-            CONF_ANALOG_SENSORS, default=options.get(CONF_ANALOG_SENSORS)
-        ): bool,
         vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
         vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
     }

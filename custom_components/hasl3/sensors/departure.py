@@ -22,7 +22,6 @@ from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -31,6 +30,7 @@ from homeassistant.helpers.update_coordinator import (
 from homeassistant.util.dt import now
 
 from .. import const
+from .device import SL_TRAFFIK_DEVICE_INFO
 
 logger = logging.getLogger(f"custom_components.{const.DOMAIN}.sensors.departure")
 
@@ -156,14 +156,7 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[SiteDepartureResponse
         self._session = session
         self.client = TransportClient()
 
-        self.device_info = DeviceInfo(
-            entry_type=DeviceEntryType.SERVICE,
-            identifiers={(const.DOMAIN, const.SL_TRAFIK_DEVICE_GUID)},
-            manufacturer=const.DEVICE_MANUFACTURER,
-            model=const.DEVICE_MODEL,
-            name=const.SL_TRAFIK_DEVICE_NAME,
-            sw_version=const.HASL_VERSION,
-        )
+        self.device_info = SL_TRAFFIK_DEVICE_INFO
 
         super().__init__(
             hass, logger, name=const.DOMAIN, update_interval=update_interval

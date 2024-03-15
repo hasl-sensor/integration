@@ -17,9 +17,13 @@ from homeassistant.helpers.schema_config_entry_flow import (
 
 from .config_schema import START_CONFIG_SCHEMA, schema_by_type
 from .const import (
+    CONF_DIRECTION,
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
     CONF_LINE,
+    CONF_SCAN_INTERVAL,
+    CONF_SITE_ID,
+    CONF_TIMEWINDOW,
     DOMAIN,
     SCHEMA_VERSION,
 )
@@ -60,8 +64,16 @@ class ConfigFlow(SchemaConfigFlowHandler, domain=DOMAIN):
     def async_config_flow_finished(self, options: Mapping[str, Any]) -> None:
         """Mutate options after all steps are done."""
 
-        if line := options.get(CONF_LINE):
-            options[CONF_LINE] = int(line)
+        int_fields = (
+            CONF_SITE_ID,
+            CONF_SCAN_INTERVAL,
+            CONF_TIMEWINDOW,
+            CONF_LINE,
+            CONF_DIRECTION,
+        )
+        for field in int_fields:
+            if (value := options.get(field)) is not None:
+                options[field] = int(value)
 
     @callback
     def async_create_entry(

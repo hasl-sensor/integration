@@ -1,5 +1,4 @@
 """HASL Configuration Database."""
-from typing import Any
 
 import voluptuous as vol
 
@@ -7,7 +6,6 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_ANALOG_SENSORS,
-    CONF_DEPARTURE_SENSOR_PROPERTY_LIST,
     CONF_DESTINATION,
     CONF_DESTINATION_ID,
     CONF_DEVIATION_LINES,
@@ -23,7 +21,6 @@ from .const import (
     CONF_FP_TB2,
     CONF_FP_TB3,
     CONF_FP_TVB,
-    CONF_INTEGRATION_LIST,
     CONF_INTEGRATION_TYPE,
     CONF_LINE,
     CONF_LINES,
@@ -44,7 +41,6 @@ from .const import (
     CONF_TIMEWINDOW,
     CONF_TL2_KEY,
     DEFAULT_DIRECTION,
-    DEFAULT_INTEGRATION_TYPE,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SENSOR_PROPERTY,
     DEFAULT_TIMEWINDOW,
@@ -57,16 +53,18 @@ from .const import (
     SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
+    CONF_INTEGRATION_LIST,
 )
+from .sensors.departure import CONFIG_SCHEMA as departure_config_schema
+
 
 START_CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): selector.TextSelector(),
-        vol.Required(CONF_INTEGRATION_TYPE): selector.SelectSelector(
+        vol.Required(CONF_INTEGRATION_TYPE, default=SENSOR_DEPARTURE): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=[
-                    selector.SelectOptionDict(value=SENSOR_DEPARTURE, label="Departure")
-                ]
+                options=CONF_INTEGRATION_LIST,
+                translation_key=CONF_INTEGRATION_TYPE,
             )
         ),
     }
@@ -76,8 +74,11 @@ START_CONFIG_SCHEMA = vol.Schema(
 def schema_by_type(type_: str) -> vol.Schema:
     """Return the schema for the specified type."""
 
+    # TODO: remove shortcut
+    if type_ == SENSOR_DEPARTURE:
+        return departure_config_schema
+
     schema = {
-        SENSOR_DEPARTURE: trafik_departures_config_option_schema,
         SENSOR_STANDARD: standard_config_option_schema,
         SENSOR_STATUS: status_config_option_schema,
         SENSOR_VEHICLE_LOCATION: vehiclelocation_config_option_schema,
@@ -89,45 +90,6 @@ def schema_by_type(type_: str) -> vol.Schema:
     }.get(type_)
 
     return vol.Schema(schema())
-
-
-def trafik_departures_config_option_schema(options: dict = {}) -> dict:
-    """Options for SL Trafik Departure sensor"""
-
-    return {
-        vol.Required(CONF_SITE_ID): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, mode=selector.NumberSelectorMode.BOX)
-        ),
-        vol.Required(
-            CONF_SENSOR_PROPERTY,
-            default=options.get(CONF_SENSOR_PROPERTY, DEFAULT_SENSOR_PROPERTY),
-        ): vol.In(CONF_DEPARTURE_SENSOR_PROPERTY_LIST),
-        vol.Required(CONF_SCAN_INTERVAL): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0,
-                unit_of_measurement="seconds",
-                mode=selector.NumberSelectorMode.BOX,
-            )
-        ),
-        # TODO: add transport type
-        vol.Optional(CONF_LINE): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, mode=selector.NumberSelectorMode.BOX)
-        ),
-        vol.Optional(
-            CONF_DIRECTION, default=options.get(CONF_DIRECTION, DEFAULT_DIRECTION)
-        ): vol.In(CONF_DIRECTION_LIST),
-        vol.Optional(CONF_TIMEWINDOW, default=60): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0,
-                max=60,
-                unit_of_measurement="minutes",
-                mode=selector.NumberSelectorMode.SLIDER,
-            )
-        ),
-        vol.Optional(CONF_SENSOR): selector.EntitySelector(
-            selector.EntitySelectorConfig(domain="binary_sensor")
-        ),
-    }
 
 
 def standard_config_option_schema(options: dict = {}) -> dict:

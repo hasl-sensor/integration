@@ -46,6 +46,7 @@
                     "fptb1": "Gröna Linjen",
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
+                    "transport": "Transport filter",
 
                     "metro": "Subway",
                     "train": "Commuter trains",
@@ -96,6 +97,7 @@
                     "fptb1": "Gröna Linjen",
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
+                    "transport": "Transport filter",
 
                     "metro": "Subway",
                     "train": "Commuter trains",
@@ -104,6 +106,31 @@
                     "bus": "Buses",
                     "ferry": "Ferries"
 				}
+            }
+        }
+    },
+    "selector": {
+        "type": {
+            "options": {
+                "departure_v2": "SL Trafik Departures"
+            }
+        },
+        "transport": {
+            "options": {
+                "BUS": "Bus",
+                "METRO": "Subway",
+                "TRAM": "Tram",
+                "TRAIN": "Train",
+                "SHIP": "Ship",
+                "FETTRY": "Ferry",
+                "TAXI": "Taxi"
+            }
+        },
+        "direction": {
+            "options": {
+                "0": "Any",
+                "1": "Left",
+                "2": "Right"
             }
         }
     }

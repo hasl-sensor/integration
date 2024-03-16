@@ -15,7 +15,6 @@
 					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
-                    "ri4key": "Realtidsinformation 4 API Key",
                     "siteid": "Location ID",
                     "line": "Line",
 					"direction": "Direction",
@@ -25,9 +24,6 @@
                     "si2key": "Störningsinformation 2 API Key",
 					"lines": "Lines (comma separated list)",
 					"stops": "Location IDs (comma separated list)",
-
-                    "tl2key": "Trafikläget 2 API Key",
-					"analog": "Create sensors instead of binary_sensors (not recomended)",
 
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
@@ -66,7 +62,6 @@
 					"scan_interval": "How many seconds between refresh",
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
-                    "ri4key": "Realtidsinformation 4 API Key",
                     "siteid": "Location ID",
                     "line": "Line",
 					"direction": "Direction",
@@ -76,9 +71,6 @@
                     "si2key": "Störningsinformation 2 API Key",
 					"lines": "Lines (comma separated list)",
 					"stops": "Location IDs (comma separated list)",
-
-                    "tl2key": "Trafikläget 2 API Key",
-					"analog": "Create sensors instead of binary_sensors (not recomended)",
 
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",

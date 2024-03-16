@@ -15,7 +15,6 @@
 					"scan_interval": "Hur många sekunder mellan uppdateringar?",
 					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
 
-                    "ri4key": "SL Realtidsinformation 4 API-nyckel",
                     "siteid": "Plats ID",
 					"direction": "Riktning",
 					"property": "Primäregenskap för sensorn",
@@ -25,9 +24,6 @@
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
-                    "tl2key": "SL Trafikläget 2 API-nyckel",
-					"analog": "Skapa sensorer istället för binära sensorer (rekomenderas ej)",
-					
                     "rp3key": "SL Reseplaneraren 3.1 API-nyckel",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
 					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
@@ -51,9 +47,9 @@
                     "local": "Lokaltåg",
                     "tram": "Spårvagn",
                     "bus": "Bussar",
-                    "ferry": "Färjor"                    
+                    "ferry": "Färjor"
 				}
-            }            
+            }
         }
     },
     "options": {
@@ -64,7 +60,6 @@
 					"scan_interval": "Hur många sekunder mellan uppdateringar?",
 					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
 
-                    "ri4key": "SL Realtidsinformation 4 API-nyckel",
                     "siteid": "Plats ID",
 					"direction": "Riktning",
 					"property": "Primäregenskap för sensorn",
@@ -74,9 +69,6 @@
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
-                    "tl2key": "SL Trafikläget 2 API-nyckel",
-					"analog": "Skapa sensorer istället för binära sensorer (rekomenderas ej)",
-					
                     "rp3key": "SL Reseplaneraren 3.1 API-nyckel",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
 					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
@@ -100,7 +92,7 @@
                     "local": "Lokaltåg",
                     "tram": "Spårvagn",
                     "bus": "Bussar",
-                    "ferry": "Färjor"                    
+                    "ferry": "Färjor"
 				}
             }
         }

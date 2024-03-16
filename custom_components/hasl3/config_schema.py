@@ -5,7 +5,6 @@ import voluptuous as vol
 from homeassistant.helpers import selector
 
 from .const import (
-    CONF_ANALOG_SENSORS,
     CONF_DESTINATION,
     CONF_DESTINATION_ID,
     CONF_DEVIATION_LINES,
@@ -25,7 +24,6 @@ from .const import (
     CONF_LINE,
     CONF_LINES,
     CONF_NAME,
-    CONF_RI4_KEY,
     CONF_RP3_KEY,
     CONF_RR_KEY,
     CONF_RRARR_PROPERTY_LIST,
@@ -82,7 +80,6 @@ def schema_by_type(type_: str) -> vol.Schema:
         return schema
 
     schema = {
-        SENSOR_STANDARD: standard_config_option_schema,
         SENSOR_VEHICLE_LOCATION: vehiclelocation_config_option_schema,
         SENSOR_DEVIATION: deviation_config_option_schema,
         SENSOR_ROUTE: route_config_option_schema,
@@ -92,37 +89,6 @@ def schema_by_type(type_: str) -> vol.Schema:
     }.get(type_)
 
     return vol.Schema(schema())
-
-
-def standard_config_option_schema(options: dict = {}) -> dict:
-    """Options for departure sensor / standard sensor."""
-    if not options:
-        options = {
-            CONF_SENSOR: "",
-            CONF_RI4_KEY: "",
-            CONF_SITE_ID: "",
-            CONF_SENSOR: "",
-            CONF_LINES: "",
-            CONF_DIRECTION: DEFAULT_DIRECTION,
-            CONF_SENSOR_PROPERTY: DEFAULT_SENSOR_PROPERTY,
-            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-            CONF_TIMEWINDOW: DEFAULT_TIMEWINDOW,
-        }
-    return {
-        vol.Required(CONF_RI4_KEY, default=options.get(CONF_RI4_KEY)): str,
-        vol.Required(CONF_SITE_ID, default=options.get(CONF_SITE_ID)): int,
-        vol.Required(
-            CONF_SENSOR_PROPERTY, default=options.get(CONF_SENSOR_PROPERTY)
-        ): vol.In(CONF_SENSOR_PROPERTY_LIST),
-        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
-        vol.Required(CONF_TIMEWINDOW, default=options.get(CONF_TIMEWINDOW)): int,
-        vol.Optional(CONF_LINES, default=options.get(CONF_LINES)): str,
-        vol.Optional(CONF_DIRECTION, default=options.get(CONF_DIRECTION)): vol.In(
-            CONF_DIRECTION_LIST
-        ),
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
-    }
-
 
 def deviation_config_option_schema(options: dict = {}) -> dict:
     """Deviation sensor options."""

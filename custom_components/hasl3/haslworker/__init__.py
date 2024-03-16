@@ -5,7 +5,6 @@ import logging
 from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
 from custom_components.hasl3.slapi import (
     slapi_fp,
-    slapi_ri4,
     slapi_rp3,
     slapi_si2,
 )
@@ -24,11 +23,9 @@ class HASLStatus(object):
 
 class HASLData(object):
     si2 = {}
-    ri4 = {}
     rp3 = {}
     rp3keys = {}
     si2keys = {}
-    ri4keys = {}
     rrd = {}
     rra = {}
     rrr = {}
@@ -38,10 +35,8 @@ class HASLData(object):
     def dump(self):
         return {
             'si2keys': self.si2keys,
-            'ri4keys': self.ri4keys,
             'rrkeys': self.rrkeys,
             'si2': self.si2,
-            'ri4': self.ri4,
             'fp': self.fp,
             'rrd': self.rrd,
             'rra': self.rra,
@@ -460,31 +455,6 @@ class HaslWorker(object):
         logger.debug("[process_si2] Completed")
         return
 
-    async def assert_ri4(self, key, stop):
-        logger.debug("[assert_ri4] Entered")
-        stopkey = str(stop)
-
-        if key not in self.data.ri4keys:
-            logger.debug("[assert_ri4] Registering key and stop")
-            self.data.ri4keys[key] = {
-                "api_key": key,
-                "stops": stopkey
-            }
-        else:
-            logger.debug("[assert_ri4] Adding stop to existing key")
-            self.data.ri4keys[key]["stops"] = f"{self.data.ri4keys[key]['stops']},{stopkey}"
-
-        if stop not in self.data.ri4:
-            logger.debug("[assert_ri4] Creating default data")
-            self.data.ri4[stopkey] = {
-                "api_type": "slapi-ri4",
-                "api_lastrun": '1970-01-01 01:01:01',
-                "api_result": "Pending"
-            }
-
-        logger.debug("[assert_ri4] Completed")
-        return
-
     async def assert_rrd(self, key, stop):
         logger.debug("[assert_rrd] Entered")
         stopkey = str(stop)
@@ -833,79 +803,3 @@ class HaslWorker(object):
             logger.debug(f"[process_rrr] Completed key {rrkey}")
 
         logger.debug("[process_rrr] Completed")
-
-    async def process_ri4(self, notarealarg=None):
-        logger.debug("[process_ri4] Entered")
-
-        iconswitcher = {
-            'Buses': 'mdi:bus',
-            'Trams': 'mdi:tram',
-            'Ships': 'mdi:ferry',
-            'Metros': 'mdi:subway-variant',
-            'Trains': 'mdi:train',
-        }
-
-        for ri4key in list(self.data.ri4keys):
-            logger.debug(f"[process_ri4] Processing key {ri4key}")
-            ri4data = self.data.ri4keys[ri4key]
-            api = slapi_ri4(ri4key, 60)
-            for stop in ','.join(set(ri4data["stops"].split(','))).split(','):
-                logger.debug(f"[process_ri4] Processing stop {stop}")
-                newdata = self.data.ri4[stop]
-                # TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
-
-                try:
-                    departures = []
-                    departuredata = await api.request(stop)
-                    departuredata = departuredata['ResponseData']
-
-                    for (i, traffictype) in enumerate(['Metros',
-                                                       'Buses',
-                                                       'Trains',
-                                                       'Trams',
-                                                       'Ships']):
-
-                        for (idx, value) in enumerate(
-                                departuredata[traffictype]):
-                            direction = value['JourneyDirection'] or 0
-                            displaytime = value['DisplayTime'] or ''
-                            destination = value['Destination'] or ''
-                            linenumber = value['LineNumber'] or ''
-                            expected = value['ExpectedDateTime'] or ''
-                            groupofline = value['GroupOfLine'] or ''
-                            icon = iconswitcher.get(traffictype,
-                                                    'mdi:train-car')
-                            diff = self.parseDepartureTime(displaytime)
-                            departures.append({
-                                'line': linenumber,
-                                'direction': direction,
-                                'departure': displaytime,
-                                'destination': destination,
-                                'time': diff,
-                                'expected': datetime.strptime(
-                                    expected, '%Y-%m-%dT%H:%M:%S'
-                                ),
-                                'type': traffictype,
-                                'groupofline': groupofline,
-                                'icon': icon,
-                            })
-
-                    newdata['data'] = sorted(departures,
-                                             key=lambda k: k['time'])
-                    newdata['attribution'] = "Stockholms Lokaltrafik"
-                    newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                    newdata['api_result'] = "Success"
-                    logger.debug(f"[process_ri4] Stop {stop} updated sucessfully")
-                except Exception as e:
-                    newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)
-                    logger.debug(f"[process_ri4] Error occured during update {stop}")
-
-                newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                self.data.ri4[stop] = newdata
-                logger.debug(f"[process_ri4] Completed stop {stop}")
-
-            logger.debug(f"[process_ri4] Completed key {ri4key}")
-
-        logger.debug("[process_ri4] Completed")
-        return

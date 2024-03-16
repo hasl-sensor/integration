@@ -12,7 +12,6 @@ from .const import (
     __version__,
     FORDONSPOSITION_URL,
     SI2_URL,
-    RI4_URL,
     PU1_URL,
     RP3_URL,
     USER_AGENT
@@ -161,19 +160,6 @@ class slapi_rp3(slapi):
         logger.debug("Will call RP3 API")
         return await self._get(RP3_URL.format(self._api_token, origin, destination,
                                               orgLat, orgLong, destLat, destLong),"Route Planner")
-
-
-class slapi_ri4(slapi):
-
-    def __init__(self, api_token, window, timeout=None):
-        super().__init__(timeout)
-        self._api_token = api_token
-        self._window = window
-
-    async def request(self, siteid):
-        logger.debug("Will call RI4 API")
-        return await self._get(RI4_URL.format(self._api_token,
-                                              siteid, self._window),"Departure Board")
 
 
 class slapi_si2(slapi):

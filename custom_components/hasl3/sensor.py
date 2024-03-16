@@ -12,7 +12,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.dt import now
 
 from .const import (
-    CONF_ANALOG_SENSORS,
     CONF_DESTINATION,
     CONF_DESTINATION_ID,
     CONF_DEVIATION_LINE,
@@ -32,7 +31,6 @@ from .const import (
     CONF_INTEGRATION_TYPE,
     CONF_LINE,
     CONF_LINES,
-    CONF_RI4_KEY,
     CONF_RP3_KEY,
     CONF_RR_KEY,
     CONF_SCAN_INTERVAL,
@@ -43,7 +41,6 @@ from .const import (
     CONF_SOURCE,
     CONF_SOURCE_ID,
     CONF_TIMEWINDOW,
-    CONF_TL2_KEY,
     CONF_TRANSPORT_MODE_LIST,
     DEVICE_GUID,
     DEVICE_MANUFACTURER,
@@ -94,33 +91,6 @@ async def setup_hasl_sensor(hass, config):
 
     sensors = []
     worker = hass.data[DOMAIN]["worker"]
-
-    try:
-        logger.debug("[setup_hasl_sensor] Setting up Departure sensor ...")
-        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_DEPARTURE:
-            await worker.assert_departure(config)
-            sensors.append(TrafikDepartureSensor(hass, config))
-            await worker.process_departures()
-
-        logger.debug("[setup_hasl_sensor] Completed setting up Departure sensors")
-    except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup Departure sensor {str(e)}")
-
-    try:
-        logger.debug("[setup_hasl_sensor] Setting up RI4 sensors..")
-        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_STANDARD:
-            if CONF_RI4_KEY in config.options and CONF_SITE_ID in config.options:
-                await worker.assert_ri4(
-                    config.options[CONF_RI4_KEY], config.options[CONF_SITE_ID]
-                )
-                sensors.append(
-                    HASLDepartureSensor(hass, config, config.options[CONF_SITE_ID])
-                )
-            logger.debug("[setup_hasl_sensor] Force proccessing RI4 sensors")
-            await worker.process_ri4()
-        logger.debug("[setup_hasl_sensor] Completed setting up RI4 sensors")
-    except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup RI4 sensors {str(e)}")
 
     try:
         logger.debug("[setup_hasl_sensor] Setting up SI2 sensors..")
@@ -554,238 +524,6 @@ class HASLRRRouteSensor(HASLDevice):
             ]
             val["last_refresh"] = self._sensordata["last_updated"]
             val["trip_count"] = len(self._sensordata["trips"])
-        except:
-            val["error"] = "NoDataYet"
-            logger.debug(
-                f"Data was not avaliable for processing when getting attributes for sensor {self._name}"
-            )
-
-        return val
-
-
-class HASLDepartureSensor(HASLDevice):
-    """HASL Departure Sensor class."""
-
-    def __init__(self, hass, config, siteid):
-        """Initialize."""
-
-        unit_table = {
-            "min": "min",
-            "time": "",
-            "deviations": "",
-            "updated": "",
-        }
-
-        self._hass = hass
-        self._config = config
-        self._lines = config.options[CONF_LINES]
-        self._siteid = str(siteid)
-        self._name = f"SL Departure Sensor {self._siteid} ({self._config.title})"
-        self._enabled_sensor = config.options[CONF_SENSOR]
-        self._sensorproperty = config.options[CONF_SENSOR_PROPERTY]
-        self._direction = config.options[CONF_DIRECTION]
-        self._timewindow = config.options[CONF_TIMEWINDOW]
-        self._nextdeparture_minutes = "0"
-        self._nextdeparture_expected = "-"
-        self._lastupdate = "-"
-        self._unit_of_measure = unit_table.get(
-            self._config.options[CONF_SENSOR_PROPERTY], "min"
-        )
-        self._sensordata = None
-        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
-        self._worker = hass.data[DOMAIN]["worker"]
-
-        if self._lines == "":
-            self._lines = []
-        if not isinstance(self._lines, list):
-            self._lines = self._lines.split(",")
-
-    async def async_update(self):
-        """Update the sensor."""
-
-        logger.debug("[async_update] Entered")
-        logger.debug(f"[async_update] Processing {self._name}")
-        if self._worker.data.ri4[self._siteid]["api_lastrun"]:
-            if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if (
-                    self._sensordata == []
-                    or self._worker.getminutesdiff(
-                        now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self._worker.data.ri4[self._siteid]["api_lastrun"],
-                    )
-                    > self._config.options[CONF_SCAN_INTERVAL]
-                ):
-                    try:
-                        await self._worker.process_ri4()
-                        logger.debug("[async_update] Update processed")
-                    except:
-                        logger.debug("[async_update] Error occured during update")
-                else:
-                    logger.debug("[async_update] Not due for update, skipping")
-
-        self._sensordata = self._worker.data.ri4[self._siteid]
-
-        logger.debug("[async_update] Performing calculations")
-        if f"stop_{self._siteid}" in self._worker.data.si2:
-            if "data" in self._worker.data.si2[f"stop_{self._siteid}"]:
-                self._sensordata["deviations"] = self._worker.data.si2[
-                    f"stop_{self._siteid}"
-                ]["data"]
-            else:
-                self._sensordata["deviations"] = []
-        else:
-            self._sensordata["deviations"] = []
-
-        if "last_updated" in self._sensordata:
-            self._last_updated = self._sensordata["last_updated"]
-        else:
-            self._last_updated = now().strftime("%Y-%m-%d %H:%M:%S")
-
-        logger.debug("[async_update] Completed")
-        return
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this sensor."""
-        return f"sl-stop-{self._siteid}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        sensorproperty = self._config.options[CONF_SENSOR_PROPERTY]
-
-        if self._sensordata == []:
-            return "Unknown"
-
-        if sensorproperty == "min":
-            next_departure = self.nextDeparture()
-            if not next_departure:
-                return "-"
-
-            delta = next_departure["expected"] - datetime.datetime.now()
-            expected_minutes = math.floor(delta.total_seconds() / 60)
-            return expected_minutes
-
-        # If the sensor should return the time at which next departure occurs.
-        if sensorproperty == "time":
-            next_departure = self.nextDeparture()
-            if not next_departure:
-                return "-"
-
-            expected = next_departure["expected"].strftime("%H:%M:%S")
-            return expected
-
-        # If the sensor should return the number of deviations.
-        if sensorproperty == "deviations":
-            return len(self._sensordata["deviations"])
-
-        if sensorproperty == "updated":
-            return self._sensordata["last_updated"]
-
-        # Failsafe
-        return "-"
-
-    def nextDeparture(self):
-        if not self._sensordata:
-            return None
-
-        now = datetime.datetime.now()
-        if "data" in self._sensordata:
-            for departure in self._sensordata["data"]:
-                if departure["expected"] > now:
-                    return departure
-        return None
-
-    def filter_direction(self, departure):
-        if self._direction == 0:
-            return True
-        return departure["direction"] == self._direction
-
-    def filter_lines(self, departure):
-        if not self._lines or len(self._lines) == 0:
-            return True
-        return departure["line"] in self._lines
-
-    @property
-    def icon(self):
-        """Return the icon of the sensor."""
-        return "mdi:train"
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self._unit_of_measure
-
-    @property
-    def scan_interval(self):
-        """Return the unique id."""
-        return self._scan_interval
-
-    @property
-    def available(self):
-        """Return true if value is valid."""
-        if self._sensordata == [] or self._sensordata is None:
-            return False
-        else:
-            return True
-
-    @property
-    def extra_state_attributes(self):
-        """Return the sensor attributes ."""
-
-        # Initialize the state attributes.
-
-        val = {}
-
-        if self._sensordata == [] or self._sensordata is None:
-            return val
-
-        # Format the next exptected time.
-        next_departure = self.nextDeparture()
-        if next_departure:
-            expected_time = next_departure["expected"]
-            delta = expected_time - datetime.datetime.now()
-            expected_minutes = math.floor(delta.total_seconds() / 60)
-            expected_time = expected_time.strftime("%H:%M:%S")
-        else:
-            expected_time = "-"
-            expected_minutes = "-"
-
-        # Setup the unit of measure.
-        if self._unit_of_measure != "":
-            val["unit_of_measurement"] = self._unit_of_measure
-
-        if self._sensordata["api_result"] == "Success":
-            val["api_result"] = "Ok"
-        else:
-            val["api_result"] = self._sensordata["api_error"]
-
-        # Set values of the sensor.
-        val["scan_interval"] = self._scan_interval
-        val["refresh_enabled"] = self._worker.checksensorstate(
-            self._enabled_sensor, STATE_ON
-        )
-
-        if val["api_result"] != "Ok":
-            return val
-
-        departures = self._sensordata["data"]
-        departures = list(filter(self.filter_direction, departures))
-        departures = list(filter(self.filter_lines, departures))
-
-        try:
-            val["attribution"] = self._sensordata["attribution"]
-            val["departures"] = departures
-            val["deviations"] = self._sensordata["deviations"]
-            val["last_refresh"] = self._sensordata["last_updated"]
-            val["next_departure_minutes"] = expected_minutes
-            val["next_departure_time"] = expected_time
-            val["deviation_count"] = len(self._sensordata["deviations"])
         except:
             val["error"] = "NoDataYet"
             logger.debug(

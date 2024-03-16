@@ -1,11 +1,9 @@
 """ SL Platform Sensor """
-import datetime
 import logging
 import math
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -25,7 +23,6 @@ from .const import (
     CONF_FP_TVB,
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
-    CONF_LINE,
     CONF_LINES,
     CONF_RP3_KEY,
     CONF_RR_KEY,
@@ -36,7 +33,6 @@ from .const import (
     CONF_SOURCE,
     CONF_SOURCE_ID,
     CONF_TIMEWINDOW,
-    CONF_TRANSPORT_MODE_LIST,
     DEVICE_GUID,
     DEVICE_MANUFACTURER,
     DEVICE_MODEL,
@@ -44,12 +40,10 @@ from .const import (
     DOMAIN,
     HASL_VERSION,
     SENSOR_DEPARTURE,
-    SENSOR_DEVIATION,
     SENSOR_ROUTE,
     SENSOR_RRARR,
     SENSOR_RRDEP,
     SENSOR_RRROUTE,
-    SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     STATE_ON,

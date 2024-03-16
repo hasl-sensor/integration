@@ -1,6 +1,5 @@
 import logging
 
-from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -13,11 +12,9 @@ from .const import (
     CONF_INTEGRATION_TYPE,
     DOMAIN,
     SCHEMA_VERSION,
-    SENSOR_DEVIATION,
     SENSOR_ROUTE,
-    SENSOR_STANDARD,
-    SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
+    CONF_INTEGRATION_ID,
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
@@ -254,26 +251,31 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             data[option] = config_entry.options[option]
 
     if config_entry.version == "2" and SCHEMA_VERSION == "3":
-        if data[CONF_INTEGRATION_TYPE] == "Departures":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_STANDARD
-            logger.debug(
-                f"[migrate_entry] migrate from Departures to {SENSOR_STANDARD}"
-            )
-        if data[CONF_INTEGRATION_TYPE] == "Traffic Status":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_STATUS
-            logger.debug(
-                f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}"
-            )
+        # TODO: write migration
+        # if data[CONF_INTEGRATION_TYPE] == "Departures":
+        #     data[CONF_INTEGRATION_TYPE] = SENSOR_STANDARD
+        #     logger.debug(
+        #         f"[migrate_entry] migrate from Departures to {SENSOR_STANDARD}"
+        #     )
+
+        # TODO: write migration
+        # if data[CONF_INTEGRATION_TYPE] == "Traffic Status":
+        #     data[CONF_INTEGRATION_TYPE] = SENSOR_STATUS
+        #     logger.debug(
+        #         f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}"
+        #     )
         if data[CONF_INTEGRATION_TYPE] == "Vehicle Locations":
             data[CONF_INTEGRATION_TYPE] = SENSOR_VEHICLE_LOCATION
             logger.debug(
                 f"[migrate_entry] migrate from Vehicle Locations to {SENSOR_VEHICLE_LOCATION}"
             )
-        if data[CONF_INTEGRATION_TYPE] == "Deviations":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_DEVIATION
-            logger.debug(
-                f"[migrate_entry] migrate from Deviations to {SENSOR_DEVIATION}"
-            )
+
+        # TODO: write migration
+        # if data[CONF_INTEGRATION_TYPE] == "Deviations":
+        #     data[CONF_INTEGRATION_TYPE] = "SL Deviations"
+        #     logger.debug(
+        #         f"[migrate_entry] migrate from Deviations to SL Deviations"
+        #     )
         if data[CONF_INTEGRATION_TYPE] == "Route":
             data[CONF_INTEGRATION_TYPE] = SENSOR_ROUTE
             logger.debug(f"[migrate_entry] migrate from Route to {SENSOR_ROUTE}")

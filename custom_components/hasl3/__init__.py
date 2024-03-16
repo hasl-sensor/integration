@@ -28,6 +28,20 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     """Set up HASL integration"""
     logger.debug("[setup] Entering")
 
+    try:
+        if DOMAIN not in hass.data:
+            hass.data.setdefault(DOMAIN, {})
+
+        if "worker" not in hass.data[DOMAIN]:
+            logger.debug("[setup] No worker present")
+            worker = HaslWorker()
+            worker.hass = hass
+            hass.data[DOMAIN] = {"worker": worker}
+            logger.debug("[setup] Worker created")
+    except:
+        logger.error("[setup] Could not get worker")
+        return False
+
     # SERVICE FUNCTIONS
     @callback
     async def sl_find_location(service):
@@ -194,20 +208,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
             serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_id")
             return True
 
-    try:
-        if DOMAIN not in hass.data:
-            hass.data.setdefault(DOMAIN, {})
-
-        if "worker" not in hass.data[DOMAIN]:
-            logger.debug("[setup] No worker present")
-            worker = HaslWorker()
-            worker.hass = hass
-            hass.data[DOMAIN] = {"worker": worker}
-            logger.debug("[setup] Worker created")
-    except:
-        logger.error("[setup] Could not get worker")
-        return False
-
     logger.debug("[setup] Registering services")
     try:
         hass.services.async_register(DOMAIN, "sl_find_location", sl_find_location)
@@ -302,19 +302,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up HASL entry."""
 
-    await hass.config_entries.async_forward_entry_setups(
-        entry, [SENSOR_DOMAIN, BINARY_SENSOR_DOMAIN]
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, [SENSOR_DOMAIN])
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload HASL entry."""
 
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry,
-        [SENSOR_DOMAIN, BINARY_SENSOR_DOMAIN],
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, [SENSOR_DOMAIN])
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)

@@ -50,6 +50,7 @@ from .const import (
 )
 from .sensors.departure import async_setup_entry as setup_departure_sensor
 from .sensors.status import async_setup_entry as setup_status_sensor
+from .haslworker import HaslWorker
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.sensors")
 
@@ -80,7 +81,7 @@ async def setup_hasl_sensor(hass: HomeAssistant, config: ConfigEntry, async_add_
     logger.debug("[setup_hasl_sensor] Entered")
 
     sensors = []
-    worker = hass.data[DOMAIN]["worker"]
+    worker: HaslWorker = hass.data[DOMAIN]["worker"]
 
     try:
         logger.debug("[setup_hasl_sensor] Setting up RP3 sensors..")
@@ -226,7 +227,7 @@ class HASLRouteSensor(HASLDevice):
         self._name = f"SL {self._trip} Route Sensor ({self._config.title})"
         self._sensordata = []
         self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
-        self._worker = hass.data[DOMAIN]["worker"]
+        self._worker: HaslWorker = hass.data[DOMAIN]["worker"]
 
     async def async_update(self):
         """Update the sensor."""

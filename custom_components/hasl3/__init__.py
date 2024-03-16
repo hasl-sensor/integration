@@ -1,25 +1,26 @@
 import logging
 
-from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-
 from custom_components.hasl3.haslworker import HaslWorker
 from custom_components.hasl3.rrapi import rrapi_sl
 from custom_components.hasl3.slapi import slapi_pu1, slapi_rp3
 
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import Event, HomeAssistant, ServiceCall
+
 from .const import (
+    CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
     DOMAIN,
     SCHEMA_VERSION,
     SENSOR_ROUTE,
     SENSOR_VEHICLE_LOCATION,
-    CONF_INTEGRATION_ID,
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
 
+EventOrService = Event | ServiceCall
 
 async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     """Set up HASL integration"""
@@ -38,8 +39,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
         return False
 
     # SERVICE FUNCTIONS
-    @callback
-    async def sl_find_location(service):
+    async def sl_find_location(service: EventOrService):
         serviceLogger.debug("[sl_find_location] Entered")
         search_string = service.data.get("search_string")
         api_key = service.data.get("api_key")
@@ -60,7 +60,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": requestResult,
                 },
             )
-            return True
+
         except Exception as e:
             serviceLogger.debug("[sl_find_location] Lookup failed")
             hass.bus.fire(
@@ -71,10 +71,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": f"Exception occured during execution: {str(e)}",
                 },
             )
-            return True
 
-    @callback
-    async def rr_find_location(service):
+    async def rr_find_location(service: EventOrService):
         serviceLogger.debug("[rr_find_location] Entered")
         search_string = service.data.get("search_string")
         api_key = service.data.get("api_key")
@@ -95,7 +93,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": requestResult,
                 },
             )
-            return True
+
         except Exception as e:
             serviceLogger.debug("[rr_find_location] Lookup failed")
             hass.bus.fire(
@@ -106,10 +104,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": f"Exception occured during execution: {str(e)}",
                 },
             )
-            return True
 
-    @callback
-    async def sl_find_trip_id(service):
+
+    async def sl_find_trip_id(service: EventOrService):
         serviceLogger.debug("[sl_find_trip_id] Entered")
         origin = service.data.get("org")
         destination = service.data.get("dest")
@@ -129,7 +126,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": requestResult,
                 },
             )
-            return True
+
         except Exception as e:
             serviceLogger.debug("[sl_find_trip_id] Lookup failed")
             hass.bus.fire(
@@ -140,10 +137,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": f"Exception occured during execution: {str(e)}",
                 },
             )
-            return True
 
-    @callback
-    async def sl_find_trip_pos(service):
+
+    async def sl_find_trip_pos(service: EventOrService):
         serviceLogger.debug("[sl_find_trip_pos] Entered")
         olat = service.data.get("orig_lat")
         olon = service.data.get("orig_long")
@@ -167,7 +163,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": requestResult,
                 },
             )
-            return True
+
         except Exception as e:
             serviceLogger.debug("[sl_find_trip_pos] Lookup failed")
             hass.bus.fire(
@@ -178,30 +174,29 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
                     "result": f"Exception occured during execution: {str(e)}",
                 },
             )
-            return True
 
-    @callback
-    async def eventListener(service):
+
+    async def eventListener(service: Event):
         serviceLogger.debug("[eventListener] Entered")
 
         command = service.data.get("cmd")
 
         if command == "sl_find_location":
-            sl_find_location(service)
+            hass.async_add_job(sl_find_location(service))
             serviceLogger.debug("[eventListener] Dispatched to sl_find_location")
-            return True
+
         if command == "rr_find_location":
-            rr_find_location(service)
+            hass.async_add_job(rr_find_location(service))
             serviceLogger.debug("[eventListener] Dispatched to rr_find_location")
-            return True
+
         if command == "sl_find_trip_pos":
-            sl_find_trip_pos(service)
+            hass.async_add_job(sl_find_trip_pos(service))
             serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_pos")
-            return True
+
         if command == "sl_find_trip_id":
-            sl_find_trip_id(service)
+            hass.async_add_job(sl_find_trip_id(service))
             serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_id")
-            return True
+
 
     logger.debug("[setup] Registering services")
     try:

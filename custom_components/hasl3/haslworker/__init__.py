@@ -1,9 +1,6 @@
-from dataclasses import dataclass
+
 from datetime import datetime
-from enum import Enum
 import logging
-import time
-from typing import Generic, List, NamedTuple, Optional, TypeVar
 
 from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
 from custom_components.hasl3.slapi import (
@@ -14,14 +11,9 @@ from custom_components.hasl3.slapi import (
     slapi_tl2,
 )
 import isodate
-import jsonpickle
-from tsl.clients.transport import TransportClient
-from tsl.models.departures import Departure
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.util.dt import now
 
-from .. import const
 
 logger = logging.getLogger("custom_components.hasl3.worker")
 
@@ -30,45 +22,6 @@ class HASLStatus(object):
     """System Status."""
     startup_in_progress = True
     running_background_tasks = False
-
-
-# TODO: add forecast and vehicle type to key
-class DepartureKey(NamedTuple):
-    siteid: int
-    direction: Optional[int]
-    forecast: Optional[int]
-    line: Optional[int]
-
-T = TypeVar('T')
-
-class MetaState(str, Enum):
-    PENDING = "Pending"
-    SUCCESS = "Success"
-    ERROR = "Error"
-
-@dataclass(frozen=True)
-class DataWithMeta(Generic[T]):
-    data: Optional[T]
-
-    api_type: str
-    api_lastrun: datetime
-    api_result: MetaState
-    api_error: str = ""
-
-    @classmethod
-    def pending(cls, api_type: str):
-        now_tz = now().tzinfo
-        return cls(data=None, api_type=api_type, api_lastrun=datetime(1970, 1, 1, tzinfo=now_tz), api_result=MetaState.PENDING)
-
-    @classmethod
-    def success(cls, api_type: str, data: T):
-        return cls(data=data, api_type=api_type, api_lastrun=now(), api_result=MetaState.SUCCESS)
-
-    @classmethod
-    def error(cls, api_type: str, error: Exception):
-        return cls(data=None, api_type=api_type, api_lastrun=now(), api_result=MetaState.ERROR, api_error=str(error))
-
-DepartureData = DataWithMeta[List[Departure]]
 
 class HASLData(object):
     tl2 = {}
@@ -83,7 +36,6 @@ class HASLData(object):
     rrr = {}
     rrkeys = {}
     fp = {}
-    departures: dict[DepartureKey, DepartureData] = {}
 
     def dump(self):
         return {
@@ -138,19 +90,6 @@ class HaslWorker(object):
     def init(hass, configuration):
         """Return a initialized HaslWorker object."""
         return HaslWorker()
-
-    def debugdump(self, data):
-        logger.debug("[debug_dump] Entered")
-
-        try:
-            timestring = time.strftime("%Y%m%d%H%M%S")
-            outputfile = self.hass.config.path(f"hasl_debug_{timestring}.json")
-            jsonFile = open(outputfile, "w")
-            jsonFile.write(jsonpickle.dumps(data, unpicklable=False))
-            jsonFile.close()
-            logger.debug("[debug_dump] Completed")
-        except:
-            logger.debug("[debug_dump] A processing error occured")
 
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
@@ -1053,30 +992,3 @@ class HaslWorker(object):
         logger.debug("[process_tl2] Completed")
         return
 
-    async def assert_departure(self, config: ConfigEntry):
-        key = DepartureKey(config.options[const.CONF_SITE_ID], config.options[const.CONF_DIRECTION] or None, config.options[const.CONF_TIMEWINDOW] or None, config.options[const.CONF_LINE] or None)
-        if tuple(key) not in self.data.departures:
-            self.data.departures[key] = DataWithMeta.pending("departure")
-
-    async def process_departures(self):
-        pending = (k for k, v in self.data.departures.items() if v.api_result == MetaState.PENDING)
-        for key in list(pending):
-            await self.get_departure_data(DepartureKey(*key))
-
-    async def get_departure_data(self, key: DepartureKey):
-        """Get departure data for a specific stop."""
-
-        client = TransportClient()
-        logger.debug(f"[get_departure_data] Enter for {key}")
-
-        try:
-            response = await client.get_site_departures(key.siteid, direction=key.direction, line=key.line, forecast=key.forecast)
-        except Exception as e:
-            logger.error(f"[get_departure_data] error: {e}")
-            data = DataWithMeta.error("departure", e)
-        else:
-            logger.debug("[get_departure_data] new Data!")
-            data = DataWithMeta.success("departure", response.departures)
-
-        self.data.departures[tuple(key)] = data
-        return data

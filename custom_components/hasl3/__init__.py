@@ -1,13 +1,13 @@
 import logging
-import time
+
+from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAIN
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
 
 from custom_components.hasl3.haslworker import HaslWorker
 from custom_components.hasl3.rrapi import rrapi_sl
 from custom_components.hasl3.slapi import slapi_pu1, slapi_rp3
-import jsonpickle
-
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
 
 from .const import (
     CONF_INTEGRATION_TYPE,
@@ -24,64 +24,11 @@ logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
 
 
-async def async_setup(hass, config):
+async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     """Set up HASL integration"""
     logger.debug("[setup] Entering")
 
     # SERVICE FUNCTIONS
-    @callback
-    async def dump_cache(service):
-        serviceLogger.debug("[dump_cache] Entered")
-        timestring = time.strftime("%Y%m%d%H%M%S")
-        outputfile = hass.config.path(f"hasl_data_{timestring}.json")
-
-        serviceLogger.debug(f"[dump_cache] Will dump to {outputfile}")
-
-        try:
-            jsonFile = open(outputfile, "w")
-            jsonFile.write(jsonpickle.dumps(worker.data.dump(), 4, unpicklable=False))
-            jsonFile.close()
-            serviceLogger.debug("[dump_cache] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {"source": "dump_cache", "state": "success", "result": outputfile},
-            )
-            return True
-        except Exception as e:
-            serviceLogger.debug("[dump_cache] Failed to take a dump")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "dump_cache",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-            return True
-
-    @callback
-    async def get_cache(service):
-        serviceLogger.debug("[get_cache] Entered")
-
-        try:
-            dataDump = jsonpickle.dump(worker.data.dump(), 4, unpicklable=False)
-            serviceLogger.debug("[get_cache] Completed")
-            hass.bus.fire(
-                DOMAIN, {"source": "get_cache", "state": "success", "result": dataDump}
-            )
-            return True
-        except Exception as e:
-            serviceLogger.debug("[get_cache] Failed to get dump")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "get_cache",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-            return True
-
     @callback
     async def sl_find_location(service):
         serviceLogger.debug("[sl_find_location] Entered")
@@ -230,14 +177,6 @@ async def async_setup(hass, config):
 
         command = service.data.get("cmd")
 
-        if command == "dump_cache":
-            dump_cache(service)
-            serviceLogger.debug("[eventListener] Dispatched to dump_cache")
-            return True
-        if command == "get_cache":
-            get_cache(service)
-            serviceLogger.debug("[eventListener] Dispatched to get_cache")
-            return True
         if command == "sl_find_location":
             sl_find_location(service)
             serviceLogger.debug("[eventListener] Dispatched to sl_find_location")
@@ -271,8 +210,6 @@ async def async_setup(hass, config):
 
     logger.debug("[setup] Registering services")
     try:
-        hass.services.async_register(DOMAIN, "dump_cache", dump_cache)
-        hass.services.async_register(DOMAIN, "get_cache", get_cache)
         hass.services.async_register(DOMAIN, "sl_find_location", sl_find_location)
         hass.services.async_register(DOMAIN, "rr_find_location", rr_find_location)
         hass.services.async_register(DOMAIN, "sl_find_trip_pos", sl_find_trip_pos)
@@ -293,7 +230,7 @@ async def async_setup(hass, config):
     return True
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     logger.debug("[migrate_entry] Entered")
 
     logger.debug(
@@ -366,7 +303,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up HASL entry."""
 
     await hass.config_entries.async_forward_entry_setups(
-        entry, ["sensor", "binary_sensor"]
+        entry, [SENSOR_DOMAIN, BINARY_SENSOR_DOMAIN]
     )
     return True
 
@@ -376,7 +313,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     unload_ok = await hass.config_entries.async_unload_platforms(
         entry,
-        ["sensor", "binary_sensor"],
+        [SENSOR_DOMAIN, BINARY_SENSOR_DOMAIN],
     )
 
     if unload_ok:

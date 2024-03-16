@@ -166,12 +166,11 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[SiteDepartureResponse
         """Update data via library."""
 
         if self.sensor_id and not self.hass.states.is_state(self.sensor_id, STATE_ON):
-            if self.logger.isEnabledFor(logging.DEBUG):
-                self.logger.debug(
-                    'Not updating %s. Sensor "%s" is off',
-                    self.name,
-                    self.sensor_id,
-                )
+            self.logger.debug(
+                'Not updating %s. Sensor "%s" is off',
+                self.config_entry.entry_id,
+                self.sensor_id,
+            )
 
             return self.data
 

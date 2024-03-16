@@ -14,10 +14,6 @@ from homeassistant.util.dt import now
 from .const import (
     CONF_DESTINATION,
     CONF_DESTINATION_ID,
-    CONF_DEVIATION_LINE,
-    CONF_DEVIATION_LINES,
-    CONF_DEVIATION_STOP,
-    CONF_DEVIATION_STOPS,
     CONF_DIRECTION,
     CONF_FP_LB,
     CONF_FP_PT,

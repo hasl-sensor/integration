@@ -1,4 +1,5 @@
 """Config flow for the HASL component."""
+
 from collections.abc import Mapping
 import logging
 from typing import Any, cast
@@ -12,6 +13,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.schema_config_entry_flow import (
     SchemaCommonFlowHandler,
     SchemaConfigFlowHandler,
+    SchemaFlowError,
     SchemaFlowFormStep,
 )
 
@@ -26,6 +28,7 @@ from .const import (
     CONF_TIMEWINDOW,
     DOMAIN,
     SCHEMA_VERSION,
+    SENSOR_STATUS,
 )
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.config")
@@ -36,8 +39,23 @@ async def get_schema_by_handler(handler: SchemaCommonFlowHandler):
     return schema_by_type(handler.options[CONF_INTEGRATION_TYPE])
 
 
+async def validate_integration(handler: SchemaCommonFlowHandler, data: dict[str, Any]):
+    if data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
+        # check if there any other configured status sensors
+        entries = handler.parent_handler.hass.config_entries.async_entries(DOMAIN)
+        for entry in entries:
+            if entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
+                raise SchemaFlowError("only_one_status_sensor")
+
+    return data
+
+
 CONFIG_FLOW = {
-    "user": SchemaFlowFormStep(schema=START_CONFIG_SCHEMA, next_step="config"),
+    "user": SchemaFlowFormStep(
+        schema=START_CONFIG_SCHEMA,
+        validate_user_input=validate_integration,
+        next_step="config",
+    ),
     "config": SchemaFlowFormStep(get_schema_by_handler),
 }
 

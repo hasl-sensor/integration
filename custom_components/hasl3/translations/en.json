@@ -16,13 +16,14 @@
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
                     "siteid": "Location ID",
+					"siteids": "Location IDs (comma separated list)",
+
                     "line": "Line",
-					"direction": "Direction",
+					"lines": "Lines (comma separated list)",
+
+                    "direction": "Direction",
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
-
-					"lines": "Lines (comma separated list)",
-					"stops": "Location IDs (comma separated list)",
 
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
@@ -52,6 +53,9 @@
                     "ferry": "Ferries"
 				}
             }
+        },
+        "error": {
+            "only_one_status_sensor": "Only one Sensor of type Status is allowed"
         }
     },
     "options": {
@@ -63,13 +67,14 @@
 					"sensor": "Only update if this binary sensor is True (empty=always update)",
 
                     "siteid": "Location ID",
+					"siteids": "Location IDs (comma separated list)",
+
                     "line": "Line",
+					"lines": "Lines (comma separated list)",
+
 					"direction": "Direction",
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
-
-					"lines": "Lines (comma separated list)",
-					"stops": "Location IDs (comma separated list)",
 
                     "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",

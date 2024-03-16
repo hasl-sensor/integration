@@ -9,10 +9,7 @@ from tsl.models.common import TransportMode
 from tsl.models.deviations import Deviation
 import voluptuous as vol
 
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription,
-)
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant, callback
@@ -96,7 +93,7 @@ class StatusDataUpdateCoordinator(DataUpdateCoordinator[list[Deviation]]):
         if self.sensor_id and not self.hass.states.is_state(self.sensor_id, STATE_ON):
             self.logger.debug(
                 'Not updating %s. Sensor "%s" is off',
-                self.name,
+                self.config_entry.entry_id,
                 self.sensor_id,
             )
 
@@ -150,7 +147,7 @@ class TrafikStatusSensor(CoordinatorEntity[StatusDataUpdateCoordinator], SensorE
     def native_value(self) -> int | None:
         """Return the state."""
 
-        if not self._sensor_data:
+        if self._sensor_data is None:
             return None
 
         return len(self._sensor_data)

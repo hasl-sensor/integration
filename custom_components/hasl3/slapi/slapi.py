@@ -11,7 +11,6 @@ from .exceptions import (
 from .const import (
     __version__,
     FORDONSPOSITION_URL,
-    SI2_URL,
     PU1_URL,
     RP3_URL,
     USER_AGENT
@@ -161,14 +160,3 @@ class slapi_rp3(slapi):
         return await self._get(RP3_URL.format(self._api_token, origin, destination,
                                               orgLat, orgLong, destLat, destLong),"Route Planner")
 
-
-class slapi_si2(slapi):
-
-    def __init__(self, api_token, siteid, timeout=None):
-        super().__init__(timeout)
-        self._api_token = api_token
-
-    async def request(self, siteid, lines):
-        logger.debug("Will call SI2 API")
-        return await self._get(SI2_URL.format(self._api_token,
-                                              siteid, lines),"Deviations")

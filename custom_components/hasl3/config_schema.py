@@ -7,8 +7,6 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_DESTINATION,
     CONF_DESTINATION_ID,
-    CONF_DEVIATION_LINES,
-    CONF_DEVIATION_STOPS,
     CONF_DIRECTION,
     CONF_DIRECTION_LIST,
     CONF_FP_LB,
@@ -32,7 +30,6 @@ from .const import (
     CONF_SENSOR,
     CONF_SENSOR_PROPERTY,
     CONF_SENSOR_PROPERTY_LIST,
-    CONF_SI2_KEY,
     CONF_SITE_ID,
     CONF_SOURCE,
     CONF_SOURCE_ID,
@@ -42,12 +39,10 @@ from .const import (
     DEFAULT_SENSOR_PROPERTY,
     DEFAULT_TIMEWINDOW,
     SENSOR_DEPARTURE,
-    SENSOR_DEVIATION,
     SENSOR_ROUTE,
     SENSOR_RRARR,
     SENSOR_RRDEP,
     SENSOR_RRROUTE,
-    SENSOR_STANDARD,
     SENSOR_STATUS,
     SENSOR_VEHICLE_LOCATION,
     CONF_INTEGRATION_LIST,
@@ -81,7 +76,6 @@ def schema_by_type(type_: str) -> vol.Schema:
 
     schema = {
         SENSOR_VEHICLE_LOCATION: vehiclelocation_config_option_schema,
-        SENSOR_DEVIATION: deviation_config_option_schema,
         SENSOR_ROUTE: route_config_option_schema,
         SENSOR_RRDEP: rrdep_config_option_schema,
         SENSOR_RRARR: rrarr_config_option_schema,
@@ -89,29 +83,6 @@ def schema_by_type(type_: str) -> vol.Schema:
     }.get(type_)
 
     return vol.Schema(schema())
-
-def deviation_config_option_schema(options: dict = {}) -> dict:
-    """Deviation sensor options."""
-    if not options:
-        options = {
-            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-            CONF_SENSOR: "",
-            CONF_SI2_KEY: "",
-            CONF_DEVIATION_STOPS: "",
-            CONF_DEVIATION_LINES: "",
-        }
-    return {
-        vol.Required(CONF_SI2_KEY, default=options.get(CONF_SI2_KEY)): str,
-        vol.Optional(
-            CONF_DEVIATION_STOPS, default=options.get(CONF_DEVIATION_STOPS)
-        ): str,
-        vol.Optional(
-            CONF_DEVIATION_LINES, default=options.get(CONF_DEVIATION_LINES)
-        ): str,
-        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
-    }
-
 
 def vehiclelocation_config_option_schema(options: dict = {}) -> dict:
     """The schema used for train location service"""

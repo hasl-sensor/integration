@@ -6,7 +6,6 @@ from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
 from custom_components.hasl3.slapi import (
     slapi_fp,
     slapi_rp3,
-    slapi_si2,
 )
 import isodate
 
@@ -22,10 +21,8 @@ class HASLStatus(object):
     running_background_tasks = False
 
 class HASLData(object):
-    si2 = {}
     rp3 = {}
     rp3keys = {}
-    si2keys = {}
     rrd = {}
     rra = {}
     rrr = {}
@@ -34,9 +31,7 @@ class HASLData(object):
 
     def dump(self):
         return {
-            'si2keys': self.si2keys,
             'rrkeys': self.rrkeys,
-            'si2': self.si2,
             'fp': self.fp,
             'rrd': self.rrd,
             'rra': self.rra,
@@ -132,7 +127,7 @@ class HaslWorker(object):
         if listvalue not in self.data.rp3:
             logger.debug("[assert_rp3] Creating default values")
             self.data.rp3[listvalue] = {
-                "api_type": "slapi-si2",
+                "api_type": "slapi-rp3",
                 "api_lastrun": '1970-01-01 01:01:01',
                 "api_result": "Pending",
                 "trips": []
@@ -335,125 +330,6 @@ class HaslWorker(object):
             newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
             self.data.fp[traintype] = newdata
         logger.debug("[process_rp3] Completed")
-
-    async def assert_si2_stop(self, key, stop):
-        await self.assert_si2(key, f"stop_{stop}", "stops", stop)
-
-    async def assert_si2_line(self, key, line):
-        await self.assert_si2(key, f"line_{line}", "lines", line)
-
-    async def assert_si2(self, key, datakey, listkey, listvalue):
-        logger.debug("[assert_si2] Entered")
-
-        if key not in self.data.si2keys:
-            logger.debug("[assert_si2] Registering key")
-            self.data.si2keys[key] = {
-                "api_key": key,
-                "stops": "",
-                "lines": ""
-            }
-        else:
-            logger.debug("[assert_si2] Key already present")
-
-        if self.data.si2keys[key][listkey] == "":
-            logger.debug("[assert_si2] Creating trip key")
-            self.data.si2keys[key][listkey] = listvalue
-        else:
-            logger.debug("[assert_si2] Appending to trip key")
-            self.data.si2keys[key][listkey] = f"{self.data.si2keys[key][listkey]},{listvalue}"
-
-        if datakey not in self.data.si2:
-            logger.debug("[assert_si2] Creating default values")
-            self.data.si2[datakey] = {
-                "api_type": "slapi-si2",
-                "api_lastrun": '1970-01-01 01:01:01',
-                "api_result": "Pending"
-            }
-
-        logger.debug("[assert_si2] Completed")
-        return
-
-    async def process_si2(self, notarealarg=None):
-        logger.debug("[process_si2] Entered")
-
-        for si2key in list(self.data.si2keys):
-            logger.debug(f"[process_si2] Processing key {si2key}")
-            si2data = self.data.si2keys[si2key]
-            api = slapi_si2(si2key, 60)
-            for stop in ','.join(set(si2data["stops"].split(','))).split(','):
-                logger.debug(f"[process_si2] Processing stop {stop}")
-                newdata = self.data.si2[f"stop_{stop}"]
-                # TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
-
-                try:
-                    deviationdata = await api.request(stop, '')
-                    deviationdata = deviationdata['ResponseData']
-
-                    deviations = []
-                    for (idx, value) in enumerate(deviationdata):
-                        deviations.append({
-                            'updated': value['Updated'],
-                            'title': value['Header'],
-                            'fromDate': value['FromDateTime'],
-                            'toDate': value['UpToDateTime'],
-                            'details': value['Details'],
-                            'sortOrder': value['SortOrder'],
-                        })
-
-                    newdata['data'] = sorted(deviations,
-                                             key=lambda k: k['sortOrder'])
-                    newdata['attribution'] = "Stockholms Lokaltrafik"
-                    newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                    newdata['api_result'] = "Success"
-                    logger.debug(f"[process_si2] Processing stop {stop} completed")
-                except Exception as e:
-                    newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)
-                    logger.debug(f"[process_si2] An error occured during processing of stop {stop}")
-
-                newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                self.data.si2[f"stop_{stop}"] = newdata
-                logger.debug(
-                    f"[process_si2] Completed processing of stop {stop}")
-
-            for line in ','.join(set(si2data["lines"].split(','))).split(','):
-                logger.debug(f"[process_si2] Processing line {line}")
-                newdata = self.data.si2[f"line_{line}"]
-                # TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
-
-                try:
-                    deviationdata = await api.request('', line)
-                    deviationdata = deviationdata['ResponseData']
-
-                    deviations = []
-                    for (idx, value) in enumerate(deviationdata):
-                        deviations.append({
-                            'updated': value['Updated'],
-                            'title': value['Header'],
-                            'fromDate': value['FromDateTime'],
-                            'toDate': value['UpToDateTime'],
-                            'details': value['Details'],
-                            'sortOrder': value['SortOrder'],
-                        })
-
-                    newdata['data'] = sorted(deviations, key=lambda k: k['sortOrder'])
-                    newdata['attribution'] = "Stockholms Lokaltrafik"
-                    newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                    newdata['api_result'] = "Success"
-                    logger.debug(f"[process_si2] Processing line {line} completed")
-                except Exception as e:
-                    newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)
-                    logger.debug(f"[process_si2] An error occured during processing of line {line}")
-
-                newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                self.data.si2[f"line_{line}"] = newdata
-                logger.debug(f"[process_si2] Completed processing of line {line}")
-
-            logger.debug(f"[process_si2] Completed processing key {si2key}")
-
-        logger.debug("[process_si2] Completed")
-        return
 
     async def assert_rrd(self, key, stop):
         logger.debug("[assert_rrd] Entered")

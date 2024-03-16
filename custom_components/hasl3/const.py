@@ -27,7 +27,6 @@ SENSOR_DEVIATION = "SL Deviations"
 SENSOR_ROUTE = "SL Route Sensor"
 SENSOR_DEPARTURE = "departure_v2"
 
-CONF_SI2_KEY = "si2key"
 CONF_RP3_KEY = "rp3key"
 CONF_RR_KEY = "rrkey"
 

@@ -21,7 +21,6 @@
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
 
-                    "si2key": "Störningsinformation 2 API Key",
 					"lines": "Lines (comma separated list)",
 					"stops": "Location IDs (comma separated list)",
 
@@ -68,7 +67,6 @@
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
 
-                    "si2key": "Störningsinformation 2 API Key",
 					"lines": "Lines (comma separated list)",
 					"stops": "Location IDs (comma separated list)",
 

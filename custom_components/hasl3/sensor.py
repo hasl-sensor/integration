@@ -36,7 +36,6 @@ from .const import (
     CONF_SCAN_INTERVAL,
     CONF_SENSOR,
     CONF_SENSOR_PROPERTY,
-    CONF_SI2_KEY,
     CONF_SITE_ID,
     CONF_SOURCE,
     CONF_SOURCE_ID,
@@ -91,38 +90,6 @@ async def setup_hasl_sensor(hass, config):
 
     sensors = []
     worker = hass.data[DOMAIN]["worker"]
-
-    try:
-        logger.debug("[setup_hasl_sensor] Setting up SI2 sensors..")
-        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_DEVIATION:
-            if CONF_SI2_KEY in config.options:
-                for deviationid in ",".join(
-                    set(config.options[CONF_DEVIATION_LINES].split(","))
-                ).split(","):
-                    await worker.assert_si2_line(
-                        config.options[CONF_SI2_KEY], deviationid
-                    )
-                    sensors.append(
-                        HASLDeviationSensor(
-                            hass, config, CONF_DEVIATION_LINE, deviationid
-                        )
-                    )
-                for deviationid in ",".join(
-                    set(config.options[CONF_DEVIATION_STOPS].split(","))
-                ).split(","):
-                    await worker.assert_si2_stop(
-                        config.options[CONF_SI2_KEY], deviationid
-                    )
-                    sensors.append(
-                        HASLDeviationSensor(
-                            hass, config, CONF_DEVIATION_STOP, deviationid
-                        )
-                    )
-            logger.debug("[setup_hasl_sensor] Force proccessing SI2 sensors")
-            await worker.process_si2()
-        logger.debug("[setup_hasl_sensor] Completed setting up SI2 sensors")
-    except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to setup SI2 sensors {str(e)}")
 
     try:
         logger.debug("[setup_hasl_sensor] Setting up RP3 sensors..")
@@ -962,130 +929,6 @@ class HASLRRArrivalSensor(HASLDevice):
             )
 
         return val
-
-
-class HASLDeviationSensor(HASLDevice):
-    """HASL Deviation Sensor class."""
-
-    def __init__(self, hass, config, deviationtype, deviationkey):
-        """Initialize."""
-        self._config = config
-        self._hass = hass
-        self._deviationkey = deviationkey
-        self._deviationtype = deviationtype
-        self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._deviationtype.capitalize()} Deviation Sensor {self._deviationkey} ({self._config.title})"
-        self._sensordata = []
-        self._enabled_sensor
-        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
-        self._worker = hass.data[DOMAIN]["worker"]
-
-    async def async_update(self):
-        """Update the sensor."""
-
-        logger.debug("[async_update] Entered")
-        logger.debug(f"[async_update] Processing {self._name}")
-        if self._worker.data.si2[f"{self._deviationtype}_{self._deviationkey}"][
-            "api_lastrun"
-        ]:
-            if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if (
-                    self._sensordata == []
-                    or self._worker.getminutesdiff(
-                        now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self._worker.data.si2[
-                            f"{self._deviationtype}_{self._deviationkey}"
-                        ]["api_lastrun"],
-                    )
-                    > self._config.options[CONF_SCAN_INTERVAL]
-                ):
-                    try:
-                        await self._worker.process_si2()
-                        logger.debug("[async_update] Update processed")
-                    except:
-                        logger.debug("[async_update] Error occured during update")
-                else:
-                    logger.debug("[async_update] Not due for update, skipping")
-
-        self._sensordata = self._worker.data.si2[
-            f"{self._deviationtype}_{self._deviationkey}"
-        ]
-        logger.debug("[async_update] Completed")
-        return
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this sensor."""
-        return f"sl-deviation-{self._deviationtype}-{self._deviationkey}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        if self._sensordata == []:
-            return "Unknown"
-        else:
-            if "data" in self._sensordata:
-                return len(self._sensordata["data"])
-            else:
-                return "Unknown"
-
-    @property
-    def icon(self):
-        """Return the icon of the sensor."""
-        return "mdi:train"
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return ""
-
-    @property
-    def scan_interval(self):
-        """Return the unique id."""
-        return self._scan_interval
-
-    @property
-    def available(self):
-        """Return true if value is valid."""
-        return self._sensordata != []
-
-    @property
-    def extra_state_attributes(self):
-        """Return the sensor attributes."""
-
-        val = {}
-
-        if self._sensordata == []:
-            return val
-
-        if self._sensordata["api_result"] == "Success":
-            val["api_result"] = "Ok"
-        else:
-            val["api_result"] = self._sensordata["api_error"]
-
-        # Set values of the sensor.
-        val["scan_interval"] = self._scan_interval
-        val["refresh_enabled"] = self._worker.checksensorstate(
-            self._enabled_sensor, STATE_ON
-        )
-        try:
-            val["attribution"] = self._sensordata["attribution"]
-            val["deviations"] = self._sensordata["data"]
-            val["last_refresh"] = self._sensordata["last_updated"]
-            val["deviation_count"] = len(self._sensordata["data"])
-        except:
-            val["error"] = "NoDataYet"
-            logger.debug(
-                f"Data was not avaliable for processing when getting attributes for sensor {self._name}"
-            )
-
-        return val
-
 
 class HASLVehicleLocationSensor(HASLDevice):
     """HASL Train Location Sensor class."""

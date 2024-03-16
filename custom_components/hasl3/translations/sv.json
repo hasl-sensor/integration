@@ -20,7 +20,6 @@
 					"property": "Primäregenskap för sensorn",
 					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
 
-                    "si2key": "SL Störningsinformation 2 API-nyckel",
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
@@ -65,7 +64,6 @@
 					"property": "Primäregenskap för sensorn",
 					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
 
-                    "si2key": "SL Störningsinformation 2 API-nyckel",
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 

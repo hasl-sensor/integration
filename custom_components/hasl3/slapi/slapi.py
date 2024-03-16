@@ -12,7 +12,6 @@ from .const import (
     __version__,
     FORDONSPOSITION_URL,
     SI2_URL,
-    TL2_URL,
     RI4_URL,
     PU1_URL,
     RP3_URL,
@@ -187,13 +186,3 @@ class slapi_si2(slapi):
         logger.debug("Will call SI2 API")
         return await self._get(SI2_URL.format(self._api_token,
                                               siteid, lines),"Deviations")
-
-
-class slapi_tl2(slapi):
-    def __init__(self, api_token, timeout=None):
-        super().__init__(timeout)
-        self._api_token = api_token
-
-    async def request(self):
-        logger.debug("Will call TL2 API")
-        return await self._get(TL2_URL.format(self._api_token),"Traffic Status")

@@ -5,7 +5,6 @@ FORDONSPOSITION_URL = 'https://api.sl.se/fordonspositioner/GetData?' \
 
 TRAFIKLAB_URL = 'https://api.sl.se/api2/'
 SI2_URL = TRAFIKLAB_URL + 'deviations.json?key={}&siteid={}&lineNumber={}'
-TL2_URL = TRAFIKLAB_URL + 'trafficsituation.json?key={}'
 RI4_URL = TRAFIKLAB_URL + 'realtimedeparturesV4.json?key={}&siteid={}' \
                           '&timeWindow={}'
 PU1_URL = TRAFIKLAB_URL + 'typeahead.json?key={}&searchstring={}' \

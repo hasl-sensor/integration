@@ -68,13 +68,14 @@ async def async_setup_entry(
 
     type_ = entry.data[CONF_INTEGRATION_TYPE]
     if coro := {
+        # "new-style" delegated setup functions
         SENSOR_DEPARTURE: setup_departure_sensor,
         SENSOR_STATUS: setup_status_sensor,
-    }.get(type_):
+    }.get(type_, setup_hasl_sensor):
         await coro(hass, entry, async_add_entities)
 
 
-async def setup_hasl_sensor(hass, config):
+async def setup_hasl_sensor(hass: HomeAssistant, config: ConfigEntry, async_add_entities: AddEntitiesCallback):
     """Setup sensor platform."""
     logger.debug("[setup_hasl_sensor] Entered")
 
@@ -171,30 +172,30 @@ async def setup_hasl_sensor(hass, config):
     except Exception as e:
         logger.error(f"[setup_hasl_sensor] Failed to setup RRA sensors {str(e)}")
 
-    # try:
-    logger.debug("[setup_hasl_sensor] Setting up RRR sensors..")
-    if config.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
-        if CONF_RR_KEY in config.options:
-            await worker.assert_rrr(
-                config.options[CONF_RR_KEY],
-                config.options[CONF_SOURCE_ID],
-                config.options[CONF_DESTINATION_ID],
-            )
-            sensors.append(
-                HASLRRRouteSensor(
-                    hass,
-                    config,
-                    f"{config.options[CONF_SOURCE_ID]}-{config.options[CONF_DESTINATION_ID]}",
+    try:
+        logger.debug("[setup_hasl_sensor] Setting up RRR sensors..")
+        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE:
+            if CONF_RR_KEY in config.options:
+                await worker.assert_rrr(
+                    config.options[CONF_RR_KEY],
+                    config.options[CONF_SOURCE_ID],
+                    config.options[CONF_DESTINATION_ID],
                 )
-            )
-        logger.debug("[setup_hasl_sensor] Force proccessing RRR sensors")
-        await worker.process_rrr()
-    logger.debug("[setup_hasl_sensor] Completed setting up RRR sensors")
-    # except Exception as e:
-    #    logger.error(f"[setup_hasl_sensor] Failed to setup RRR sensors {str(e)}")
+                sensors.append(
+                    HASLRRRouteSensor(
+                        hass,
+                        config,
+                        f"{config.options[CONF_SOURCE_ID]}-{config.options[CONF_DESTINATION_ID]}",
+                    )
+                )
+            logger.debug("[setup_hasl_sensor] Force proccessing RRR sensors")
+            await worker.process_rrr()
+        logger.debug("[setup_hasl_sensor] Completed setting up RRR sensors")
+    except Exception as e:
+        logger.error(f"[setup_hasl_sensor] Failed to setup RRR sensors {str(e)}")
 
     logger.debug("[setup_hasl_sensor] Completed")
-    return sensors
+    async_add_entities(sensors)
 
 
 class HASLDevice(Entity):

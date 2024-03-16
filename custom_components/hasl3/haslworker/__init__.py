@@ -1,16 +1,13 @@
 
-from datetime import datetime
 import logging
+from datetime import datetime
 
-from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
-from custom_components.hasl3.slapi import (
-    slapi_fp,
-    slapi_rp3,
-)
 import isodate
-
+from homeassistant.core import HomeAssistant
 from homeassistant.util.dt import now
 
+from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
+from custom_components.hasl3.slapi import slapi_fp, slapi_rp3
 
 logger = logging.getLogger("custom_components.hasl3.worker")
 
@@ -67,16 +64,14 @@ class HASLInstances(object):
 class HaslWorker(object):
     """HaslWorker."""
 
-    hass = None
-    configuration = None
+    hass: HomeAssistant | None = None
+
     status = HASLStatus()
     data = HASLData()
     instances = HASLInstances()
 
-    @staticmethod
-    def init(hass, configuration):
-        """Return a initialized HaslWorker object."""
-        return HaslWorker()
+    def __init__(self, hass: HomeAssistant):
+        self.hass = hass
 
     def getminutesdiff(self, d1, d2):
         d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")

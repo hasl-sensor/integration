@@ -5,4 +5,3 @@ from .departure import (
     DepartureDataUpdateCoordinator,
     TrafikDepartureSensor,
 )
-from .device import HASLDevice

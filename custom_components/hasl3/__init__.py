@@ -25,15 +25,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     """Set up HASL integration"""
     logger.debug("[setup] Entering")
 
-    try:
-        if DOMAIN not in hass.data:
-            hass.data.setdefault(DOMAIN, {})
+    if DOMAIN not in hass.data:
+        hass.data.setdefault(DOMAIN, {})
 
+    try:
         if "worker" not in hass.data[DOMAIN]:
             logger.debug("[setup] No worker present")
-            worker = HaslWorker()
-            worker.hass = hass
-            hass.data[DOMAIN] = {"worker": worker}
+            hass.data[DOMAIN] = {"worker": HaslWorker(hass)}
             logger.debug("[setup] Worker created")
     except:
         logger.error("[setup] Could not get worker")

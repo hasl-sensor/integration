@@ -37,18 +37,19 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Optional(const.CONF_LINES): sel.TextSelector(
             sel.TextSelectorConfig(multiple=True, type=sel.TextSelectorType.NUMBER)
         ),
-        vol.Optional(const.CONF_TRANSPORT): sel.SelectSelector(
+        vol.Optional(const.CONF_TRANSPORTS): sel.SelectSelector(
             sel.SelectSelectorConfig(
                 options=[e.value for e in TransportMode],
                 translation_key=const.CONF_TRANSPORT,
+                multiple=True,
             )
         ),
         vol.Optional(const.CONF_SENSOR): sel.EntitySelector(
             sel.EntitySelectorConfig(domain="binary_sensor")
         ),
-        vol.Required(const.CONF_SCAN_INTERVAL, default=60): sel.NumberSelector(
+        vol.Required(const.CONF_SCAN_INTERVAL, default=61): sel.NumberSelector(
             sel.NumberSelectorConfig(
-                min=0,
+                min=61,
                 unit_of_measurement="seconds",
                 mode=sel.NumberSelectorMode.BOX,
             )
@@ -62,7 +63,7 @@ class SettingsKey(NamedTuple):
 
     sites: list[str] | None
     lines: list[str] | None
-    transport: str | None
+    transports: list[str] | None
 
 
 class StatusDataUpdateCoordinator(DataUpdateCoordinator[list[Deviation]]):
@@ -93,17 +94,16 @@ class StatusDataUpdateCoordinator(DataUpdateCoordinator[list[Deviation]]):
         """Update data via library."""
 
         if self.sensor_id and not self.hass.states.is_state(self.sensor_id, STATE_ON):
-            if self.logger.isEnabledFor(logging.DEBUG):
-                self.logger.debug(
-                    'Not updating %s. Sensor "%s" is off',
-                    self.name,
-                    self.sensor_id,
-                )
+            self.logger.debug(
+                'Not updating %s. Sensor "%s" is off',
+                self.name,
+                self.sensor_id,
+            )
 
             return self.data
 
-        if (type_ := self.key.transport) is not None:
-            transport = TransportMode(type_)
+        if (types := self.key.transports) is not None:
+            transport = [TransportMode(t) for t in types]
         else:
             transport = None
 
@@ -184,17 +184,10 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     websession = async_get_clientsession(hass)
-
-    def _int_or_none(v) -> None | int:
-        if v is None:
-            return v
-
-        return int(v) or None
-
     key = SettingsKey(
         sites=entry.options.get(const.CONF_SITE_IDS),
         lines=entry.options.get(const.CONF_LINES),
-        transport=entry.options.get(const.CONF_TRANSPORT),
+        transports=entry.options.get(const.CONF_TRANSPORTS),
     )
     interval = timedelta(seconds=entry.options[const.CONF_SCAN_INTERVAL])
     sensor_id: str | None = entry.options.get(const.CONF_SENSOR)

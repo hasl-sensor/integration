@@ -15,7 +15,7 @@ DEVICE_GUID = (
     "10ba5386-5fad-49c6-8f03-c7a047cd5aa5-6a618956-520c-41d2-9a10-6d7e7353c7f5"
 )
 SL_TRAFIK_DEVICE_GUID = "feb117a9-c5cb-4f0c-b08e-331d5c081bfc"
-SL_TRAFIK_DEVICE_NAME = "SL Traffic Departures"
+SL_TRAFIK_DEVICE_NAME = "SL Traffic"
 
 SENSOR_RRDEP = "Resrobot Departures"
 SENSOR_RRARR = "Resrobot Arrivals"
@@ -46,6 +46,7 @@ CONF_SENSOR = "sensor"
 CONF_SENSOR_PROPERTY = "property"
 CONF_LINE = "line"
 CONF_TRANSPORT = "transport"
+CONF_TRANSPORTS = "transports"
 CONF_LINES = "lines"
 CONF_TRIPS = "trips"
 CONF_ENABLED = "enabled"

@@ -42,6 +42,7 @@
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
+                    "transports": "Transport filter (Multiple)",
 
                     "metro": "Subway",
                     "train": "Commuter trains",
@@ -88,6 +89,7 @@
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
+                    "transports": "Transport filter (Multiple)",
 
                     "metro": "Subway",
                     "train": "Commuter trains",

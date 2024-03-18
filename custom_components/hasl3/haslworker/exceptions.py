@@ -6,4 +6,4 @@ class HaslException(Exception):
 
 
 class HaslExpectedException(HaslException):
-    """For stuff that are expected."""
+    """For stuff that is expected."""

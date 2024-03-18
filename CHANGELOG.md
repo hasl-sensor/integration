@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.3] (2024-03-06)
+
+### Fixes
+Buying time: use the newer API URL until its shutdown at end of 2024-03 @systemcrash
+
+## [3.1.2] (2024-03-06)
+
+### Fixes
+Fixes spelling/grammar fixes thanks @systemcrash
+
 ## [3.1.1] (2023-09-10)
 
 ### Fixes
@@ -11,7 +21,7 @@ Fixes [hasl-sensor/integration#56](https://github.com/hasl-sensor/integration/is
 
 ## [3.1] (2022-09-10)
 
-This is major relase adding Resrobot functionallity BUT with some known upgrade issues due to some bad decisions earlier in development. During some cases the automatic upgrade of sensors might fail and to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
+This is major release adding Resrobot functionality BUT with some known upgrade issues due to some bad decisions earlier in development. During some cases the automatic upgrade of sensors might fail and to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
 
 ### BREAKING CHANGES
 - During some cases the automatic upgrade of sensors might fail, to restore a broken sensor it must be fully removed and then recreated manually. Sorry.
@@ -24,7 +34,7 @@ This is major relase adding Resrobot functionallity BUT with some known upgrade 
 - Departure sensor using Resrobot API
 - Arrival sensor using Resrobot API
 - Route sensor using Resrobot API
-- Lookup services for resrobot locations
+- Lookup services for Resrobot locations
 
 ## [3.1.0b2] (2022-08-18)
 
@@ -34,7 +44,7 @@ This is major relase adding Resrobot functionallity BUT with some known upgrade 
 
 ## [3.1.0b1] (2022-03-25)
 
-Project will change name to `Swedish Public Transit Sensor (HASL)` because resrobot supports the whole country however for Stockholm region it is still recomended to use SL-specific apis since they contain alot of extra data.
+Project will change name to `Swedish Public Transit Sensor (HASL)` because Resrobot supports the whole country however for Stockholm region it is still recommended to use SL-specific APIs since they contain a lot of extra data.
 
 ### Breaking Changes
 - Service find_location renamed to `sl_find_location`
@@ -46,7 +56,7 @@ Project will change name to `Swedish Public Transit Sensor (HASL)` because resro
 - Departure sensor using Resrobot API
 - Arrival sensor using Resrobot API
 - Route sensor using Resrobot API
-- Lookup service for resrobot locations
+- Lookup service for Resrobot locations
 
 ### Changed
 - Updated translation for names ad descriptions and strings where applicable
@@ -55,7 +65,7 @@ Project will change name to `Swedish Public Transit Sensor (HASL)` because resro
 
 ### Added
 - Errors are now logged to error and not just to debug so you know whats wrong when it fails
-- If sensor data is empty, force refresh even if intervall is not up yet
+- If sensor data is empty, force refresh even if interval is not up yet
 
 ### Fixes
 - Added missing translation from GUI for new wizard
@@ -65,14 +75,14 @@ Project will change name to `Swedish Public Transit Sensor (HASL)` because resro
 
 ### Fixes
 - Fixes [hasl-sensor/integration#36](https://github.com/hasl-sensor/integration/issues/36) introduced in 3.0.3
-- Fixes [hasl-sensor/integration#35](https://github.com/hasl-sensor/integration/issues/35) anoying log message due to stupidity
+- Fixes [hasl-sensor/integration#35](https://github.com/hasl-sensor/integration/issues/35) annoying log message due to stupidity
 
 ### Changes
 - Sensor will now show unavailable until sensor data is initiated
 - Configuration now stored in data and not options inside of configuration object
-- Implemented separate configuration schema versioning (restarting with schema version 2. Everyting earlier is to be treated as version 1)
+- Implemented separate configuration schema versioning (restarting with schema version 2. Everything earlier is to be treated as version 1)
 - Now configures integration in one step when adding new integration
-- Harmonizing version settings between slapi and core as theese will never differ anymore
+- Harmonizing version settings between slapi and core as these will never differ anymore
 
 ## [3.0.4] (2022-03-07)
 
@@ -108,7 +118,7 @@ Project will change name to `Swedish Public Transit Sensor (HASL)` because resro
 ## [3.0.1] (2022-01-05)
 
 ### Fixes
-- [#22](https://github.com/hasl-sensor/integration/issues/22) fixed broken filtering on no lines beeing filtered
+- [#22](https://github.com/hasl-sensor/integration/issues/22) fixed broken filtering on no lines being filtered
 
 ## [3.0.0] (2022-01-03)
 
@@ -120,7 +130,7 @@ This also means that version 2 and older is now deprecated.
 ### Fixes
 - [#17](https://github.com/hasl-sensor/integration/issues/17) fixed. Logic logically logical now. Thnx @FredHags
 - [#18](https://github.com/hasl-sensor/integration/issues/18) fixed. Renamed
-- [#13](https://github.com/hasl-sensor/integration/issues/18) Removed strange errors beeing logged.
+- [#13](https://github.com/hasl-sensor/integration/issues/18) Removed strange errors being logged.
 - Fixed errors in SLAPI causing requests to fail
 - Fixed broken data validation on some sensor data types
 
@@ -153,23 +163,23 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Added GUI configuration for the integration
 - Metadata added to the home assistant wheels repo, PR [#48](https://github.com/home-assistant/wheels-custom-integrations/pull/48) and [#57](https://github.com/home-assistant/wheels-custom-integrations/pull/57)
 - Icons added to the home assistant brands repo, PR [#1606](https://github.com/home-assistant/brands/pull/1606) and [#1626](https://github.com/home-assistant/brands/pull/1626)
-- Changed the unique naming of all enteties generated to be truly unique and stay the same over time
+- Changed the unique naming of all entities generated to be truly unique and stay the same over time
 - Allow use of multiple API-keys for different sensors using multiple integrations
 - Enforce time based caching between all integrations to reduce wear on the API-keys
-- Workers to handle updates etc are now run on one minute intervalls using call-backs to be friendlier on hass
-- Sensors are "just" retreiving data from the workers data instead of directly interfacing the apis.
+- Workers to handle updates etc are now run on one minute intervals using call-backs to be friendlier on hass
+- Sensors are "just" retrieving data from the workers data instead of directly interfacing the APIs.
 - Devices are now created for each integration to be used for future automation etc
-- Departures entity is now providing Deviation data only if a Deviation integration is configured with the same stops/lines to decrease complexity but maintaining compability both with new and old architechture.
-- Deviation sensors are now availiable as separate entites/sensors if needed and are leveraged by the Departures sensors if they exist.
+- Departures entity is now providing Deviation data only if a Deviation integration is configured with the same stops/lines to decrease complexity but maintaining compatibility both with new and old architecture.
+- Deviation sensors are now available as separate entities/sensors if needed and are leveraged by the Departures sensors if they exist.
 - A common in-memory structure for all data is now done using a worker holding data for all instances instead of writing to disk
 - Updated hacs.json and info.md to be updated for v3
 - Service for dumping the cache to disk have been implemented
-- Fixed lots of bugs related to data not beeing available yet (async issues)
-- Generic extensible queing system built in
+- Fixed lots of bugs related to data not being available yet (async issues)
+- Generic extensible queuing system built in
 - Services for location lookup and trip planning implemented
 - Traffic status now is one sensor per traffic type to make it simpler to display status
 - All sensortypes works and returns some kind of data if configured with valid data
-- Added dependency on jsonpickle as the builtin json serialiser kind of sucks
+- Added dependency on jsonpickle as the built-in json serializer kind of sucks
 - Added version field to manifest
 - Added system health checks
 - Services now response on the event bus by hasl3_response
@@ -187,7 +197,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [2.2.6] (2021-05-18)
 
 ### Changed
-- Fixed version numbers discrepencies
+- Fixed version numbers discrepancies
 
 ## [2.2.5] (2021-05-10)
 
@@ -202,7 +212,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [2.2.3] (2020-03-04)
 
 ### Changed
-- Bugfixes
+- Bug fixes
 
 ## [2.2.2] (2020-03-01)
 
@@ -219,7 +229,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [2.2.0] (2019-07-18)
 
 ### BREAKING CHANGES
-- config entrys have been changed to a true string array and should now be specified according to `lines: ['123X','124']`
+- config entries have been changed to a true string array and should now be specified according to `lines: ['123X','124']`
 
 ### Changed
 - Fix [#36](https://github.com/DSorlov/hasl-platform/issues/36) platform not found
@@ -262,11 +272,11 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Branched all display cards to new project [hasl-cards](https://github.com/DSorlov/hasl-cards).
 - Renamed repository from ha-sensor-sl to hasl-platform to conform to new naming.
 - Updated massive amounts of links and documentation
-- Many stability improvements and minor bugfixes
+- Many stability improvements and minor bug fixes
 
 ### Added
 - Implemented basic error handling as exceptions are now raised from communications library.
-- Implemented new sensor based on real-time train location api (EXPERIMENTAL!)
+- Implemented new sensor based on real-time train location API (EXPERIMENTAL!)
 
 ## [2.0.2] (2019-04-30)
 
@@ -281,9 +291,9 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [2.0.0] (2019-04-30)
 
 ### BREAKING CHANGES
-- Changed structure in configuration to be more standarlized, avoid key duplication etc
-- Cannot be used pre 0.92 as dependency code has moved (or atleast I have not tried it)
-- New install location for the autoupdater (changed from folder sl to hasl)
+- Changed structure in configuration to be more standardized, avoid key duplication etc
+- Cannot be used pre 0.92 as dependency code has moved (or at least I have not tried it)
+- New install location for the auto-updater (changed from folder sl to hasl)
 - Rename of sl-card.js to hasl-comb-card.js
 
 ### Changed
@@ -291,9 +301,9 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Fixed issue #16: sync_interval not working
 - Fixed issue #11: wrong time shown, thanks to [@isabellaalstrom] for suggesting fix
 - Language is now picked from config first, then from browser, and then default sv-SE
-- Icon changed to mdi:bus if no deviances, otherwise mdi:bus-alert
-- Recomended install directory is now 'hasl' instead of 'sl' to align naming
-- Fixed the autoupdater URLS (dev branch will be off but who cares, dev should not be used in prod)
+- Icon changed to mdi:bus if no deviations, otherwise mdi:bus-alert
+- Recommended install directory is now 'hasl' instead of 'sl' to align naming
+- Fixed the auto-updater URLs (dev branch will be off but who cares, dev should not be used in prod)
 - Using HASL 2.0.0 Communications Library with support for Trafikläget2 API from SL
 - Implemented a request minimization strategy for API-calls / using caching (haslcache.json) when using multiple sensors for same stops
 
@@ -302,7 +312,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Config 'always_show_time' in hasl-comb-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
 - Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
 - Added property deviation_count to comb sensor to show number of deviations in total
-- New sensor type TL2 for displaying trafic status messages for the Trafikläget2 API
+- New sensor type TL2 for displaying traffic status messages for the Trafikläget2 API
 - Service for force clearing of cache (adds services.json, mostly for troubleshooting)
 
 ## [1.0.3] (2019-04-16)
@@ -321,8 +331,8 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [1.0.1] (2019-04-15)
 
 ### Changed
-- Fixed documtentation about interval being changed to scan_interval this to better support the Home Assistant standard.
-- Fixed direction parameter that had been hardcoded for some strage reason. Blaming it on someone else. =)
+- Fixed documentation about interval being changed to scan_interval this to better support the Home Assistant standard.
+- Fixed direction parameter that had been hard-coded for some strange reason. Blaming it on someone else. =)
 
 ## [1.0.0] (2019-04-12)
 
@@ -338,7 +348,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Changed default repo from dev to hasl
 - Cleaned up the code
 - Using constant keywords from HomeAssistant
-- If update error occures now deliver '-' as value instead of -1
+- If update error occurs now deliver '-' as value instead of -1
 
 ### Removed
 - name configuration (replaced by friendly_name)
@@ -354,7 +364,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ## [0.0.7] (2018-12-13)
 
 ### Added
-- Rendering of deviances
+- Rendering of deviations
 - Parameters to customize card
 
 ### Changed
@@ -366,7 +376,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Added output of icons
 
 ### Changed
-- Buggfixes in lookup
+- Bug fixes in lookup
 - Changed rendering in lovelace card
 
 ## [0.0.5] (2018-11-16)
@@ -376,7 +386,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 - Lovelace card
 
 ### Changed
-- Logging strings changed to indicate which api failed
+- Logging strings changed to indicate which API failed
 - User Agent String conforms to standard
 - Now renders the next hour of departures
 

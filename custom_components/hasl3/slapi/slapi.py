@@ -46,7 +46,7 @@ class slapi_fp(object):
                                            follow_redirects=True,
                                            timeout=self._timeout)
         except Exception as e:
-            error = SLAPI_HTTP_Error(997, "A HTTP error occured (Vechicle Locations)", str(e))
+            error = SLAPI_HTTP_Error(997, "An HTTP error occurred (Vehicle Locations)", str(e))
             logger.debug(e)
             logger.error(error)
             raise error
@@ -76,10 +76,10 @@ class slapi(object):
             1001: 'No API key supplied in request',
             1002: 'The supplied API key is not valid',
             1003: 'Specified API is not valid',
-            1004: 'The API is not avaliable for this key',
+            1004: 'The API is not available for this key',
             1005: 'Key exists but is not for requested API',
-            1006: 'To many request per minute (qouta exceeded for key)',
-            1007: 'To many request per month (qouta exceeded for key)',
+            1006: 'Too many request per minute (quota exceeded for key)',
+            1007: 'Too many request per month (quota exceeded for key)',
             4002: 'Date filter is not valid',
             5000: 'Parameter invalid',
         }
@@ -91,7 +91,7 @@ class slapi(object):
                                         follow_redirects=True,
                                         timeout=self._timeout)
         except Exception as e:
-            error = SLAPI_HTTP_Error(997, f"A HTTP error occured ({api})", str(e))
+            error = SLAPI_HTTP_Error(997, f"An HTTP error occurred ({api})", str(e))
             logger.debug(e)
             logger.error(error)
             raise error
@@ -99,7 +99,7 @@ class slapi(object):
         try:
             jsonResponse = resp.json()
         except Exception as e:
-            error = SLAPI_API_Error(998, f"A parsing error occured ({api})", str(e))
+            error = SLAPI_API_Error(998, f"A parsing error occurred ({api})", str(e))
             logger.debug(error)
             raise error
 

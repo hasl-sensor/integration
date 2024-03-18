@@ -66,7 +66,7 @@ async def system_health_info(hass):
         logger.debug("[system_health_info] Information gather succeeded")
         return statusObject
     except:
-        logger.debug("[system_health_info] Information gather Failed")
+        logger.debug("[system_health_info] Information gather failed")
         return {
             "Version": HASL_VERSION,
             "Schema": SCHEMA_VERSION,

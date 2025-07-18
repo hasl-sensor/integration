@@ -1,44 +1,24 @@
-import logging
 from functools import partial
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from tsl.models.stops import LookupSiteId
 
 from ..const import DOMAIN
-from ..slapi import SLRoutePlanner31TripApi
-
-logger = logging.getLogger(__name__)
-
-
-API_KEY = "api_key"
-ORIGIN = "org"
-DESTINATION = "dest"
-
+from .trip_finder import DESTINATION, LANG, ORIGIN, SIMPLIFIED, TRIPS, find_trip
 
 SCHEMA = vol.Schema(
     {
-        vol.Required(API_KEY): str,
-        vol.Required(ORIGIN): int,
-        vol.Required(DESTINATION): int,
+        vol.Required(ORIGIN): str,
+        vol.Required(DESTINATION): str,
+        vol.Optional(TRIPS, default=1): int,
+        vol.Optional(LANG, default="en"): str,
+        vol.Optional(SIMPLIFIED, default=False): vol.Coerce(bool),
     }
 )
 
 
 async def service(hass: HomeAssistant, call: ServiceCall):
-    api_key = call.data.get(API_KEY)
-    origin = LookupSiteId.from_siteid(call.data.get(ORIGIN))
-    destination = LookupSiteId.from_siteid(call.data.get(DESTINATION))
-
-    logger.debug(
-        f"Searching for trip {origin} -> {destination} with key {'*' * len(api_key)}"
-    )
-
-    session = async_get_clientsession(hass)
-    client = SLRoutePlanner31TripApi(api_key, session)
-    requestResult = await client.request((origin, destination))
-    return requestResult
+    return await find_trip(hass, call, coordinates=False)
 
 
 def register(hass: HomeAssistant):

@@ -65,7 +65,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     new_sensors = [
         SENSOR_DEPARTURE,
         SENSOR_STATUS,
-        SENSOR_ROUTE,
+        # SENSOR_ROUTE, # disabled for now
     ]
 
     def __init__(self):
@@ -244,18 +244,19 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
         # validate user input
         errors = {}
-        if type_ == SENSOR_ROUTE:
-            source = user_input[const.CONF_SOURCE]
-            dest = user_input[const.CONF_DESTINATION]
+        # Temporary disabled
+        # if type_ == SENSOR_ROUTE:
+        #     source = user_input[const.CONF_SOURCE]
+        #     dest = user_input[const.CONF_DESTINATION]
 
-            try:
-                siteid_or_coords(source, dest)
-            except* SourceInvalid:
-                errors[const.CONF_SOURCE] = "invalid_siteid_or_coords"
-            except* DestinationInvalid:
-                errors[const.CONF_DESTINATION] = "invalid_siteid_or_coords"
-            except* ValueError:
-                errors["base"] = "inconsistent_source_and_destination"
+        #     try:
+        #         siteid_or_coords(source, dest)
+        #     except* SourceInvalid:
+        #         errors[const.CONF_SOURCE] = "invalid_siteid_or_coords"
+        #     except* DestinationInvalid:
+        #         errors[const.CONF_DESTINATION] = "invalid_siteid_or_coords"
+        #     except* ValueError:
+        #         errors["base"] = "inconsistent_source_and_destination"
 
         if errors:
             schema = self.add_suggested_values_to_schema(schema, user_input)

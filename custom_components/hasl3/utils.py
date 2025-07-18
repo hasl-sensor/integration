@@ -1,5 +1,4 @@
-from tsl.models.stops import LookupSiteId
-
+from tsl.utils import global_id_to_site_id
 
 class SourceInvalid(ValueError): ...
 
@@ -36,12 +35,12 @@ def siteid_or_coords(
 
     else:
         try:
-            source = LookupSiteId.from_siteid(source)
+            source = global_id_to_site_id(source)
         except ValueError:
             errors.append(SourceInvalid())
 
         try:
-            dest = LookupSiteId.from_siteid(dest)
+            dest = global_id_to_site_id(dest)
         except ValueError:
             errors.append(DestinationInvalid())
 

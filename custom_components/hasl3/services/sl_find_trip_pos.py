@@ -3,48 +3,37 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from ..const import DOMAIN
-from ..slapi import SLRoutePlanner31TripApi
+from .trip_finder import (
+    DESTINATION_LAT,
+    DESTINATION_LON,
+    LANG,
+    ORIGIN_LAT,
+    ORIGIN_LON,
+    SIMPLIFIED,
+    TRIPS,
+    find_trip,
+)
 
 logger = logging.getLogger(__name__)
 
 
-API_KEY = "api_key"
-ORIGIN_LAT = "orig_lat"
-ORIGIN_LONG = "orig_long"
-DESTINATION_LAT = "dest_lat"
-DESTINATION_LONG = "dest_long"
-
-
 SCHEMA = vol.Schema(
     {
-        vol.Required(API_KEY): str,
-        vol.Required(ORIGIN_LAT): str,
-        vol.Required(ORIGIN_LONG): str,
-        vol.Required(DESTINATION_LAT): str,
-        vol.Required(DESTINATION_LONG): str,
+        vol.Required(ORIGIN_LAT): vol.Coerce(float),
+        vol.Required(ORIGIN_LON): vol.Coerce(float),
+        vol.Required(DESTINATION_LAT): vol.Coerce(float),
+        vol.Required(DESTINATION_LON): vol.Coerce(float),
+        vol.Optional(TRIPS, default=1): int,
+        vol.Optional(LANG, default="en"): str,
+        vol.Optional(SIMPLIFIED, default=False): vol.Coerce(bool),
     }
 )
 
 
 async def service(hass: HomeAssistant, call: ServiceCall):
-    api_key = call.data.get(API_KEY)
-    orig_lat, orig_lon = call.data.get(ORIGIN_LAT), call.data.get(ORIGIN_LONG)
-    dest_lat, dest_lon = (
-        call.data.get(DESTINATION_LAT),
-        call.data.get(DESTINATION_LONG),
-    )
-
-    logger.debug(
-        f"Searching for trip [{orig_lat}, {orig_lon}] -> [{dest_lat}, {dest_lon}] with key {'*' * len(api_key)}"
-    )
-
-    session = async_get_clientsession(hass)
-    client = SLRoutePlanner31TripApi(api_key, session)
-    requestResult = await client.request((orig_lat, orig_lon, dest_lat, dest_lon))
-    return requestResult
+    return await find_trip(hass, call, coordinates=True)
 
 
 def register(hass: HomeAssistant):

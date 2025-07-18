@@ -23,6 +23,7 @@ from homeassistant.helpers.schema_config_entry_flow import (
 )
 from tsl.clients.common import ClientException
 from tsl.clients.stoplookup import StopLookupClient
+from tsl.utils import global_id_to_site_id
 
 from . import const
 from .config_schema import NAME_CONFIG_SCHEMA, schema_by_type
@@ -53,10 +54,7 @@ OPTIONS_FLOW = {
     "user": SchemaFlowFormStep(get_schema_by_handler),
 }
 
-
-LOOKUP_API_KEY = "lookup_api_key"
 LOOKUP_SEARCH_KEY = "lookup_search_key"
-
 
 class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for HASL."""
@@ -152,29 +150,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_lookup_location(
         self, user_input: dict[str, Any] | None = None
     ):
-        if (
-            user_input is None
-            or (
-                api_key := self._options.get(
-                    LOOKUP_API_KEY, user_input.get(LOOKUP_API_KEY)
-                )
-            )
-            is None
-        ):
-            old_errors = user_input and user_input.get("errors")
-            return self.async_show_form(
-                step_id="lookup_location",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(LOOKUP_API_KEY): str,
-                    },
-                ),
-                errors=old_errors,
-            )
-        else:
-            self._options[LOOKUP_API_KEY] = api_key
-
-        if (search_key := user_input.get(LOOKUP_SEARCH_KEY)) is None:
+        if not user_input or (search_key := user_input.get(LOOKUP_SEARCH_KEY)) is None:
             return self.async_show_form(
                 step_id="lookup_location",
                 data_schema=vol.Schema(
@@ -195,27 +171,26 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         # the result was chosen
         if site_id := user_input.get(CONF_SITE_ID):
             user_input.pop(LOOKUP_SEARCH_KEY, None)
-            self._options.pop(LOOKUP_API_KEY, None)
             self._options.pop(LOOKUP_SEARCH_KEY, None)
             self._options[CONF_SITE_ID] = int(site_id)
             return await self.async_step_name()
 
         # perform the search
         session = async_get_clientsession(self.hass)
-        client = StopLookupClient(api_key, session)
+        client = StopLookupClient(session)
 
         try:
             stops = await client.get_stops(search_key)
         except ClientException:
-            self._options.pop(LOOKUP_API_KEY, None)
             return await self.async_step_lookup_location(
                 {"errors": {"base": "lookup_failed"}}
             )
 
         stop_options: list[sel.SelectOptionDict] = [
-            {"value": str(stop.SiteId.transport_siteid), "label": stop.Name}
+            {"value": str(global_id_to_site_id(stop["id"])), "label": stop["name"]}
             for stop in stops
         ]
+
         if first_option := next(iter(stop_options), None):
             first_option = first_option["value"]
 
@@ -231,6 +206,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         sel.SelectSelectorConfig(
                             options=stop_options,
                             translation_key=CONF_SITE_ID,
+                            mode=sel.SelectSelectorMode.DROPDOWN
                         )
                     ),
                 }

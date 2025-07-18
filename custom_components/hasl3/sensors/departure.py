@@ -23,6 +23,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 from tsl.clients.transport import TransportClient
 from tsl.models.departures import SiteDepartureResponse, TransportMode
+from tsl.utils import from_sl_dt
 
 from .. import const
 from .device import SL_TRAFFIK_DEVICE_INFO
@@ -188,7 +189,7 @@ class BaseDepartureSensor(
             return None
 
         departures = sorted(
-            self.coordinator.data.departures, key=lambda x: x.expected or x.scheduled
+            self.coordinator.data["departures"], key=lambda x: x.get("expected", None) or x.get("scheduled", None)
         )
         return next(iter(departures), None)
 
@@ -210,14 +211,14 @@ class DeparturesSensor(BaseDepartureSensor):
         if not self.coordinator.data:
             return None
 
-        return len(self.coordinator.data.departures)
+        return len(self.coordinator.data["departures"])
 
     @property
     def extra_state_attributes(self):
         if not self.coordinator.data:
             return {}
 
-        return {"departures": self.coordinator.data.departures}
+        return {"departures": self.coordinator.data["departures"]}
 
 
 class DeviationsSensor(BaseDepartureSensor):
@@ -233,7 +234,7 @@ class DeviationsSensor(BaseDepartureSensor):
 
     @property
     def native_value(self):
-        return len(self.coordinator.data.stop_deviations)
+        return len(self.coordinator.data["stop_deviations"])
 
     @property
     def extra_state_attributes(self):
@@ -242,7 +243,7 @@ class DeviationsSensor(BaseDepartureSensor):
         if not self.coordinator.data:
             return {}
 
-        return {"deviations": self.coordinator.data.stop_deviations}
+        return {"deviations": self.coordinator.data["stop_deviations"]}
 
 
 class NextDepartureSensor(BaseDepartureSensor):
@@ -260,4 +261,7 @@ class NextDepartureSensor(BaseDepartureSensor):
         if (departure := self._next_departure()) is None:
             return None
 
-        return departure.expected or departure.scheduled
+        if (value := departure.get("expected") or departure.get("scheduled")) is None:
+            return None
+
+        return from_sl_dt(value)

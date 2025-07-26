@@ -26,7 +26,6 @@ SENSOR_VEHICLE_LOCATION = "SL Vehicle Locations"
 SENSOR_ROUTE = "route_v2"
 SENSOR_DEPARTURE = "departure_v2"
 
-CONF_RP3_KEY = "rp3key"
 CONF_RR_KEY = "rrkey"
 
 CONF_SITE_ID = "siteid"

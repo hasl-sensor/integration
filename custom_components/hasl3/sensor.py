@@ -115,8 +115,6 @@ async def setup_hasl_sensor(
             if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
                 await worker.assert_fp("TB3")
                 sensors.append(HASLVehicleLocationSensor(hass, config, "TB3"))
-            logger.debug("[setup_hasl_sensor] Force proccessing FP sensors")
-            await worker.process_fp()
         logger.debug("[setup_hasl_sensor] Completed setting up FP sensors")
     except Exception as e:
         logger.error(f"[setup_hasl_sensor] Failed to set up FP sensors: {str(e)}")

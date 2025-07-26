@@ -29,12 +29,6 @@
                     "siteid": "Location"
                 }
             },
-            "rp3key": {
-                "description": "Provide an api key",
-                "data": {
-                    "rp3key": "\"Trafikverket öppet API\" key"
-                }
-            },
             "name": {
                 "description": "Friendly name for the sensor",
                 "data": {
@@ -110,7 +104,6 @@
 					"property": "Sensor primary property",
 					"timewindow": "How long into the future (5-60 min)",
 
-                    "rp3key": "Reseplaneraren 3.1 API Key",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
 					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
 

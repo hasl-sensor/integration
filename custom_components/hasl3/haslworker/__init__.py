@@ -7,7 +7,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.util.dt import now
 
 from custom_components.hasl3.rrapi import rrapi_rra, rrapi_rrd, rrapi_rrr
-from custom_components.hasl3.slapi import slapi_fp
 
 logger = logging.getLogger("custom_components.hasl3.worker")
 
@@ -137,29 +136,6 @@ class HaslWorker(object):
 
         logger.debug("[assert_fp] Completed")
         return
-
-    async def process_fp(self, notarealarg=None):
-        logger.debug("[process_rp3] Entered")
-
-        api = slapi_fp()
-        for traintype in list(self.data.fp):
-            logger.debug(f"[process_rp3] Processing {traintype}")
-
-            newdata = self.data.fp[traintype]
-            try:
-                newdata['data'] = await api.request(traintype)
-                newdata['attribution'] = "Stockholms Lokaltrafik"
-                newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                newdata['api_result'] = "Success"
-                logger.debug(f"[process_rp3] Completed {traintype}")
-            except Exception as e:
-                newdata['api_result'] = "Error"
-                newdata['api_error'] = str(e)
-                logger.debug(f"[process_rp3] Error occurred for {traintype}: {str(e)}")
-
-            newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
-            self.data.fp[traintype] = newdata
-        logger.debug("[process_rp3] Completed")
 
     async def assert_rrd(self, key, stop):
         logger.debug("[assert_rrd] Entered")

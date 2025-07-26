@@ -29,12 +29,6 @@
                     "siteid": "Plats"
                 }
             },
-            "rp3key": {
-                "description": "Ange en API-nyckel",
-                "data": {
-                    "rp3key": "\"Trafikverket öppet API\" nyckel"
-                }
-            },
             "name": {
                 "description": "Vänligt namn för sensorn",
                 "data": {
@@ -104,7 +98,6 @@
 					"lines": "Linjer (kommaseparerad lista)",
 					"stops": "Plats IDn (kommaseparerad lista)",
 
-                    "rp3key": "SL Reseplaneraren 3.1 API-nyckel",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
 					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
 

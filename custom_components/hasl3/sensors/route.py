@@ -2,20 +2,21 @@
 
 import logging
 from asyncio import timeout
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
 )
 from homeassistant.config_entries import (
     ConfigEntry,
-    ConfigEntryAuthFailed,
     ConfigEntryError,
 )
-from homeassistant.const import STATE_ON
+from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -24,9 +25,10 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
+from tsl.clients.journey import Journey, JourneyPlannerClient, SearchLeg
+from tsl.tools.journey import SimpleJourneyInterpreter, leg_display_str
 
 from .. import const
-from ..slapi import SLAPI_Error, SLRoutePlanner31TripApi
 from ..utils import siteid_or_coords
 from .device import SL_TRAFFIK_DEVICE_INFO
 
@@ -66,10 +68,26 @@ async def async_setup_entry(
 ):
     """Set up the sensor platform."""
 
-    async_add_entities([RouteTripsSensor(entry)])
+    async_add_entities(
+        [
+            RouteRidesSensor(entry),
+            RouteDurationSensor(entry),
+            RouteTripsSensor(entry),
+            RouteTripsDebugSensor(entry),
+        ]
+    )
 
 
-class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
+@dataclass
+class Data:
+    """Data class for route data."""
+
+    trips: list[Journey]
+    trips_rides: list[int]
+    simple_trips_steps: list[list[str]]
+
+
+class RouteDataUpdateCoordinator(DataUpdateCoordinator[Data]):
     """Class to manage fetching Route data API."""
 
     config_entry: ConfigEntry
@@ -79,14 +97,25 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
     ) -> None:
-        self._api_key = config_entry.data[const.CONF_RP3_KEY]
-
         source: str = config_entry.options[const.CONF_SOURCE]
         dest: str = config_entry.options[const.CONF_DESTINATION]
         try:
-            self._lookup = siteid_or_coords(source, dest)
+            ids_or_ccords = siteid_or_coords(source, dest)
         except* ValueError as exc:
             raise ConfigEntryError("source-or-dest-invalid") from exc
+        else:
+            if len(ids_or_ccords) == 2:
+                _from, _to = ids_or_ccords
+                self._lookup = (
+                    SearchLeg.from_any(_from),
+                    SearchLeg.from_any(_to),
+                )
+            else:
+                olat, olon, dlat, dlon = ids_or_ccords
+                self._lookup = (
+                    SearchLeg.from_coordinates(olat, olon),
+                    SearchLeg.from_coordinates(dlat, dlon),
+                )
 
         self._sensor_id: str | None = config_entry.options.get(const.CONF_SENSOR)
         interval = timedelta(seconds=config_entry.options[const.CONF_SCAN_INTERVAL])
@@ -117,35 +146,31 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
             return self.data
 
-        client = SLRoutePlanner31TripApi(
-            self._api_key,
-            async_get_clientsession(self.hass),
-        )
+        client = JourneyPlannerClient(async_get_clientsession(self.hass))
+        origin, destination = self._lookup
+        request = client.build_request_params(origin=origin, destination=destination)
+
         async with timeout(10):
             try:
-                data = await client.request(self._lookup)
-                data = client.transform(data)
-            except SLAPI_Error as error:
-                if error.code == 1002:
-                    raise ConfigEntryAuthFailed(error) from error
+                data = await client.search_trip(request)
+            except Exception as error:
                 raise ConfigEntryError(error) from error
 
-            return data
+        rides = []
+        simple_trips = []
+        for journey in data:
+            legs = list(SimpleJourneyInterpreter(journey).get_itinerary())
+            rides.append(len([x for x in legs if x._type != "walk"]))
+            simple_trips.append([leg_display_str(leg) for leg in legs])
+
+        return Data(trips=data, trips_rides=rides, simple_trips_steps=simple_trips)
 
 
-class RouteTripsSensor(
+class RouteBaseSensor(
     CoordinatorEntity[RouteDataUpdateCoordinator],
     SensorEntity,
 ):
     _attr_attribution = "Stockholm Lokaltrafik"
-    _unrecorded_attributes = frozenset({"route"})
-
-    entity_description = SensorEntityDescription(
-        key="route",
-        icon="mdi:train",
-        has_entity_name=True,
-        name="Trips",
-    )
 
     def __init__(
         self,
@@ -156,16 +181,99 @@ class RouteTripsSensor(
         self._attr_unique_id = f"{entry.entry_id}_{self.entity_description.key}"
         self._attr_device_info = self.coordinator.device_info
 
+
+class RouteTripsDebugSensor(RouteBaseSensor):
+    """
+    Sensor for number of routes.
+    Contains raw steps in `routes` attribute.
+    """
+
+    _unrecorded_attributes = frozenset({"routes"})
+
+    entity_description = SensorEntityDescription(
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        key="raw_routes",
+        icon="mdi:swap-horizontal",
+        has_entity_name=True,
+        name="Raw Routes",
+    )
+
     @property
     def native_value(self):
-        if not self.coordinator.data:
-            return None
+        if data := self.coordinator.data.trips:
+            return len(data)
 
-        return len(self.coordinator.data["trips"])
+        return None
 
     @property
     def extra_state_attributes(self):
-        if not self.coordinator.data:
-            return {}
+        return {"routes": self.coordinator.data.trips or []}
 
-        return {"route": self.coordinator.data}
+
+class RouteTripsSensor(RouteBaseSensor):
+    """
+    Sensor for number of simple routes.
+    Contains human-readable steps in `routes` attribute.
+    """
+
+    _unrecorded_attributes = frozenset({"routes"})
+
+    entity_description = SensorEntityDescription(
+        key="simple_routes",
+        icon="mdi:swap-horizontal",
+        has_entity_name=True,
+        name="Routes",
+    )
+
+    @property
+    def native_value(self):
+        if data := self.coordinator.data.simple_trips_steps:
+            return len(data)
+
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        return {"routes": self.coordinator.data.simple_trips_steps or []}
+
+
+class RouteDurationSensor(RouteBaseSensor):
+    """Sensor for first available route duration."""
+
+    entity_description = SensorEntityDescription(
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.MINUTES,
+        device_class=SensorDeviceClass.DURATION,
+        key="duration",
+        icon="mdi:timer",
+        has_entity_name=True,
+        name="Duration",
+    )
+
+    @property
+    def native_value(self):
+        if data := self.coordinator.data.trips:
+            first_trip = data[0]
+            return first_trip["tripDuration"]
+
+        return None
+
+
+class RouteRidesSensor(RouteBaseSensor):
+    """Sensor for number of transport rides in the first available route"""
+
+    entity_description = SensorEntityDescription(
+        key="rides",
+        icon="mdi:train",
+        has_entity_name=True,
+        name="Rides",
+    )
+
+    @property
+    def native_value(self):
+        if data := self.coordinator.data.trips_rides:
+            first_trip = data[0]
+            return first_trip
+
+        return None

@@ -3,12 +3,11 @@
 import logging
 import uuid
 from functools import partial
-from typing import Any, Mapping, cast
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.config_entries import (
     CONN_CLASS_CLOUD_POLL,
-    SOURCE_REAUTH,
     ConfigEntry,
     ConfigFlow,
 )
@@ -65,7 +64,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     new_sensors = [
         SENSOR_DEPARTURE,
         SENSOR_STATUS,
-        # SENSOR_ROUTE, # disabled for now
+        SERVICE_PROVIDER,
     ]
 
     def __init__(self):
@@ -77,9 +76,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> SchemaOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> SchemaOptionsFlowHandler:
         """Get the options flow for this handler."""
         return SchemaOptionsFlowHandler(config_entry, OPTIONS_FLOW)
 
@@ -112,39 +109,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_route_v2(self, user_input: dict[str, Any] | None = None):
         self._options[CONF_INTEGRATION_TYPE] = SENSOR_ROUTE
 
-        return await self.async_step_rp3key()
-
-    async def async_step_rp3key(self, user_input: dict[str, Any] | None = None):
-        old_key = (
-            self._get_reauth_entry().data.get(const.CONF_RP3_KEY)
-            if self.source == SOURCE_REAUTH
-            else None
-        )
-
-        if (user_input is None) or (not user_input.get(const.CONF_RP3_KEY)):
-            return self.async_show_form(
-                step_id="rp3key",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(
-                            const.CONF_RP3_KEY,
-                            description={"suggested_value": old_key},
-                        ): str,
-                    }
-                ),
-            )
-
-        new_key = user_input[const.CONF_RP3_KEY]
-
-        if self.source == SOURCE_REAUTH:
-            return self.async_update_reload_and_abort(
-                self._get_reauth_entry(),
-                data_updates={
-                    const.CONF_RP3_KEY: new_key,
-                },
-            )
-
-        self._options[const.CONF_RP3_KEY] = new_key
         return await self.async_step_name()
 
     async def async_step_lookup_location(
@@ -244,19 +208,18 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
         # validate user input
         errors = {}
-        # Temporary disabled
-        # if type_ == SENSOR_ROUTE:
-        #     source = user_input[const.CONF_SOURCE]
-        #     dest = user_input[const.CONF_DESTINATION]
+        if type_ == SENSOR_ROUTE:
+            source = user_input[const.CONF_SOURCE]
+            dest = user_input[const.CONF_DESTINATION]
 
-        #     try:
-        #         siteid_or_coords(source, dest)
-        #     except* SourceInvalid:
-        #         errors[const.CONF_SOURCE] = "invalid_siteid_or_coords"
-        #     except* DestinationInvalid:
-        #         errors[const.CONF_DESTINATION] = "invalid_siteid_or_coords"
-        #     except* ValueError:
-        #         errors["base"] = "inconsistent_source_and_destination"
+            try:
+                siteid_or_coords(source, dest)
+            except* SourceInvalid:
+                errors[const.CONF_SOURCE] = "invalid_siteid_or_coords"
+            except* DestinationInvalid:
+                errors[const.CONF_DESTINATION] = "invalid_siteid_or_coords"
+            except* ValueError:
+                errors["base"] = "inconsistent_source_and_destination"
 
         if errors:
             schema = self.add_suggested_values_to_schema(schema, user_input)
@@ -270,9 +233,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             CONF_INTEGRATION_TYPE: type_,
         }
 
-        if type_ == SENSOR_ROUTE:
-            data[const.CONF_RP3_KEY] = self._options[const.CONF_RP3_KEY]
-
         # TODO: remove legacy: generate a new integration id
         if type_ not in (SENSOR_DEPARTURE, SENSOR_STATUS):
             data[CONF_INTEGRATION_ID] = uuid.uuid1()
@@ -280,14 +240,3 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(
             title=self._options[CONF_NAME], data=data, options=user_input
         )
-
-    async def async_step_reauth(self, entry_data: Mapping[str, Any]):
-        type_ = entry_data[CONF_INTEGRATION_TYPE]
-        self._options[CONF_INTEGRATION_TYPE] = type_
-
-        if step := {
-            SENSOR_ROUTE: self.async_step_rp3key,
-        }.get(type_):
-            return await step()
-
-        return await self.async_abort(reason="reauth_not_supported")

@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 import aiohttp
+import isodate
 
 logger = logging.getLogger(__name__)
 
@@ -51,5 +52,78 @@ class ResRobotClient:
                     "type": place.get("type", "STOP"),
                 }
             )
+
+        return result
+
+    async def find_trip(self, origin: str, destination: str) -> list[dict[str, Any]]:
+        """Find a route between two locations."""
+        url = f"{self._base_url}/trip?format=json&originId={origin}&destId={destination}&passlist=true&showPassingPoints=true&accessId={self._api_key}"
+        data = await self._get_json(url)
+
+        # transform data
+        trips = []
+
+        #Parse every trip
+        for trip in data["Trip"]:
+            newtrip = {'legs': []}
+
+            # Add legs to trips
+            for leg in trip['LegList']['Leg']:
+                newleg = {}
+                # Walking is done by humans.
+                # And robots.
+                # Robots are scary.
+                newleg['line'] = leg['Product'][0]['line'] if leg["type"] != "WALK" else "Walk"
+                newleg['direction'] = leg['directionFlag'] if leg["type"] != "WALK" else "Walk"
+                newleg['category'] = leg['type']
+                newleg['name'] = leg['Product'][0]['name']
+                newleg['from'] = leg['Origin']['name']
+                newleg['to'] = leg['Destination']['name']
+                newleg['time'] = f"{leg['Origin']['date']} {leg['Origin']['time']}"
+
+                if leg.get('Stops'):
+                    if leg['Stops'].get('Stop', {}):
+                        newleg['stops'] = []
+                        for stop in leg.get('Stops', {}).get('Stop', {}):
+                            newleg['stops'].append(stop)
+
+                newtrip['legs'].append(newleg)
+
+            # Make some shortcuts for data
+            newtrip['first_leg'] = newtrip['legs'][0]['name']
+            newtrip['time'] = newtrip['legs'][0]['time']
+            newtrip['duration'] = str(isodate.parse_duration(trip['duration']))
+            trips.append(newtrip)
+
+        # Add shortcuts to info in the first trip if it exists
+        firstLegFirstTrip = next((x for x in trips[0]['legs'] if x["category"] != "WALK"), [])
+        lastLegLastTrip = next((x for x in reversed(trips[0]['legs']) if x["category"] != "WALK"), [])
+
+        result = {
+            "transfers": sum(p["category"] != "WALK" for p in trips[0]['legs']) - 1 or 0,
+            "time": trips[0]['time'] or '',
+            "duration": trips[0]['duration'] or '',
+            "from": trips[0]['legs'][0]['from'] or '',
+            "to": trips[0]['legs'][-1]['to'] or '',
+            "origin": {
+                "leg": firstLegFirstTrip["name"] or '',
+                "line": firstLegFirstTrip["line"] or '',
+                "direction": firstLegFirstTrip["direction"] or '',
+                "category": firstLegFirstTrip["category"] or '',
+                "time": firstLegFirstTrip["time"] or '',
+                "from": firstLegFirstTrip["from"] or '',
+                "to": firstLegFirstTrip["to"] or '',
+            },
+            "destination": {
+                "leg": lastLegLastTrip["name"] or '',
+                "line": lastLegLastTrip["line"] or '',
+                "direction": lastLegLastTrip["direction"] or '',
+                "category": lastLegLastTrip["category"] or '',
+                "time": lastLegLastTrip["time"] or '',
+                "from": lastLegLastTrip["from"] or '',
+                "to": lastLegLastTrip["to"] or '',
+            },
+            "trips": trips,
+        }
 
         return result

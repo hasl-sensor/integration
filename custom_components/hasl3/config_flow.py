@@ -64,7 +64,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     new_sensors = [
         SENSOR_DEPARTURE,
         SENSOR_STATUS,
-        SERVICE_PROVIDER,
+        SENSOR_ROUTE,
     ]
 
     def __init__(self):

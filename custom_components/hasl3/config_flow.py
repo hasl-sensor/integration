@@ -9,7 +9,9 @@ import voluptuous as vol
 from homeassistant.config_entries import (
     CONN_CLASS_CLOUD_POLL,
     ConfigEntry,
+    ConfigEntryState,
     ConfigFlow,
+    ConfigSubentryFlow,
 )
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
@@ -25,7 +27,7 @@ from tsl.clients.stoplookup import StopLookupClient
 from tsl.utils import global_id_to_site_id
 
 from . import const
-from .config_schema import NAME_CONFIG_SCHEMA, schema_by_type
+from .config_schema import API_KEY_CONFIG_SCHEMA, NAME_CONFIG_SCHEMA, schema_by_type
 from .const import (
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_LIST,
@@ -34,9 +36,12 @@ from .const import (
     DOMAIN,
     SCHEMA_VERSION,
     SENSOR_DEPARTURE,
+    SENSOR_RESROBOT_ROUTE,
     SENSOR_ROUTE,
     SENSOR_STATUS,
+    SERVICE_RESROBOT_KEY,
 )
+from .rrapi.client import ResRobotClient
 from .utils import DestinationInvalid, SourceInvalid, siteid_or_coords
 
 logger = logging.getLogger(__name__)
@@ -55,6 +60,7 @@ OPTIONS_FLOW = {
 
 LOOKUP_SEARCH_KEY = "lookup_search_key"
 
+
 class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for HASL."""
 
@@ -65,6 +71,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         SENSOR_DEPARTURE,
         SENSOR_STATUS,
         SENSOR_ROUTE,
+        SERVICE_RESROBOT_KEY,
     ]
 
     def __init__(self):
@@ -80,11 +87,48 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         """Get the options flow for this handler."""
         return SchemaOptionsFlowHandler(config_entry, OPTIONS_FLOW)
 
+    @classmethod
+    @callback
+    def async_get_supported_subentry_types(
+        cls, config_entry: ConfigEntry
+    ) -> dict[str, type[ConfigSubentryFlow]]:
+        """Return subentries supported by this integration."""
+        if _type := config_entry.data.get(CONF_INTEGRATION_TYPE):
+            if _type == SERVICE_RESROBOT_KEY:
+                return {
+                    SERVICE_RESROBOT_KEY: ResrobotSubentryFlowHandler,
+                }
+        return {}
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         # TODO: add back legacy sensor types
-        return self.async_show_menu(
-            step_id="user",
-            menu_options=self.new_sensors,
+        return self.async_show_menu(step_id="user", menu_options=self.new_sensors)
+
+    async def async_step_resrobot_key(self, user_input: dict[str, Any] | None = None):
+        """Handle the ResRobot API key configuration."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id=SERVICE_RESROBOT_KEY,
+                data_schema=API_KEY_CONFIG_SCHEMA,
+            )
+
+        # validate the API key
+        session = async_get_clientsession(self.hass)
+        client = ResRobotClient(session, user_input[const.CONF_API_KEY])
+
+        try:
+            await client.find_location("Slussen")
+        except ClientException:
+            return self.async_show_form(
+                step_id=SERVICE_RESROBOT_KEY,
+                data_schema=API_KEY_CONFIG_SCHEMA,
+                errors={"base": "invalid_api_key"},
+            )
+
+        return self.async_create_entry(
+            title="ResRobot",
+            data={CONF_INTEGRATION_TYPE: SERVICE_RESROBOT_KEY, **user_input},
+            description="Configured ResRobot API key",
         )
 
     async def async_step_departure_v2(self, user_input: dict[str, Any] | None = None):
@@ -170,7 +214,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         sel.SelectSelectorConfig(
                             options=stop_options,
                             translation_key=CONF_SITE_ID,
-                            mode=sel.SelectSelectorMode.DROPDOWN
+                            mode=sel.SelectSelectorMode.DROPDOWN,
                         )
                     ),
                 }
@@ -240,3 +284,77 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(
             title=self._options[CONF_NAME], data=data, options=user_input
         )
+
+
+class ResrobotSubentryFlowHandler(ConfigSubentryFlow):
+
+    _options = {}
+
+    @property
+    def _is_new(self) -> bool:
+        """Return if this is a new subentry."""
+        return self.source == "user"
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> SchemaOptionsFlowHandler:
+        """Get the options flow for this handler."""
+        return SchemaOptionsFlowHandler(config_entry, OPTIONS_FLOW)
+
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=[
+                SENSOR_RESROBOT_ROUTE,
+            ],
+        )
+
+    async def async_step_resrobot_route(self, user_input: dict[str, Any] | None = None):
+        self._options[CONF_INTEGRATION_TYPE] = SENSOR_RESROBOT_ROUTE
+        return await self.async_step_name()
+
+    async def async_step_name(self, user_input: dict[str, Any] | None = None):
+        if not user_input:
+            return self.async_show_form(step_id="name", data_schema=NAME_CONFIG_SCHEMA)
+
+        self._options[CONF_NAME] = user_input[CONF_NAME]
+        return await self.async_step_config()
+
+    async def async_step_config(self, user_input: dict[str, Any] | None = None):
+        if self._get_entry().state != ConfigEntryState.LOADED:
+            return self.async_abort(reason="entry_not_loaded")
+
+        if user_input is None:
+            if not self._is_new:
+                # If this is a reconfiguration, we need to copy the existing options
+                self._options = self._get_reconfigure_subentry().data.copy()
+                self._options[CONF_NAME] = self._get_reconfigure_subentry().title
+
+            type_ = self._options[CONF_INTEGRATION_TYPE]
+            schema = schema_by_type(type_)
+
+            if not self._is_new:
+                schema = self.add_suggested_values_to_schema(schema, self._options)
+
+            return self.async_show_form(step_id="config", data_schema=schema)
+
+        type_ = self._options[CONF_INTEGRATION_TYPE]
+        final_data = {
+            CONF_INTEGRATION_TYPE: type_,
+            **user_input,
+        }
+
+        if self._is_new:
+            return self.async_create_entry(
+                title=self._options[CONF_NAME],
+                data=final_data,
+                unique_id=f"{self._entry_id}_{type_}_{uuid.uuid1()}",
+            )
+
+        return self.async_update_and_abort(
+            self._get_entry(),
+            self._get_reconfigure_subentry(),
+            data=final_data,
+        )
+
+    async_step_reconfigure = async_step_config

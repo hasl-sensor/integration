@@ -10,8 +10,8 @@
                     "Resrobot Departures": "Resrobot Departures",
                     "Resrobot Arrivals": "Resrobot Arrivals",
                     "Resrobot Route Sensor": "Resrobot Route Sensor",
-                    "SL Vehicle Locations": "SL Vehicle Locations",
-                    "route_v2": "SL Route Sensor"
+                    "route_v2": "SL Route Sensor",
+                    "resrobot_key": "Resrobot"
                 }
             },
             "departure_v2": {
@@ -84,6 +84,22 @@
             "only_one_status_sensor": "Only one Sensor of type Status is allowed",
             "invalid_siteid_or_coords": "Invalid siteid or coordinates",
             "inconsistent_source_and_destination": "Inconsistent source and destination formats. Use either siteid or coordinates for both"
+        }
+    },
+    "config_subentries": {
+        "resrobot_key": {
+            "initiate_flow": {
+                "user": "Add Resrobot Sensor",
+                "reconfigure": "Reconfigure Resrobot Sensor"
+            },
+            "entry_type": "Resrobot Sensor",
+            "step": {
+                "user": {
+                    "menu_options": {
+                        "resrobot_route": "Resrobot Route"
+                    }
+                }
+            }
         }
     },
     "options": {

@@ -18,13 +18,17 @@ DEVICE_GUID = (
 SL_TRAFIK_DEVICE_GUID = "feb117a9-c5cb-4f0c-b08e-331d5c081bfc"
 SL_TRAFIK_DEVICE_NAME = "SL Traffic"
 
+KEY_COORDINATORS = "coordinators"
+
 SENSOR_RRDEP = "Resrobot Departures"
 SENSOR_RRARR = "Resrobot Arrivals"
-SENSOR_RRROUTE = "Resrobot Route Sensor"
 SENSOR_STATUS = "status_v2"
 SENSOR_ROUTE = "route_v2"
 SENSOR_DEPARTURE = "departure_v2"
+SERVICE_RESROBOT_KEY = "resrobot_key"
+SENSOR_RESROBOT_ROUTE = "resrobot_route"
 
+CONF_API_KEY = "api_key"
 CONF_RR_KEY = "rrkey"
 
 CONF_SITE_ID = "siteid"
@@ -80,7 +84,7 @@ CONF_INTEGRATION_LIST = [
     SENSOR_STATUS,
     SENSOR_RRDEP,
     SENSOR_RRARR,
-    SENSOR_RRROUTE,
+    SENSOR_RESROBOT_ROUTE,
     SENSOR_ROUTE,
 ]
 CONF_RRARR_PROPERTY_LIST = [

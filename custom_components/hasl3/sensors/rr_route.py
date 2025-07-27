@@ -1,0 +1,148 @@
+from functools import cached_property
+import logging
+from asyncio import timeout
+from datetime import timedelta
+from typing import TYPE_CHECKING
+
+import voluptuous as vol
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigEntryError,
+    ConfigSubentry,
+)
+from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import selector as sel
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
+
+from .. import const
+from ..rrapi.client import ResRobotClient
+from .device import SL_TRAFFIK_DEVICE_INFO
+
+logger = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = vol.Schema(
+    {
+        vol.Required(const.CONF_SOURCE): sel.TextSelector(),
+        vol.Required(const.CONF_DESTINATION): sel.TextSelector(),
+        vol.Optional(const.CONF_SENSOR): sel.EntitySelector(
+            sel.EntitySelectorConfig(domain="binary_sensor")
+        ),
+        vol.Required(const.CONF_SCAN_INTERVAL, default=300): sel.NumberSelector(
+            sel.NumberSelectorConfig(
+                min=0,
+                unit_of_measurement="seconds",
+                mode=sel.NumberSelectorMode.BOX,
+            )
+        ),
+    }
+)
+
+
+class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
+    config_entry: ConfigEntry
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        subentry: ConfigSubentry,
+    ) -> None:
+        self.api_key: str = config_entry.data[const.CONF_API_KEY]
+        self.origin: str = subentry.data[const.CONF_SOURCE]
+        self.destination: str = subentry.data[const.CONF_DESTINATION]
+        self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
+        interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
+
+        self.device_info = {
+            **SL_TRAFFIK_DEVICE_INFO,
+            "identifiers": {(const.DOMAIN, config_entry.entry_id)},
+            "name": config_entry.title,
+        }
+
+        super().__init__(
+            hass,
+            logger=logging.getLogger(__name__),
+            config_entry=config_entry,
+            name=const.DOMAIN,
+            update_interval=interval,
+        )
+
+    async def _async_update_data(self):
+        if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
+            self.logger.debug(
+                'Not updating %s. Sensor "%s" is off',
+                self.config_entry.entry_id,
+                self._sensor_id,
+            )
+
+            return self.data
+
+        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key)
+        async with timeout(10):
+            try:
+                data = await client.find_trip(self.origin, self.destination)
+            except Exception as error:
+                raise ConfigEntryError(error) from error
+
+        return data
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    subentry: ConfigSubentry
+) -> list[Entity]:
+    """Set up the sensor platform."""
+
+    coordinator = RouteDataUpdateCoordinator(hass, entry, subentry)
+    await coordinator.async_config_entry_first_refresh()
+
+    entry.runtime_data[const.KEY_COORDINATORS].append(coordinator)
+    return [ResRobotRouteSensor(coordinator, {
+        "id": subentry.subentry_id,
+        "type": subentry.data[const.CONF_INTEGRATION_TYPE],
+        "name": subentry.title,
+    })]
+
+
+class ResRobotRouteSensor(
+    CoordinatorEntity[RouteDataUpdateCoordinator],
+    SensorEntity,
+):
+    _attr_attribution = "Samtrafiken Resrobot"
+    _unrecorded_attributes = frozenset({"trips", "origin", "destination", "from", "to"})
+
+    @cached_property
+    def entity_description(self):
+        sid = self.coordinator_context["id"]
+        _type = self.coordinator_context["type"]
+        return SensorEntityDescription(
+            key=f"{self.coordinator.config_entry.entry_id}_{_type}_{sid}",
+            icon="mdi:train",
+            has_entity_name=True,
+            name=f"{self.coordinator_context["name"]}",
+        )
+
+    @property
+    def unique_id(self):
+        return f"{self.coordinator.config_entry.entry_id}_{self.entity_description.key}"
+
+    @property
+    def native_value(self):
+        return len(self.coordinator.data["trips"])
+
+    @property
+    def extra_state_attributes(self):
+        return self.coordinator.data

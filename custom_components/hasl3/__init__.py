@@ -14,7 +14,6 @@ from .const import (
     SENSOR_DEPARTURE,
     SENSOR_ROUTE,
     SENSOR_STATUS,
-    SENSOR_VEHICLE_LOCATION,
 )
 from .sensors.departure import async_setup_coordinator as setup_departure_coordinator
 from .sensors.route import async_setup_coordinator as setup_route_coordinator
@@ -92,12 +91,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         #     logger.debug(
         #         f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}"
         #     )
-        if data[CONF_INTEGRATION_TYPE] == "Vehicle Locations":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_VEHICLE_LOCATION
-            logger.debug(
-                f"[migrate_entry] migrate from Vehicle Locations to {SENSOR_VEHICLE_LOCATION}"
-            )
-
         # TODO: write migration
         # if data[CONF_INTEGRATION_TYPE] == "Deviations":
         #     data[CONF_INTEGRATION_TYPE] = "SL Deviations"

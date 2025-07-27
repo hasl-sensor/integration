@@ -21,12 +21,10 @@ class HASLData(object):
     rra = {}
     rrr = {}
     rrkeys = {}
-    fp = {}
 
     def dump(self):
         return {
             'rrkeys': self.rrkeys,
-            'fp': self.fp,
             'rrd': self.rrd,
             'rra': self.rra,
             'rrr': self.rrr
@@ -115,26 +113,6 @@ class HaslWorker(object):
                 return min
         except:
             return
-        return
-
-    async def process_rp3(self):
-        logger.debug("[process_rp3] Entered")
-        return # Disabled for now
-
-    async def assert_fp(self, traintype):
-        logger.debug("[assert_fp] Entered")
-
-        if traintype not in self.data.fp:
-            logger.debug(f"[assert_fp] Registering {traintype}")
-            self.data.fp[traintype] = {
-                "api_type": "slapi-fp1",
-                "api_lastrun": '1970-01-01 01:01:01',
-                "api_result": "Pending"
-            }
-        else:
-            logger.debug(f"[assert_fp] {traintype} already registered")
-
-        logger.debug("[assert_fp] Completed")
         return
 
     async def assert_rrd(self, key, stop):

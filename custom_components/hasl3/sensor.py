@@ -13,14 +13,6 @@ from homeassistant.util.dt import now
 from .const import (
     CONF_DESTINATION_ID,
     CONF_DIRECTION,
-    CONF_FP_LB,
-    CONF_FP_PT,
-    CONF_FP_RB,
-    CONF_FP_SB,
-    CONF_FP_SPVC,
-    CONF_FP_TB1,
-    CONF_FP_TB2,
-    CONF_FP_TVB,
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
     CONF_LINES,
@@ -43,7 +35,6 @@ from .const import (
     SENSOR_RRDEP,
     SENSOR_RRROUTE,
     SENSOR_STATUS,
-    SENSOR_VEHICLE_LOCATION,
     STATE_ON,
 )
 from .haslworker import HaslWorker
@@ -84,40 +75,6 @@ async def setup_hasl_sensor(
 
     sensors = []
     worker: HaslWorker = hass.data[DOMAIN]["worker"]
-
-    try:
-        logger.debug("[setup_hasl_sensor] Setting up FP sensors...")
-        if config.data[CONF_INTEGRATION_TYPE] == SENSOR_VEHICLE_LOCATION:
-            if CONF_FP_PT in config.options and config.options[CONF_FP_PT]:
-                await worker.assert_fp("PT")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "PT"))
-            if CONF_FP_RB in config.options and config.options[CONF_FP_RB]:
-                await worker.assert_fp("RB")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "RB"))
-            if CONF_FP_TVB in config.options and config.options[CONF_FP_TVB]:
-                await worker.assert_fp("TVB")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "TVB"))
-            if CONF_FP_SB in config.options and config.options[CONF_FP_SB]:
-                await worker.assert_fp("SB")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "SB"))
-            if CONF_FP_LB in config.options and config.options[CONF_FP_LB]:
-                await worker.assert_fp("LB")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "LB"))
-            if CONF_FP_SPVC in config.options and config.options[CONF_FP_SPVC]:
-                await worker.assert_fp("SpvC")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "SpvC"))
-            if CONF_FP_TB1 in config.options and config.options[CONF_FP_TB1]:
-                await worker.assert_fp("TB1")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "TB1"))
-            if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
-                await worker.assert_fp("TB2")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "TB2"))
-            if CONF_FP_TB2 in config.options and config.options[CONF_FP_TB2]:
-                await worker.assert_fp("TB3")
-                sensors.append(HASLVehicleLocationSensor(hass, config, "TB3"))
-        logger.debug("[setup_hasl_sensor] Completed setting up FP sensors")
-    except Exception as e:
-        logger.error(f"[setup_hasl_sensor] Failed to set up FP sensors: {str(e)}")
 
     try:
         logger.debug("[setup_hasl_sensor] Setting up RRD sensors...")
@@ -753,121 +710,6 @@ class HASLRRArrivalSensor(HASLDevice):
             val["last_refresh"] = self._sensordata["last_updated"]
             val["next_arrival_minutes"] = expected_minutes
             val["next_arrival_time"] = expected_time
-        except:
-            val["error"] = "NoDataYet"
-            logger.debug(
-                f"Data was not avaliable for processing when getting attributes for sensor {self._name}"
-            )
-
-        return val
-
-
-class HASLVehicleLocationSensor(HASLDevice):
-    """HASL Train Location Sensor class."""
-
-    def __init__(self, hass, config, vehicletype):
-        """Initialize."""
-        self._hass = hass
-        self._config = config
-        self._vehicletype = vehicletype
-        self._enabled_sensor = config.options[CONF_SENSOR]
-        self._name = f"SL {self._vehicletype} Location Sensor ({self._config.title})"
-        self._sensordata = []
-        self._scan_interval = self._config.options[CONF_SCAN_INTERVAL] or 300
-        self._worker = hass.data[DOMAIN]["worker"]
-
-    async def async_update(self):
-        """Update the sensor."""
-
-        logger.debug("[async_update] Entered")
-        logger.debug(f"[async_update] Processing {self._name}")
-        if self._worker.data.fp[self._vehicletype]["api_lastrun"]:
-            if self._worker.checksensorstate(self._enabled_sensor, STATE_ON):
-                if (
-                    self._sensordata == []
-                    or self._worker.getminutesdiff(
-                        now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self._worker.data.fp[self._vehicletype]["api_lastrun"],
-                    )
-                    > self._config.options[CONF_SCAN_INTERVAL]
-                ):
-                    try:
-                        await self._worker.process_fp()
-                        logger.debug("[async_update] Update processed")
-                    except:
-                        logger.debug("[async_update] Error occurred during update")
-                else:
-                    logger.debug("[async_update] Not due for update, skipping")
-
-        self._sensordata = self._worker.data.fp[self._vehicletype]
-        logger.debug("[async_update] Completed")
-        return
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this sensor."""
-        return (
-            f"sl-fl-{self._vehicletype}-sensor-{self._config.data[CONF_INTEGRATION_ID]}"
-        )
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        if self._sensordata == []:
-            return "Unknown"
-        else:
-            if "data" in self._sensordata:
-                return len(self._sensordata["data"])
-            else:
-                return "Unknown"
-
-    @property
-    def icon(self):
-        """Return the icon of the sensor."""
-        return "mdi:train"
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return ""
-
-    @property
-    def scan_interval(self):
-        """Return the unique id."""
-        return self._scan_interval
-
-    @property
-    def available(self):
-        """Return true if value is valid."""
-        return self._sensordata != []
-
-    @property
-    def extra_state_attributes(self):
-        val = {}
-
-        if self._sensordata == []:
-            return val
-
-        if self._sensordata["api_result"] == "Success":
-            val["api_result"] = "Success"
-        else:
-            val["api_result"] = self._sensordata["api_error"]
-
-        # Set values of the sensor.
-        val["scan_interval"] = self._scan_interval
-        val["refresh_enabled"] = self._worker.checksensorstate(
-            self._enabled_sensor, STATE_ON
-        )
-        try:
-            val["attribution"] = self._sensordata["attribution"]
-            val["data"] = self._sensordata["data"]
-            val["last_refresh"] = self._sensordata["last_updated"]
-            val["vehicle_count"] = len(self._sensordata["data"])
         except:
             val["error"] = "NoDataYet"
             logger.debug(

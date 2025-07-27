@@ -8,15 +8,6 @@ from .const import (
     CONF_DESTINATION_ID,
     CONF_DIRECTION,
     CONF_DIRECTION_LIST,
-    CONF_FP_LB,
-    CONF_FP_PT,
-    CONF_FP_RB,
-    CONF_FP_SB,
-    CONF_FP_SPVC,
-    CONF_FP_TB1,
-    CONF_FP_TB2,
-    CONF_FP_TB3,
-    CONF_FP_TVB,
     CONF_LINES,
     CONF_NAME,
     CONF_RR_KEY,
@@ -39,7 +30,6 @@ from .const import (
     SENSOR_RRDEP,
     SENSOR_RRROUTE,
     SENSOR_STATUS,
-    SENSOR_VEHICLE_LOCATION,
 )
 from .sensors.departure import CONFIG_SCHEMA as departure_config_schema
 from .sensors.route import CONFIG_SCHEMA as route_config_option_schema
@@ -59,45 +49,14 @@ def schema_by_type(type_: str) -> vol.Schema:
     }.get(type_):
         return schema
 
-    schema = {
-        SENSOR_VEHICLE_LOCATION: vehiclelocation_config_option_schema,
+    if schema := {
         SENSOR_RRDEP: rrdep_config_option_schema,
         SENSOR_RRARR: rrarr_config_option_schema,
         SENSOR_RRROUTE: rrroute_config_option_schema,
-    }.get(type_)
+    }.get(type_):
+        return schema
 
     return vol.Schema(schema())
-
-
-def vehiclelocation_config_option_schema(options: dict = {}) -> dict:
-    """The schema used for train location service"""
-    if not options:
-        options = {
-            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-            CONF_SENSOR: "",
-            CONF_FP_PT: False,
-            CONF_FP_RB: False,
-            CONF_FP_TVB: False,
-            CONF_FP_SB: False,
-            CONF_FP_LB: False,
-            CONF_FP_SPVC: False,
-            CONF_FP_TB1: False,
-            CONF_FP_TB2: False,
-            CONF_FP_TB3: False,
-        }
-    return {
-        vol.Optional(CONF_FP_PT, default=options.get(CONF_FP_PT)): bool,
-        vol.Optional(CONF_FP_RB, default=options.get(CONF_FP_RB)): bool,
-        vol.Optional(CONF_FP_TVB, default=options.get(CONF_FP_TVB)): bool,
-        vol.Optional(CONF_FP_SB, default=options.get(CONF_FP_SB)): bool,
-        vol.Optional(CONF_FP_LB, default=options.get(CONF_FP_LB)): bool,
-        vol.Optional(CONF_FP_SPVC, default=options.get(CONF_FP_SPVC)): bool,
-        vol.Optional(CONF_FP_TB1, default=options.get(CONF_FP_TB1)): bool,
-        vol.Optional(CONF_FP_TB2, default=options.get(CONF_FP_TB2)): bool,
-        vol.Optional(CONF_FP_TB3, default=options.get(CONF_FP_TB3)): bool,
-        vol.Required(CONF_SCAN_INTERVAL, default=options.get(CONF_SCAN_INTERVAL)): int,
-        vol.Optional(CONF_SENSOR, default=options.get(CONF_SENSOR)): str,
-    }
 
 
 def rrdep_config_option_schema(options: dict = {}) -> dict:

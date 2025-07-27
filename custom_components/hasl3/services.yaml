@@ -1,10 +1,4 @@
 # Describes the format for available hasl3 services
-dump_cache:
-  description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created. Response will be triggered as event on the bus (topic is hasl3).
-
-get_cache:
-  description: Returns all data downloaded and cached in the HASL worker for manual processing. Response will be triggered as event on the bus (topic is hasl3).
-
 sl_find_location:
   description: Searches for a SL location using a freetext string. Up to 10 results will be returned
   fields:
@@ -18,7 +12,7 @@ sl_find_location:
         text:
 
 rr_find_location:
-  description: Searches for a Resrobot location id using a freetext string. Response will be triggered as event on the bus (topic is hasl3).
+  description: Searches for a Resrobot location id using a freetext string
   fields:
     api_key:
       name: API Key

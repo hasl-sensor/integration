@@ -2,10 +2,9 @@ import logging
 
 from homeassistant.components.sensor.const import DOMAIN as SENSOR_DOMAIN
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import Event, HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant
 
 from custom_components.hasl3.haslworker import HaslWorker
-from custom_components.hasl3.rrapi import rrapi_sl
 
 from .const import (
     CONF_INTEGRATION_ID,
@@ -23,11 +22,9 @@ from .sensors.status import async_setup_coordinator as setup_status_coordinator
 from .services.sl_find_location import register as register_sl_find_location
 from .services.sl_find_trip_id import register as register_sl_find_trip_id
 from .services.sl_find_trip_pos import register as register_sl_find_trip_pos
+from .services.rr_find_location import register as register_rr_find_location
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
-serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
-
-EventOrService = Event | ServiceCall
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigEntry):
@@ -46,65 +43,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
         logger.error("[setup] Could not get worker")
         return False
 
-    # SERVICE FUNCTIONS
-    async def rr_find_location(service: EventOrService):
-        serviceLogger.debug("[rr_find_location] Entered")
-        search_string = service.data.get("search_string")
-        api_key = service.data.get("api_key")
-
-        serviceLogger.debug(
-            f"[rr_find_location] Looking for '{search_string}' with key {api_key}"
-        )
-
-        try:
-            rrapi = rrapi_sl(api_key)
-            requestResult = await rrapi.request(search_string)
-            serviceLogger.debug("[rr_find_location] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "rr_find_location",
-                    "state": "success",
-                    "result": requestResult,
-                },
-            )
-
-        except Exception as e:
-            serviceLogger.debug("[rr_find_location] Lookup failed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "rr_find_location",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-
-    async def eventListener(service: Event):
-        serviceLogger.debug("[eventListener] Entered")
-
-        command = service.data.get("cmd")
-
-        if command == "rr_find_location":
-            hass.async_add_job(rr_find_location(service))
-            serviceLogger.debug("[eventListener] Dispatched to rr_find_location")
-
     logger.debug("[setup] Registering services")
-    try:
-        register_sl_find_location(hass)
-        register_sl_find_trip_id(hass)
-        register_sl_find_trip_pos(hass)
-        hass.services.async_register(DOMAIN, "rr_find_location", rr_find_location)
-        logger.debug("[setup] Service registration completed")
-    except:
-        logger.error("[setup] Service registration failed")
-
-    logger.debug("[setup] Registering event listeners")
-    try:
-        hass.bus.async_listen(DOMAIN, eventListener)
-        logger.debug("[setup] Registering event listeners completed")
-    except:
-        logger.error("[setup] Registering event listeners failed")
+    register_sl_find_location(hass)
+    register_sl_find_trip_id(hass)
+    register_sl_find_trip_pos(hass)
+    register_rr_find_location(hass)
+    logger.debug("[setup] Service registration completed")
 
     hass.data[DOMAIN]["worker"].status.startup_in_progress = False
     logger.debug("[setup] Completed")

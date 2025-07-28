@@ -37,6 +37,7 @@ from .const import (
     SCHEMA_VERSION,
     SENSOR_DEPARTURE,
     SENSOR_RESROBOT_ROUTE,
+    SENSOR_RESROBOT_DEPARTURE,
     SENSOR_ROUTE,
     SENSOR_STATUS,
     SERVICE_RESROBOT_KEY,
@@ -306,11 +307,18 @@ class ResrobotSubentryFlowHandler(ConfigSubentryFlow):
             step_id="user",
             menu_options=[
                 SENSOR_RESROBOT_ROUTE,
+                SENSOR_RESROBOT_DEPARTURE,
             ],
         )
 
     async def async_step_resrobot_route(self, user_input: dict[str, Any] | None = None):
         self._options[CONF_INTEGRATION_TYPE] = SENSOR_RESROBOT_ROUTE
+        return await self.async_step_name()
+
+    async def async_step_resrobot_departure(
+        self, user_input: dict[str, Any] | None = None
+    ):
+        self._options[CONF_INTEGRATION_TYPE] = SENSOR_RESROBOT_DEPARTURE
         return await self.async_step_name()
 
     async def async_step_name(self, user_input: dict[str, Any] | None = None):

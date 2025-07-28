@@ -4,6 +4,7 @@ from functools import partial
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.util.dt import async_get_time_zone
 
 from ..rrapi.client import ResRobotClient
 
@@ -25,8 +26,9 @@ async def service(hass: HomeAssistant, call: ServiceCall):
 
     logger.debug(f"Looking for '{search_string}' with key {api_key}")
 
+    tz = await async_get_time_zone("Europe/Stockholm")
     session = async_get_clientsession(hass)
-    rrapi = ResRobotClient(session, api_key)
+    rrapi = ResRobotClient(session, api_key, tz=tz)
     requestResult = await rrapi.find_location(search_string)
     return {
         "search_string": search_string,

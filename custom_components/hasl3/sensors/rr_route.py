@@ -19,6 +19,7 @@ from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.entity import Entity
+from homeassistant.util.dt import async_get_time_zone
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
@@ -89,7 +90,8 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
             return self.data
 
-        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key)
+        tz = await async_get_time_zone("Europe/Stockholm")
+        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key, tz=tz)
         async with timeout(10):
             try:
                 data = await client.find_trip(self.origin, self.destination)

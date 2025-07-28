@@ -115,34 +115,6 @@ class HaslWorker(object):
             return
         return
 
-    async def assert_rrd(self, key, stop):
-        logger.debug("[assert_rrd] Entered")
-        stopkey = str(stop)
-
-        if key not in self.data.rrkeys:
-            logger.debug("[assert_rrd] Registering key")
-            self.data.rrkeys[key] = {
-                "api_key": key
-            }
-
-        if 'deps' not in self.data.rrkeys[key]:
-            logger.debug("[assert_rrd] Registering deps key")
-            self.data.rrkeys[key]['deps'] = f"{stopkey}"
-        else:
-            logger.debug("[assert_rrd] Adding stop to existing deps key")
-            self.data.rrkeys[key]["deps"] = f"{self.data.rrkeys[key]['deps']},{stopkey}"
-
-        if stop not in self.data.rrd:
-            logger.debug("[assert_rrd] Creating default data")
-            self.data.rrd[stopkey] = {
-                "api_type": "rrapi-rrd",
-                "api_lastrun": '1970-01-01 01:01:01',
-                "api_result": "Pending"
-            }
-
-        logger.debug("[assert_rrd] Completed")
-        return
-
     async def assert_rra(self, key, stop):
         logger.debug("[assert_rra] Entered")
         stopkey = str(stop)
@@ -169,86 +141,6 @@ class HaslWorker(object):
             }
 
         logger.debug("[assert_rra] Completed")
-        return
-
-    async def process_rrd(self, notarealarg=None):
-        logger.debug("[process_rrd] Entered")
-
-        iconswitcher = {
-            'BLT': 'mdi:bus',
-            'BXB': 'mdi:bus',
-            'ULT': 'mdi:subway-variant',
-            'JAX': 'mdi:train',
-            'JLT': 'mdi:train',
-            'JRE': 'mdi:train',
-            'JIC': 'mdi:train',
-            'JPT': 'mdi:train',
-            'JEX': 'mdi:train',
-            'SLT': 'mdi:tram',
-            'FLT': 'mdi:ferry',
-            'FUT': 'mdi:ferry'
-        }
-
-        for rrkey in list(self.data.rrkeys):
-            logger.debug(f"[process_rrd] Processing key {rrkey}")
-            rrdata = self.data.rrkeys[rrkey]
-            api = rrapi_rrd(rrkey, 60)
-            for stop in ','.join(set(rrdata["deps"].split(','))).split(','):
-                logger.debug(f"[process_rrd] Processing stop {stop}")
-                newdata = self.data.rrd[stop]
-                # TODO: CHECK FOR FRESHNESS TO NOT KILL OFF THE KEYS
-
-                try:
-                    departures = []
-                    departuredata = await api.request(stop)
-                    departuredata = departuredata['Departure']
-
-                    for (idx, value) in enumerate(departuredata):
-
-                        adjustedDateTime = now()
-                        adjustedDateTime = adjustedDateTime.replace(tzinfo=None)
-                        if 'rtDate' in value and 'rtTime' in value:
-                            diff = datetime.strptime(f'{value["rtDate"]} {value["rtTime"]}', '%Y-%m-%d %H:%M:%S') - adjustedDateTime
-                            expected = datetime.strptime(f'{value["rtDate"]} {value["rtTime"]}', '%Y-%m-%d %H:%M:%S')
-                        else:
-                            diff = datetime.strptime(f'{value["date"]} {value["time"]}', '%Y-%m-%d %H:%M:%S') - adjustedDateTime
-                            expected = datetime.strptime(f'{value["date"]} {value["time"]}', '%Y-%m-%d %H:%M:%S')
-                        diff = diff.total_seconds()
-                        diff = diff / 60
-                        diff = round(diff)
-
-                        departures.append({
-                            'line': value["ProductAtStop"]["displayNumber"],
-                            'direction': value["directionFlag"],
-                            'departure': datetime.strptime(f'{value["date"]} {value["time"]}', '%Y-%m-%d %H:%M:%S'),
-                            'destination': value["direction"],
-                            'time': diff,
-                            'operator': value["ProductAtStop"]["operator"],
-                            'expected': expected,
-                            'type': value["ProductAtStop"]["catOut"],
-                            'icon': iconswitcher.get(value["ProductAtStop"]["catOut"],'mdi:train-car'),
-                        })
-
-                    newdata['data'] = sorted(departures,
-                                                key=lambda k: k['time'])
-                    newdata['attribution'] = "Samtrafiken Resrobot"
-                    newdata['last_updated'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                    newdata['api_result'] = "Success"
-                    logger.debug(f"[process_rrd] Stop {stop} updated successfully")
-
-                except Exception as e:
-                    newdata['api_result'] = "Error"
-                    newdata['api_error'] = str(e)
-                    logger.debug(f"[process_rrd] Error occurred during update {stop}")
-
-
-                newdata['api_lastrun'] = now().strftime('%Y-%m-%d %H:%M:%S')
-                self.data.rrd[stop] = newdata
-                logger.debug(f"[process_rrd] Completed stop {stop}")
-
-            logger.debug(f"[process_rrd] Completed key {rrkey}")
-
-        logger.debug("[process_rrd] Completed")
         return
 
     async def process_rra(self, notarealarg=None):

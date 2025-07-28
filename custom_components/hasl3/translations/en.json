@@ -96,7 +96,8 @@
             "step": {
                 "user": {
                     "menu_options": {
-                        "resrobot_route": "Resrobot Route"
+                        "resrobot_route": "Resrobot Route",
+                        "resrobot_departure": "Resrobot Departure"
                     }
                 }
             }

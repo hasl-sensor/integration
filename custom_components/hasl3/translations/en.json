@@ -14,6 +14,12 @@
                     "resrobot_key": "Resrobot"
                 }
             },
+            "resrobot_key": {
+                "description": "Enter yout Resrobot API key",
+                "data": {
+                    "api_key": "Api key"
+                }
+            },
             "departure_v2": {
                 "description": "How do you want to proceed ?",
                 "menu_options": {
@@ -38,26 +44,20 @@
             "config": {
                 "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
-					"scan_interval": "How many seconds between refresh",
-					"sensor": "Only update if this binary sensor is True (empty=always update)",
-
+                    "scan_interval": "How many seconds between refresh",
+                    "sensor": "Only update if this binary sensor is True (empty=always update)",
                     "siteid": "Location ID",
-					"siteids": "Location IDs (comma separated list)",
-
+                    "siteids": "Location IDs (comma separated list)",
                     "line": "Line",
-					"lines": "Lines (comma separated list)",
-
+                    "lines": "Lines (comma separated list)",
                     "direction": "Direction",
-					"property": "Sensor primary property",
-					"timewindow": "How long into the future (5-60 min)",
-
+                    "property": "Sensor primary property",
+                    "timewindow": "How long into the future (5-60 min)",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
-					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
-
+                    "to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
                     "rrkey": "Resrobot 2.1 API Key",
                     "fromid": "From Location ID",
-					"toid": "Destination Location ID",
-
+                    "toid": "Destination Location ID",
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",
                     "fptvb": "Tvärbanan",
@@ -69,21 +69,21 @@
                     "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
                     "transports": "Transport filter (Multiple)",
-
                     "metro": "Subway",
                     "train": "Commuter trains",
                     "local": "Local trains",
                     "tram": "Trams",
                     "bus": "Buses",
                     "ferry": "Ferries"
-				}
+                }
             }
         },
         "error": {
             "lookup_failed": "Failed to lookup location using given key. Check the key and try again.",
             "only_one_status_sensor": "Only one Sensor of type Status is allowed",
             "invalid_siteid_or_coords": "Invalid siteid or coordinates",
-            "inconsistent_source_and_destination": "Inconsistent source and destination formats. Use either siteid or coordinates for both"
+            "inconsistent_source_and_destination": "Inconsistent source and destination formats. Use either siteid or coordinates for both",
+            "invalid_api_key": "Api key validation failed"
         }
     },
     "config_subentries": {
@@ -95,9 +95,60 @@
             "entry_type": "Resrobot Sensor",
             "step": {
                 "user": {
+                    "description": "Select integration type",
                     "menu_options": {
                         "resrobot_route": "Resrobot Route",
                         "resrobot_departure": "Resrobot Departure"
+                    }
+                },
+                "name": {
+                    "description": "Set sensor name",
+                    "data": {
+                        "name": "Sensor name"
+                    }
+                },
+                "resrobot_departure": {
+                    "description": "How do you want to proceed?",
+                    "menu_options": {
+                        "find_stop": "Find stop id by name",
+                        "name": "Configure stop ids manually"
+                    }
+                },
+                "resrobot_route": {
+                    "description": "How do you want to proceed?",
+                    "menu_options": {
+                        "find_source": "Find origin and destination id by name",
+                        "name": "Configure stop ids manually"
+                    }
+                },
+                "find_stop": {
+                    "description": "Find stop using Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Search query",
+                        "from": "Choose stop"
+                    }
+                },
+                "find_source": {
+                    "description": "Find origin stop using Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Search query",
+                        "from": "Choose origin stop"
+                    }
+                },
+                "find_destination": {
+                    "description": "Find destination stop using Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Search query",
+                        "to": "Choose destination stop"
+                    }
+                },
+                "config": {
+                    "description": "Update integration parameters",
+                    "data": {
+                        "scan_interval": "Set refresh interval in seconds",
+                        "sensor": "Only update if this binary sensor is True (empty=always update)",
+                        "from": "Origin/Stop as Resrobot Location extId",
+                        "to": "Destination as Resrobot Location extId"
                     }
                 }
             }
@@ -108,26 +159,20 @@
             "user": {
                 "description": "Change integration parameters. More info on https://hasl.sorlov.com",
                 "data": {
-					"scan_interval": "How many seconds between refresh",
-					"sensor": "Only update if this binary sensor is True (empty=always update)",
-
+                    "scan_interval": "How many seconds between refresh",
+                    "sensor": "Only update if this binary sensor is True (empty=always update)",
                     "siteid": "Location ID",
-					"siteids": "Location IDs (comma separated list)",
-
+                    "siteids": "Location IDs (comma separated list)",
                     "line": "Line",
-					"lines": "Lines (comma separated list)",
-
-					"direction": "Direction",
-					"property": "Sensor primary property",
-					"timewindow": "How long into the future (5-60 min)",
-
+                    "lines": "Lines (comma separated list)",
+                    "direction": "Direction",
+                    "property": "Sensor primary property",
+                    "timewindow": "How long into the future (5-60 min)",
                     "from": "From as Location ID or Longlat-pair (59.33258,18.0649)",
-					"to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
-
+                    "to": "Destination as Location ID or Longlat-pair (59.33258,18.0649)",
                     "rrkey": "Resrobot 2.1 API Key",
                     "fromid": "From Location ID",
-					"toid": "Destination Location ID",
-
+                    "toid": "Destination Location ID",
                     "fppt": "Commuter Trains",
                     "fprb": "Roslagsbanan",
                     "fptvb": "Tvärbanan",
@@ -139,14 +184,13 @@
                     "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
                     "transports": "Transport filter (Multiple)",
-
                     "metro": "Subway",
                     "train": "Commuter trains",
                     "local": "Local trains",
                     "tram": "Trams",
                     "bus": "Buses",
                     "ferry": "Ferries"
-				}
+                }
             }
         }
     },

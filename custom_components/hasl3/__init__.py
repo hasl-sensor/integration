@@ -16,10 +16,10 @@ from .const import (
 from .sensors.departure import async_setup_coordinator as setup_departure_coordinator
 from .sensors.route import async_setup_coordinator as setup_route_coordinator
 from .sensors.status import async_setup_coordinator as setup_status_coordinator
+from .services.rr_find_location import register as register_rr_find_location
 from .services.sl_find_location import register as register_sl_find_location
 from .services.sl_find_trip_id import register as register_sl_find_trip_id
 from .services.sl_find_trip_pos import register as register_sl_find_trip_pos
-from .services.rr_find_location import register as register_rr_find_location
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 
@@ -38,7 +38,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     register_rr_find_location(hass)
     logger.debug("[setup] Service registration completed")
 
-    hass.data[DOMAIN]["worker"].status.startup_in_progress = False
     logger.debug("[setup] Completed")
     return True
 

@@ -38,6 +38,7 @@ from .const import (
     DOMAIN,
     SCHEMA_VERSION,
     SENSOR_DEPARTURE,
+    SENSOR_RESROBOT_ARRIVAL,
     SENSOR_RESROBOT_DEPARTURE,
     SENSOR_RESROBOT_ROUTE,
     SENSOR_ROUTE,
@@ -364,6 +365,7 @@ class ResrobotSubentryFlowHandler(ConfigSubentryFlow, LocationLookupMixin):
             menu_options=[
                 SENSOR_RESROBOT_ROUTE,
                 SENSOR_RESROBOT_DEPARTURE,
+                SENSOR_RESROBOT_ARRIVAL,
             ],
         )
 
@@ -379,6 +381,13 @@ class ResrobotSubentryFlowHandler(ConfigSubentryFlow, LocationLookupMixin):
         return self.async_show_menu(
             step_id=SENSOR_RESROBOT_DEPARTURE,
             menu_options=["find_stop", "name"],
+        )
+
+    async def async_step_resrobot_arrival(self, _: dict[str, Any] | None = None):
+        self._options[CONF_INTEGRATION_TYPE] = SENSOR_RESROBOT_ARRIVAL
+        return self.async_show_menu(
+            step_id=SENSOR_RESROBOT_ARRIVAL,
+            menu_options=["find_destination", "name"],
         )
 
     async def async_step_name(self, user_input: UserInputType = None):

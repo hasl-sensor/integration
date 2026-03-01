@@ -28,6 +28,7 @@ SENSOR_DEPARTURE = "departure_v2"
 SERVICE_RESROBOT_KEY = "resrobot_key"
 SENSOR_RESROBOT_ROUTE = "resrobot_route"
 SENSOR_RESROBOT_DEPARTURE = "resrobot_departure"
+SENSOR_RESROBOT_ARRIVAL = "resrobot_arrival"
 
 CONF_API_KEY = "api_key"
 CONF_RR_KEY = "rrkey"

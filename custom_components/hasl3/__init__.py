@@ -4,8 +4,6 @@ from homeassistant.components.sensor.const import DOMAIN as SENSOR_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from custom_components.hasl3.haslworker import HaslWorker
-
 from .const import (
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
@@ -32,15 +30,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
     if DOMAIN not in hass.data:
         hass.data.setdefault(DOMAIN, {})
-
-    try:
-        if "worker" not in hass.data[DOMAIN]:
-            logger.debug("[setup] No worker present")
-            hass.data[DOMAIN] = {"worker": HaslWorker(hass)}
-            logger.debug("[setup] Worker created")
-    except:
-        logger.error("[setup] Could not get worker")
-        return False
 
     logger.debug("[setup] Registering services")
     register_sl_find_location(hass)

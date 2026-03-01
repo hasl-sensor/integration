@@ -22,11 +22,8 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaFlowFormStep,
     SchemaOptionsFlowHandler,
 )
-from tsl.clients.common import ClientException
 from tsl.clients.journey import JourneyPlannerClient
 from tsl.utils import global_id_to_site_id
-
-from .rrapi.model import LocationSearchType
 
 from . import const
 from .config_schema import API_KEY_CONFIG_SCHEMA, NAME_CONFIG_SCHEMA, schema_by_type
@@ -48,6 +45,7 @@ from .const import (
     SERVICE_RESROBOT_KEY,
 )
 from .rrapi.client import ResRobotClient
+from .rrapi.model import LocationSearchType
 from .utils import DestinationInvalid, SourceInvalid, siteid_or_coords
 
 logger = logging.getLogger(__name__)
@@ -395,7 +393,7 @@ class ResrobotSubentryFlowHandler(ConfigSubentryFlow, LocationLookupMixin):
         client = ResRobotClient(session, self._get_entry().data[CONF_API_KEY])
         stops = await client.find_stop_location(search_key, LocationSearchType.STOP)
         return [{"value": stop["id"], "label": stop["name"]} for stop in stops]
-    
+
     async def async_step_find_stop(self, user_input: UserInputType = None):
         return await self._find_location(
             step_id="find_stop",

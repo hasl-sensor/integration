@@ -201,3 +201,44 @@ class ResRobotClient:
             )
 
         return departures
+
+    async def get_arrivals(self, location_id: str, now: datetime):
+        url = f"{self._base_url}/arrivalBoard?format=json&id={location_id}&accessId={self._api_key}"
+        data = await self._get_json(url)
+
+        # transform data
+        arrivals = []
+        for arrival in data["Arrival"]:
+            date, time = arrival["date"], arrival["time"]
+
+            if "rtDate" in arrival and "rtTime" in arrival:
+                diff_date, diff_time = arrival["rtDate"], arrival["rtTime"]
+            else:
+                diff_date, diff_time = date, time
+
+            adjustedDateTime = now.replace(tzinfo=None)
+            diff = (
+                datetime.strptime(f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S")
+                - adjustedDateTime
+            )
+            diff = round(diff.total_seconds() / 60)
+
+            expected = datetime.strptime(
+                f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S"
+            ).replace(tzinfo=self._timezone)
+
+            arrivals.append(
+                {
+                    "line": arrival["ProductAtStop"]["displayNumber"],
+                    "arrival": datetime.strptime(
+                        f"{date} {time}", "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "origin": arrival["origin"],
+                    "time": diff,
+                    "operator": arrival["ProductAtStop"]["operator"],
+                    "expected": expected,
+                    "type": arrival["ProductAtStop"]["catOut"],
+                }
+            )
+
+        return arrivals

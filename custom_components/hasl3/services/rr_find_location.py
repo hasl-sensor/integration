@@ -29,7 +29,7 @@ async def service(hass: HomeAssistant, call: ServiceCall):
     tz = await async_get_time_zone("Europe/Stockholm")
     session = async_get_clientsession(hass)
     rrapi = ResRobotClient(session, api_key, tz=tz)
-    requestResult = await rrapi.find_location(search_string)
+    requestResult = await rrapi.find_stop_location(search_string)
     return {
         "search_string": search_string,
         "results": requestResult

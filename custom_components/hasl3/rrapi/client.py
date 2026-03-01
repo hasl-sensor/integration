@@ -1,23 +1,29 @@
 import logging
-from datetime import datetime, tzinfo
-from typing import Any
+from datetime import datetime, tzinfo, UTC
+from typing import Any, cast
+from .model import StopLookupResponse, LocationSearchType
 
 import aiohttp
 import isodate
+import urllib.parse
 
 logger = logging.getLogger(__name__)
 
 
 class ResRobotClient:
-    def __init__(self, session: aiohttp.ClientSession, api_key: str, tz: tzinfo):
+    def __init__(self, session: aiohttp.ClientSession, api_key: str, tz: tzinfo = UTC):
         self._session = session
         self._api_key = api_key
         self._base_url = "https://api.resrobot.se/v2.1"
         self._timezone = tz
 
-    async def _get_json(self, url: str) -> Any:
+    async def _get_json(self, url: str, params: dict[str, Any] = {}) -> Any:
+        encoded_params = dict(
+            (urllib.parse.quote(key), urllib.parse.quote_plus(value))
+            for key, value in params.items()
+        )
         try:
-            async with self._session.get(url) as response:
+            async with self._session.get(url=url, params=encoded_params) as response:
                 response.raise_for_status()
                 json = await response.json()
 
@@ -34,27 +40,38 @@ class ResRobotClient:
 
         return json
 
-    async def find_location(self, search_string: str) -> list[dict[str, Any]]:
-        """Search for a location by a free text string."""
-        url = f"{self._base_url}/location.name?input={search_string}&format=json&accessId={self._api_key}"
-        data = await self._get_json(url)
+    async def find_stop_location(
+        self,
+        search_string: str,
+        location_search_type: LocationSearchType = LocationSearchType.ALL,
+    ) -> list[dict[str, Any]]:
+        """Search for a stop location by a free text string."""
+        data = await self._get_json(
+            url=f"{self._base_url}/location.name",
+            params={
+                "input": search_string,
+                "format": "json",
+                "accessId": self._api_key,
+                "type": location_search_type.value,
+            },
+        )
+        data = cast(StopLookupResponse, data)
 
         # transform data
         result = []
-        for stopOrLocation in data["stopLocationOrCoordLocation"]:
-            place = stopOrLocation.get(
-                "CoordLocation", stopOrLocation.get("StopLocation")
-            )
-            result.append(
-                {
-                    "longId": place["id"],
-                    "name": place["name"],
-                    "lon": place["lon"],
-                    "lat": place["lat"],
-                    "id": place.get("extId", ""),
-                    "type": place.get("type", "STOP"),
-                }
-            )
+        for stop in data["stopLocationOrCoordLocation"]:
+            place = stop.get("StopLocation", stop.get("CoordLocation", None))
+            if place is not None:
+                result.append(
+                    {
+                        "longId": place["id"],
+                        "name": place["name"],
+                        "lon": place["lon"],
+                        "lat": place["lat"],
+                        "id": place.get("extId", ""),
+                        "type": place.get("type", "STOP"),
+                    }
+                )
 
         return result
 

@@ -98,7 +98,8 @@
                     "description": "Select integration type",
                     "menu_options": {
                         "resrobot_route": "Resrobot Route",
-                        "resrobot_departure": "Resrobot Departure"
+                        "resrobot_departure": "Resrobot Departure",
+                        "resrobot_arrival": "Resrobot Arrival"
                     }
                 },
                 "name": {
@@ -107,17 +108,24 @@
                         "name": "Sensor name"
                     }
                 },
+                "resrobot_arrival": {
+                    "description": "How do you want to proceed?",
+                    "menu_options": {
+                        "find_destination": "Find stop by name",
+                        "name": "Configure stop id manually"
+                    }
+                },
                 "resrobot_departure": {
                     "description": "How do you want to proceed?",
                     "menu_options": {
-                        "find_stop": "Find stop id by name",
-                        "name": "Configure stop ids manually"
+                        "find_stop": "Find stop by name",
+                        "name": "Configure stop id manually"
                     }
                 },
                 "resrobot_route": {
                     "description": "How do you want to proceed?",
                     "menu_options": {
-                        "find_source": "Find origin and destination id by name",
+                        "find_source": "Find origin and destination by name",
                         "name": "Configure stop ids manually"
                     }
                 },

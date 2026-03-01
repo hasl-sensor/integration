@@ -1,31 +1,29 @@
-from functools import cached_property
 import logging
 from asyncio import timeout
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from functools import cached_property
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
-    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
 )
 from homeassistant.config_entries import (
     ConfigEntry,
-    ConfigEntryError,
     ConfigSubentry,
 )
-from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
+from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
-from homeassistant.helpers.entity import Entity
-from homeassistant.util.dt import async_get_time_zone
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
+from homeassistant.util.dt import async_get_time_zone
 
 from .. import const
 from ..rrapi.client import ResRobotClient
@@ -66,12 +64,6 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
 
-        self.device_info = {
-            **SL_TRAFFIK_DEVICE_INFO,
-            "identifiers": {(const.DOMAIN, config_entry.entry_id)},
-            "name": config_entry.title,
-        }
-
         super().__init__(
             hass,
             logger=logging.getLogger(__name__),
@@ -102,9 +94,7 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    subentry: ConfigSubentry
+    hass: HomeAssistant, entry: ConfigEntry, subentry: ConfigSubentry
 ) -> list[Entity]:
     """Set up the sensor platform."""
 
@@ -112,11 +102,16 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data[const.KEY_COORDINATORS].append(coordinator)
-    return [ResRobotRouteSensor(coordinator, {
-        "id": subentry.subentry_id,
-        "type": subentry.data[const.CONF_INTEGRATION_TYPE],
-        "name": subentry.title,
-    })]
+    return [
+        ResRobotRouteSensor(
+            coordinator,
+            {
+                "id": subentry.subentry_id,
+                "type": subentry.data[const.CONF_INTEGRATION_TYPE],
+                "name": subentry.title,
+            },
+        )
+    ]
 
 
 class ResRobotRouteSensor(
@@ -134,7 +129,7 @@ class ResRobotRouteSensor(
             key=f"{self.coordinator.config_entry.entry_id}_{_type}_{sid}",
             icon="mdi:train",
             has_entity_name=True,
-            name=f"{self.coordinator_context["name"]}",
+            name=f"{self.coordinator_context['name']}",
         )
 
     @property
@@ -148,3 +143,11 @@ class ResRobotRouteSensor(
     @property
     def extra_state_attributes(self):
         return self.coordinator.data
+
+    @cached_property
+    def device_info(self) -> DeviceInfo:
+        return {
+            **SL_TRAFFIK_DEVICE_INFO,
+            "identifiers": {(const.DOMAIN, self.coordinator_context["id"])},
+            "name": "Route Sensor",
+        }

@@ -18,6 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -62,12 +63,6 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.destination: str = subentry.data[const.CONF_DESTINATION]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
-
-        self.device_info = {
-            **SL_TRAFFIK_DEVICE_INFO,
-            "identifiers": {(const.DOMAIN, config_entry.entry_id)},
-            "name": config_entry.title,
-        }
 
         super().__init__(
             hass,
@@ -179,6 +174,14 @@ class ResRobotBaseArrivalSensor(
         return next(
             (x for x in self.coordinator.data if x["expected"] > adjustedDateTime), None
         )
+
+    @cached_property
+    def device_info(self) -> DeviceInfo:
+        return {
+            **SL_TRAFFIK_DEVICE_INFO,
+            "identifiers": {(const.DOMAIN, self.coordinator_context["id"])},
+            "name": "Arrival Sensor",
+        }
 
 
 class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):

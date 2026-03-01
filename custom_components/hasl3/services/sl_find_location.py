@@ -4,7 +4,7 @@ from functools import partial
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from tsl.clients.stoplookup import StopLookupClient
+from tsl.clients.journey import JourneyPlannerClient
 from tsl.utils import global_id_to_site_id
 
 from ..const import DOMAIN
@@ -24,9 +24,9 @@ async def service(hass: HomeAssistant, call: ServiceCall):
     logger.debug(f"Searching for '{search_string}'")
 
     session = async_get_clientsession(hass)
-    client = StopLookupClient(session)
+    client = JourneyPlannerClient(session)
 
-    requestResult = await client.get_stops(search_string)
+    requestResult = await client.find_stops(str(search_string))
     logger.debug(
         f"Completed search for '{search_string}'. Found {len(requestResult)} results"
     )

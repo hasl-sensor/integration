@@ -17,7 +17,10 @@
 	  "httpx>0.12.1",
 	  "jsonpickle>2.0.0",
 	  "isodate>0.6.0",
-    "trafiklab-sl==2.1.1"
+    "trafiklab-sl==2.2.0"
   ],
-  "loggers": ["tsl"]
+  "loggers": [
+    "custom_components.hasl3",
+    "tsl"
+  ]
 }

@@ -22,7 +22,8 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaFlowFormStep,
     SchemaOptionsFlowHandler,
 )
-from tsl.clients.stoplookup import StopLookupClient
+from tsl.clients.common import ClientException
+from tsl.clients.journey import JourneyPlannerClient
 from tsl.utils import global_id_to_site_id
 
 from .rrapi.model import LocationSearchType
@@ -257,8 +258,8 @@ class ConfigFlowHandler(ConfigFlow, LocationLookupMixin, domain=DOMAIN):
 
     async def _find_stops(self, search_key: str) -> list[sel.SelectOptionDict]:
         session = async_get_clientsession(self.hass)
-        client = StopLookupClient(session)
-        stops = await client.get_stops(search_key)
+        client = JourneyPlannerClient(session)
+        stops = await client.find_stops(search_key)
 
         return [
             {"value": str(global_id_to_site_id(stop["id"])), "label": stop["name"]}

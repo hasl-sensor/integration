@@ -90,6 +90,12 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @classmethod
     @callback
+    def async_supports_options_flow(cls, config_entry: ConfigEntry) -> bool:
+        """Return if the config entry supports an options flow."""
+        return config_entry.data.get(CONF_INTEGRATION_TYPE) != SERVICE_RESROBOT_KEY
+
+    @classmethod
+    @callback
     def async_get_supported_subentry_types(
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
@@ -104,6 +110,15 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         # TODO: add back legacy sensor types
         return self.async_show_menu(step_id="user", menu_options=self.new_sensors)
+
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
+        entry_type = self._get_reconfigure_entry().data.get(CONF_INTEGRATION_TYPE)
+        if entry_type == SERVICE_RESROBOT_KEY:
+            return await self.async_step_resrobot_key(user_input)
+
+        # HACK: since config expects this to work
+        self._options[CONF_INTEGRATION_TYPE] = entry_type
+        return await self.async_step_config(user_input)
 
     async def async_step_resrobot_key(self, user_input: dict[str, Any] | None = None):
         """Handle the ResRobot API key configuration."""
@@ -126,6 +141,8 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 errors={"base": "invalid_api_key"},
             )
 
+        # TODO: consider using `next_flow` to immediately start the subflow
+        # for creating a sensor, instead of going back to the menu
         return self.async_create_entry(
             title="ResRobot",
             data={CONF_INTEGRATION_TYPE: SERVICE_RESROBOT_KEY, **user_input},

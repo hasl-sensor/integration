@@ -23,7 +23,7 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaOptionsFlowHandler,
 )
 from tsl.clients.common import ClientException
-from tsl.clients.stoplookup import StopLookupClient
+from tsl.clients.journey import JourneyPlannerClient
 from tsl.utils import global_id_to_site_id
 
 from . import const
@@ -186,10 +186,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
         # perform the search
         session = async_get_clientsession(self.hass)
-        client = StopLookupClient(session)
+        client = JourneyPlannerClient(session)
 
         try:
-            stops = await client.get_stops(search_key)
+            stops = await client.find_stops(str(search_key))
         except ClientException:
             return await self.async_step_lookup_location(
                 {"errors": {"base": "lookup_failed"}}

@@ -1,5 +1,6 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from ..const import (
@@ -28,6 +29,10 @@ async def setup_resrobot_subentries(
     }
 
     for subentry_id, subentry in config_entry.subentries.items():
-        if setup := setup_map.get(subentry.data.get(CONF_INTEGRATION_TYPE)):
+        if (_type := subentry.data.get(CONF_INTEGRATION_TYPE)) is None:
+            error = ValueError(f"Subentry {subentry_id} missing integration type")
+            raise ConfigEntryError(error) from error
+
+        if setup := setup_map.get(_type):
             entities = await setup(hass, config_entry, subentry)
             async_add_entities(entities, config_subentry_id=subentry_id)

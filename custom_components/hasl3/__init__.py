@@ -1,8 +1,11 @@
 import logging
 
 from homeassistant.components.sensor.const import DOMAIN as SENSOR_DOMAIN
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import (
+    entity_registry as er,
+)
 
 from .const import (
     CONF_INTEGRATION_ID,
@@ -12,6 +15,14 @@ from .const import (
     SENSOR_DEPARTURE,
     SENSOR_ROUTE,
     SENSOR_STATUS,
+    SENSOR_RRARR,
+    SENSOR_RRDEP,
+    SENSOR_RRROUTE,
+    SENSOR_RESROBOT_ARRIVAL,
+    SENSOR_RESROBOT_DEPARTURE,
+    SENSOR_RESROBOT_ROUTE,
+    CONF_RR_KEY,
+    SERVICE_RESROBOT_KEY,
 )
 from .sensors.departure import async_setup_coordinator as setup_departure_coordinator
 from .sensors.route import async_setup_coordinator as setup_route_coordinator
@@ -20,6 +31,8 @@ from .services.rr_find_location import register as register_rr_find_location
 from .services.sl_find_location import register as register_sl_find_location
 from .services.sl_find_trip_id import register as register_sl_find_trip_id
 from .services.sl_find_trip_pos import register as register_sl_find_trip_pos
+
+from types import MappingProxyType
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
 
@@ -30,6 +43,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
     if DOMAIN not in hass.data:
         hass.data.setdefault(DOMAIN, {})
+        
+    await async_migrate_integration(hass)
 
     logger.debug("[setup] Registering services")
     register_sl_find_location(hass)
@@ -143,3 +158,85 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return unload_ok
+
+
+# custom migration to convert resrobot entries to main entry with subentries
+async def async_migrate_integration(hass: HomeAssistant) -> None:
+    """Migrate integration entry structure."""
+    NEW_VERSION = 5
+
+    entries = hass.config_entries.async_entries(DOMAIN)
+    
+    # We migrate only resrobot entries
+    if not any(entry.version < NEW_VERSION for entry in entries):
+        return
+    entries = [entry for entry in entries if (
+        any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRARR for entry in entries)
+        or any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP for entry in entries)
+        or any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE for entry in entries)
+    )]
+    if entries.count == 0:
+        return
+
+    api_keys_entries: dict[str, ConfigEntry] = {}
+    entity_registry = er.async_get(hass)
+
+    for entry in entries:
+        use_existing = False
+        
+        subentry_type=map_RR_entry_to_subentry(entry.data[CONF_INTEGRATION_TYPE])
+        subentry_data = entry.data.copy()
+        # subentry doesn't need the api key
+        del subentry_data[CONF_RR_KEY]
+        subentry = ConfigSubentry(
+            data=MappingProxyType(subentry_data),
+            subentry_type=subentry_type,
+            title=entry.title,
+            unique_id=None,
+        )
+        if entry.data[CONF_RR_KEY] not in api_keys_entries:
+            use_existing = True
+            # we save the whole original entry here, we will update it in the end
+            api_keys_entries[entry.data[CONF_RR_KEY]] = entry
+
+        parent_entry = api_keys_entries[entry.data[CONF_RR_KEY]]
+
+        hass.config_entries.async_add_subentry(parent_entry, subentry)
+        sensor_entity_id = entity_registry.async_get_entity_id(
+            subentry_type,
+            DOMAIN,
+            entry.entry_id,
+        )
+        if sensor_entity_id is not None:
+            entity_registry.async_update_entity(
+                entity_id=sensor_entity_id,
+                config_entry_id=parent_entry.entry_id,
+                config_subentry_id=subentry.subentry_id,
+                new_unique_id=subentry.subentry_id,
+            )
+
+        if not use_existing:
+            await hass.config_entries.async_remove(entry.entry_id)
+        else:
+            entry_data=dict()
+            entry_data[CONF_RR_KEY] = entry.data[CONF_RR_KEY]
+            entry_data[CONF_INTEGRATION_TYPE] = SERVICE_RESROBOT_KEY
+            hass.config_entries.async_update_entry(
+                entry,
+                title=SERVICE_RESROBOT_KEY,
+                data=entry_data,
+                options={},
+                version=NEW_VERSION,
+            )
+            
+def map_RR_entry_to_subentry(entry_name: str) -> str:
+    if entry_name == SENSOR_RRDEP:
+        return SENSOR_RESROBOT_DEPARTURE
+    elif entry_name == SENSOR_RRARR:
+        return SENSOR_RESROBOT_ARRIVAL
+    elif entry_name == SENSOR_RRROUTE:
+        return SENSOR_RESROBOT_ROUTE
+    else:
+        # raise exception?
+        return ""
+    

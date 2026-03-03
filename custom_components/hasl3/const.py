@@ -22,6 +22,7 @@ KEY_COORDINATORS = "coordinators"
 
 SENSOR_RRDEP = "Resrobot Departures"
 SENSOR_RRARR = "Resrobot Arrivals"
+SENSOR_RRROUTE = 'Resrobot Route Sensor'
 SENSOR_STATUS = "status_v2"
 SENSOR_ROUTE = "route_v2"
 SENSOR_DEPARTURE = "departure_v2"

@@ -166,16 +166,18 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
     NEW_VERSION = 5
 
     entries = hass.config_entries.async_entries(DOMAIN)
-    
+
     # We migrate only resrobot entries
     if not any(entry.version < NEW_VERSION for entry in entries):
         return
-    entries = [entry for entry in entries if (
-        any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRARR for entry in entries)
-        or any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRDEP for entry in entries)
-        or any(entry.data[CONF_INTEGRATION_TYPE] == SENSOR_RRROUTE for entry in entries)
-    )]
-    if entries.count == 0:
+
+    entries = [
+        entry
+        for entry in entries
+        if entry.data.get(CONF_INTEGRATION_TYPE)
+        in (SENSOR_RRARR, SENSOR_RRDEP, SENSOR_RRROUTE)
+    ]
+    if not entries:
         return
 
     api_keys_entries: dict[str, ConfigEntry] = {}
@@ -186,6 +188,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
         
         subentry_type=map_RR_entry_to_subentry(entry.data[CONF_INTEGRATION_TYPE])
         subentry_data = entry.data.copy()
+        subentry_data[CONF_INTEGRATION_TYPE] = subentry_type
         # subentry doesn't need the api key
         del subentry_data[CONF_RR_KEY]
         subentry = ConfigSubentry(
@@ -203,7 +206,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
 
         hass.config_entries.async_add_subentry(parent_entry, subentry)
         sensor_entity_id = entity_registry.async_get_entity_id(
-            subentry_type,
+            SENSOR_DOMAIN,
             DOMAIN,
             entry.entry_id,
         )
@@ -240,3 +243,4 @@ def map_RR_entry_to_subentry(entry_name: str) -> str:
         # raise exception?
         return ""
     
+

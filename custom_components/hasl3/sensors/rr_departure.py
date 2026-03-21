@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo, async_get as get_dr
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -62,6 +62,8 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.api_key: str = config_entry.data[const.CONF_API_KEY]
         self.origin: str = subentry.data[const.CONF_SOURCE]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
+        self.subentry = subentry
+        self.get_device = lambda: get_dr(hass).async_get_device({(const.DOMAIN, subentry.subentry_id)})
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
 
         super().__init__(
@@ -88,10 +90,14 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     }
 
     async def _async_update_data(self):
+        if (device := self.get_device()) and device.disabled:
+            self.logger.debug('Not updating %s. Device is off', self.subentry.subentry_id)
+            return self.data
+
         if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
             self.logger.debug(
                 'Not updating %s. Sensor "%s" is off',
-                self.config_entry.entry_id,
+                self.subentry.subentry_id,
                 self._sensor_id,
             )
 

@@ -5,6 +5,7 @@ from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import (
     entity_registry as er,
+    device_registry as dr,
 )
 
 from .const import (
@@ -168,7 +169,9 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
     entries = hass.config_entries.async_entries(DOMAIN)
 
     # We migrate only resrobot entries
-    if not any(entry.version < NEW_VERSION for entry in entries):
+    old_versions = list(range(NEW_VERSION))
+    old_versions = set([*old_versions, *[str(n) for n in old_versions]])
+    if not any(entry.version in old_versions for entry in entries):
         return
 
     entries = [
@@ -182,6 +185,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
 
     api_keys_entries: dict[str, ConfigEntry] = {}
     entity_registry = er.async_get(hass)
+    device_registry = dr.async_get(hass)
 
     for entry in entries:
         use_existing = False
@@ -210,6 +214,11 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
             DOMAIN,
             entry.entry_id,
         )
+        
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, entry.entry_id)}
+        )
+        
         if sensor_entity_id is not None:
             entity_registry.async_update_entity(
                 entity_id=sensor_entity_id,
@@ -217,6 +226,19 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
                 config_subentry_id=subentry.subentry_id,
                 new_unique_id=subentry.subentry_id,
             )
+        
+        if device is not None:
+            device_registry.async_update_device(
+                device.id,
+                new_identifiers={(DOMAIN, subentry.subentry_id)},
+                add_config_subentry_id=subentry.subentry_id,
+                add_config_entry_id=parent_entry.entry_id,
+            )
+            if parent_entry.entry_id != entry.entry_id:
+                device_registry.async_update_device(
+                    device.id,
+                    remove_config_entry_id=entry.entry_id,
+                )
 
         if not use_existing:
             await hass.config_entries.async_remove(entry.entry_id)
@@ -242,5 +264,3 @@ def map_RR_entry_to_subentry(entry_name: str) -> str:
     else:
         # raise exception?
         return ""
-    
-

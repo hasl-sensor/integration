@@ -161,8 +161,14 @@ class ResRobotClient:
         self, location_id: str, now: datetime
     ) -> list[dict[str, Any]]:
         """Get departures from a specific location."""
-        url = f"{self._base_url}/departureBoard?format=json&id={location_id}&accessId={self._api_key}"
-        data = await self._get_json(url)
+        data = await self._get_json(
+            url=f"{self._base_url}/departureBoard",
+            params={
+                "format": "json",
+                "id": location_id,
+                "accessId": self._api_key,
+            },
+        )
 
         # transform data
         departures = []
@@ -203,8 +209,14 @@ class ResRobotClient:
         return departures
 
     async def get_arrivals(self, location_id: str, now: datetime):
-        url = f"{self._base_url}/arrivalBoard?format=json&id={location_id}&accessId={self._api_key}"
-        data = await self._get_json(url)
+        data = await self._get_json(
+            url=f"{self._base_url}/arrivalBoard",
+            params={
+                "format": "json",
+                "id": location_id,
+                "accessId": self._api_key,
+            },
+        )
 
         # transform data
         arrivals = []

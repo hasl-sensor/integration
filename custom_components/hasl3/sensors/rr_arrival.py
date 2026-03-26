@@ -72,20 +72,6 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
             update_interval=interval,
         )
 
-    iconswitcher = {
-        "BLT": "mdi:bus",
-        "BXB": "mdi:bus",
-        "ULT": "mdi:subway-variant",
-        "JAX": "mdi:train",
-        "JLT": "mdi:train",
-        "JRE": "mdi:train",
-        "JIC": "mdi:train",
-        "JPT": "mdi:train",
-        "JEX": "mdi:train",
-        "SLT": "mdi:tram",
-        "FLT": "mdi:ferry",
-        "FUT": "mdi:ferry",
-    }
 
     async def _async_update_data(self):
         if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
@@ -101,24 +87,16 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         client = ResRobotClient(async_get_clientsession(self.hass), self.api_key, tz=tz)
         async with timeout(10):
             try:
-                departures = await client.get_arrivals(self.destination, now())
+                arrivals = await client.get_arrivals(self.destination, now())
             except Exception as error:
                 logger.error(
-                    "Failed to fetch departures for %s: %s",
+                    "Failed to fetch arrivals for %s: %s",
                     self.destination,
                     error,
                 )
                 raise ConfigEntryError(error) from error
 
-        data = [
-            {
-                **departure,
-                "icon": self.iconswitcher.get(departure["type"], "mdi:train"),
-            }
-            for departure in departures
-        ]
-
-        return data
+        return arrivals
 
 
 async def async_setup_entry(

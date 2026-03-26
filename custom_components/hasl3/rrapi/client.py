@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, tzinfo, UTC
 from typing import Any, cast
 from .model import (
+    ListOfArrivals,
     ListOfDepartures,
     StopLookupResponse,
     LocationSearchType,
@@ -234,36 +235,31 @@ class ResRobotClient:
             },
         )
 
+        data = cast(ListOfArrivals, data)
         # transform data
         arrivals = []
         for arrival in data["Arrival"]:
-            date, time = arrival["date"], arrival["time"]
-
-            if "rtDate" in arrival and "rtTime" in arrival:
-                diff_date, diff_time = arrival["rtDate"], arrival["rtTime"]
-            else:
-                diff_date, diff_time = date, time
-
-            adjustedDateTime = now.replace(tzinfo=None)
-            diff = (
-                datetime.strptime(f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S")
-                - adjustedDateTime
-            )
-            diff = round(diff.total_seconds() / 60)
-
-            expected = datetime.strptime(
-                f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S"
-            ).replace(tzinfo=self._timezone)
+            time = arrival["time"]
+            adjustedTime = arrival.get("rtTime", time)
 
             arrivals.append(
                 {
-                    "line": arrival["ProductAtStop"]["displayNumber"],
-                    "arrival": datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M:%S"),
-                    "origin": arrival["origin"],
-                    "time": diff,
-                    "operator": arrival["ProductAtStop"]["operator"],
-                    "expected": expected,
-                    "type": arrival["ProductAtStop"]["catOut"],
+                    "destination": arrival["direction"],
+                    "direction": "",
+                    "direction_code": 0,
+                    "state": "EXPECTED",
+                    "display": arrival["name"],
+                    "stop_point": {"name": arrival["stop"], "designation": ""},
+                    "line": {
+                        "id": arrival["ProductAtStop"].get("operatorCode", 0),
+                        "designation": arrival["transportNumber"],
+                        "transport_mode": self.transportMap.get(
+                            arrival["transportCategory"].value
+                        ),
+                        "group_of_lines": "",
+                    },
+                    "scheduled": time,
+                    "expected": adjustedTime,
                 }
             )
 

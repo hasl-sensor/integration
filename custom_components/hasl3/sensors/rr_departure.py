@@ -72,21 +72,6 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
             update_interval=interval,
         )
 
-    iconswitcher = {
-        "BLT": "mdi:bus",
-        "BXB": "mdi:bus",
-        "ULT": "mdi:subway-variant",
-        "JAX": "mdi:train",
-        "JLT": "mdi:train",
-        "JRE": "mdi:train",
-        "JIC": "mdi:train",
-        "JPT": "mdi:train",
-        "JEX": "mdi:train",
-        "SLT": "mdi:tram",
-        "FLT": "mdi:ferry",
-        "FUT": "mdi:ferry",
-    }
-
     async def _async_update_data(self):
         if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
             self.logger.debug(
@@ -110,15 +95,7 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                 )
                 raise ConfigEntryError(error) from error
 
-        data = [
-            {
-                **departure,
-                "icon": self.iconswitcher.get(departure["type"], "mdi:train"),
-            }
-            for departure in departures
-        ]
-
-        return data
+        return departures
 
 
 async def async_setup_entry(

@@ -1,7 +1,12 @@
 import logging
 from datetime import datetime, tzinfo, UTC
 from typing import Any, cast
-from .model import StopLookupResponse, LocationSearchType
+from .model import (
+    ListOfDepartures,
+    StopLookupResponse,
+    LocationSearchType,
+    TransportCategory,
+)
 
 import aiohttp
 import isodate
@@ -157,6 +162,25 @@ class ResRobotClient:
 
         return result
 
+    transportMap = {
+        "BLT": "BUS",
+        "BXB": "BUS",
+        "BAX": "BUS",
+        "BRE": "BUS",
+        "BBL": "BUS",
+        "ULT": "METRO",
+        "JAX": "TRAIN",
+        "JEX": "TRAIN",
+        "JIC": "TRAIN",
+        "JLT": "TRAIN",
+        "JPT": "TRAIN",
+        "JST": "TRAIN",
+        "JRE": "TRAIN",
+        "SLT": "TRAM",
+        "FLT": "FERRY",
+        "FUT": "FERRY",
+    }
+
     async def get_departures(
         self, location_id: str, now: datetime
     ) -> list[dict[str, Any]]:
@@ -170,39 +194,31 @@ class ResRobotClient:
             },
         )
 
+        data = cast(ListOfDepartures, data)
         # transform data
         departures = []
         for departure in data["Departure"]:
-            date, time = departure["date"], departure["time"]
-
-            if "rtDate" in departure and "rtTime" in departure:
-                diff_date, diff_time = departure["rtDate"], departure["rtTime"]
-            else:
-                diff_date, diff_time = date, time
-
-            adjustedDateTime = now.replace(tzinfo=None)
-            diff = (
-                datetime.strptime(f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S")
-                - adjustedDateTime
-            )
-            diff = round(diff.total_seconds() / 60)
-
-            expected = datetime.strptime(
-                f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S"
-            ).replace(tzinfo=self._timezone)
+            time = departure["time"]
+            adjustedTime = departure.get("rtTime", time)
 
             departures.append(
                 {
-                    "line": departure["ProductAtStop"]["displayNumber"],
-                    "direction": departure["directionFlag"],
-                    "departure": datetime.strptime(
-                        f"{date} {time}", "%Y-%m-%d %H:%M:%S"
-                    ),
                     "destination": departure["direction"],
-                    "time": diff,
-                    "operator": departure["ProductAtStop"]["operator"],
-                    "expected": expected,
-                    "type": departure["ProductAtStop"]["catOut"],
+                    "direction": "",
+                    "direction_code": 0,
+                    "state": "EXPECTED",
+                    "display": departure["name"],
+                    "stop_point": {"name": departure["stop"], "designation": ""},
+                    "line": {
+                        "id": departure["ProductAtStop"].get("operatorCode", 0),
+                        "designation": departure["transportNumber"],
+                        "transport_mode": self.transportMap.get(
+                            departure["transportCategory"].value
+                        ),
+                        "group_of_lines": "",
+                    },
+                    "scheduled": time,
+                    "expected": adjustedTime,
                 }
             )
 
@@ -242,9 +258,7 @@ class ResRobotClient:
             arrivals.append(
                 {
                     "line": arrival["ProductAtStop"]["displayNumber"],
-                    "arrival": datetime.strptime(
-                        f"{date} {time}", "%Y-%m-%d %H:%M:%S"
-                    ),
+                    "arrival": datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M:%S"),
                     "origin": arrival["origin"],
                     "time": diff,
                     "operator": arrival["ProductAtStop"]["operator"],

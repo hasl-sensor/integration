@@ -136,8 +136,10 @@ class DepartureBoardEntry(TypedDict):
     stop: str
     stopid: str
     stopExtId: str
-    time: str
-    date: str
+    time: str # Scheduled departure/arrival time, formatted as HH:MM:SS
+    date: str # Scheduled departure/arrival date, formatted as YYYY-MM-DD
+    rtTime: NotRequired[str] # Realtime departure/arrival time, formatted as HH:MM:SS
+    rtDate: NotRequired[str] # Realtime departure/arrival date, formatted as YYYY-MM-DD
     direction: str
     transportNumber: str
     transportCategory: TransportCategory

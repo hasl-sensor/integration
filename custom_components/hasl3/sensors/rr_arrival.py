@@ -14,7 +14,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigSubentry,
 )
-from homeassistant.const import CONF_NAME, STATE_ON, EntityCategory, UnitOfTime
+from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel

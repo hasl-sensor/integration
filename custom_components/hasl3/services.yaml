@@ -1,22 +1,9 @@
 # Describes the format for available hasl3 services
-dump_cache:
-  description: Dumps all downloaded and cached data in the HASL worker to a file in the config directory and returns the full path and name of the file created. Response will be triggered as event on the bus (topic is hasl3).
-
-get_cache:
-  description: Returns all data downloaded and cached in the HASL worker for manual processing. Response will be triggered as event on the bus (topic is hasl3).
-
 sl_find_location:
-  description: Searches for a SL location id using a freetext string. Response will be triggered as event on the bus (topic is hasl3).
+  description: Searches for a SL location using a freetext string. Up to 10 results will be returned
   fields:
-    api_key:
-      name: API Key
-      advanced: false
-      required: true
-      description: The SL Platsuppslag 1 API key to use for the query
-      selector:
-        text:
     search_string:
-      description: Enter the location to find id
+      description: Enter the location to search for
       advanced: false
       name: Location
       required: true
@@ -25,7 +12,7 @@ sl_find_location:
         text:
 
 rr_find_location:
-  description: Searches for a Resrobot location id using a freetext string. Response will be triggered as event on the bus (topic is hasl3).
+  description: Searches for a Resrobot location id using a freetext string
   fields:
     api_key:
       name: API Key
@@ -44,71 +31,129 @@ rr_find_location:
         text:
 
 sl_find_trip_id:
-  description: Search for a trip between two places using either SL orgigin and destination locations. Response will be triggered as event on the bus (topic is hasl3).
+  description: >
+    Search for a trip between two places using SL origin and destination locations.
+    Use `sl_find_location` action to find the values for `origin` and `destination`.
   fields:
-    api_key:
-      name: API Key
-      advanced: false
-      required: true
-      description: The Reseplaneraren 3.1 API key to use for the query
-      selector:
-        text:
-    org:
+    orig:
       name: Origin ID
       advanced: false
       required: true
-      description: The origin for the trip
-      example: 4243
+      description: The id of the origin for the trip
+      example: "9091001000001002"
       selector:
         text:
     dest:
       name: Destination ID
       advanced: false
       required: true
-      description: The destination for the trip
-      example: 2412
+      description: The if of the destination for the trip
+      example: "9091001000009731"
       selector:
         text:
+    trips:
+      name: Number of Trips
+      optional: true
+      description: The number of trips to return. Default is 1
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 3
+    lang:
+      name: Language
+      optional: true
+      description: The language to use for the response. Default is English
+      default: "en"
+      selector:
+        select:
+          options:
+            - "en"
+            - "sv"
+    simplified:
+      name: Simplified Response
+      description: >
+        If true, the response will be simplified to contain human-readable steps
+      optional: true
+      default: false
+      selector:
+        boolean:
 
 sl_find_trip_pos:
-  description: Search for a trip between two placings using longitude and latitude. Response will be triggered as event on the bus (topic is hasl3).
+  description: Search for a trip between two placings using longitude and latitude
   fields:
-    api_key:
-      name: API Key
-      advanced: false
-      required: true
-      description: The SL Reseplaneraren 3.1 API key to use for the query
-      selector:
-        text:
     orig_lat:
       name: Origin Latitude
       advanced: false
       required: true
       description: The origin location for the trip
-      example: '20.20'
+      example: 32.87336
       selector:
-        text:
-    orig_long:
+        number:
+          mode: box
+          min: -90
+          max: 90
+          step: any
+    orig_lon:
       name: Origin Longitude
       advanced: false
       required: true
       description: The origin location for the trip
-      example: '10.20'
+      example: 117.22743
       selector:
-        text:
+        number:
+          mode: box
+          min: -180
+          max: 180
+          step: any
     dest_lat:
       name: Destination Latitude
       advanced: false
       required: true
       description: The destination location for the trip
-      example: '20.20'
+      example: 32.87336
       selector:
-        text:
-    dest_long:
+        number:
+          mode: box
+          min: -90
+          max: 90
+          step: any
+    dest_lon:
       name: Destination Longitude
       advanced: false
       required: true
       description: The destination location for the trip
-      example: '10.20'
+      example: 117.22743
       selector:
-        text:
+        number:
+          mode: box
+          min: -180
+          max: 180
+          step: any
+    trips:
+      name: Number of Trips
+      optional: true
+      description: The number of trips to return. Default is 1
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 3
+    lang:
+      name: Language
+      optional: true
+      description: The language to use for the response. Default is English
+      default: "en"
+      selector:
+        select:
+          options:
+            - "en"
+            - "sv"
+    simplified:
+      name: Simplified Response
+      description: >
+        If true, the response will be simplified to contain human-readable steps
+      optional: true
+      default: false
+      selector:
+        boolean:

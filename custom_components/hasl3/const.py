@@ -1,10 +1,11 @@
-""" SL Platform Constants """
+"""SL Platform Constants"""
+
 from enum import IntEnum
 
 from homeassistant.const import CONF_NAME, STATE_OFF, STATE_ON
 
-HASL_VERSION = "3.1.1"
-SCHEMA_VERSION = "4"
+HASL_VERSION = "3.2.0b2"
+SCHEMA_VERSION = "5"
 DOMAIN = "hasl3"
 NAME = "Swedish Public Transport Sensor (HASL)"
 
@@ -17,29 +18,25 @@ DEVICE_GUID = (
 SL_TRAFIK_DEVICE_GUID = "feb117a9-c5cb-4f0c-b08e-331d5c081bfc"
 SL_TRAFIK_DEVICE_NAME = "SL Traffic"
 
+KEY_COORDINATORS = "coordinators"
+
 SENSOR_RRDEP = "Resrobot Departures"
 SENSOR_RRARR = "Resrobot Arrivals"
-SENSOR_RRROUTE = "Resrobot Route Sensor"
+SENSOR_RRROUTE = 'Resrobot Route Sensor'
 SENSOR_STATUS = "status_v2"
-SENSOR_VEHICLE_LOCATION = "SL Vehicle Locations"
-SENSOR_ROUTE = "SL Route Sensor"
+SENSOR_ROUTE = "route_v2"
 SENSOR_DEPARTURE = "departure_v2"
+SERVICE_RESROBOT_KEY = "resrobot_key"
+SENSOR_RESROBOT_ROUTE = "resrobot_route"
+SENSOR_RESROBOT_DEPARTURE = "resrobot_departure"
+SENSOR_RESROBOT_ARRIVAL = "resrobot_arrival"
 
-CONF_RP3_KEY = "rp3key"
+CONF_API_KEY = "api_key"
 CONF_RR_KEY = "rrkey"
 
 CONF_SITE_ID = "siteid"
 CONF_SITE_IDS = "siteids"
 CONF_DEBUG = "debug"
-CONF_FP_PT = "fppt"
-CONF_FP_RB = "fprb"
-CONF_FP_TVB = "fptvb"
-CONF_FP_SB = "fpsb"
-CONF_FP_LB = "fplb"
-CONF_FP_SPVC = "fpspvc"
-CONF_FP_TB1 = "fptb1"
-CONF_FP_TB2 = "fptb2"
-CONF_FP_TB3 = "fptb3"
 CONF_SENSOR = "sensor"
 CONF_SENSOR_PROPERTY = "property"
 CONF_LINE = "line"
@@ -90,8 +87,7 @@ CONF_INTEGRATION_LIST = [
     SENSOR_STATUS,
     SENSOR_RRDEP,
     SENSOR_RRARR,
-    SENSOR_RRROUTE,
-    SENSOR_VEHICLE_LOCATION,
+    SENSOR_RESROBOT_ROUTE,
     SENSOR_ROUTE,
 ]
 CONF_RRARR_PROPERTY_LIST = [

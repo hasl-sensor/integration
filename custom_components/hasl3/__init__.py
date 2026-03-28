@@ -1,26 +1,52 @@
 import logging
+from typing import Any
 
-from custom_components.hasl3.haslworker import HaslWorker
-from custom_components.hasl3.rrapi import rrapi_sl
-from custom_components.hasl3.slapi import slapi_pu1, slapi_rp3
-
-from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import Event, HomeAssistant, ServiceCall
+from homeassistant.components.sensor.const import DOMAIN as SENSOR_DOMAIN
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import (
+    entity_registry as er,
+    device_registry as dr,
+)
 
 from .const import (
     CONF_INTEGRATION_ID,
     CONF_INTEGRATION_TYPE,
+    CONF_SOURCE,
+    CONF_DESTINATION,
+    CONF_SITE_ID,
+    DEVICE_GUID,
     DOMAIN,
     SCHEMA_VERSION,
+    SENSOR_DEPARTURE,
     SENSOR_ROUTE,
-    SENSOR_VEHICLE_LOCATION,
+    SENSOR_STATUS,
+    SENSOR_RRARR,
+    SENSOR_RRDEP,
+    SENSOR_RRROUTE,
+    SENSOR_RESROBOT_ARRIVAL,
+    SENSOR_RESROBOT_DEPARTURE,
+    SENSOR_RESROBOT_ROUTE,
+    CONF_RR_KEY,
+    CONF_API_KEY,
+    CONF_SENSOR,
+    CONF_SCAN_INTERVAL,
+    CONF_SOURCE_ID,
+    CONF_DESTINATION_ID,
+    SERVICE_RESROBOT_KEY,
 )
+from .sensors.departure import async_setup_coordinator as setup_departure_coordinator
+from .sensors.route import async_setup_coordinator as setup_route_coordinator
+from .sensors.status import async_setup_coordinator as setup_status_coordinator
+from .services.rr_find_location import register as register_rr_find_location
+from .services.sl_find_location import register as register_sl_find_location
+from .services.sl_find_trip_id import register as register_sl_find_trip_id
+from .services.sl_find_trip_pos import register as register_sl_find_trip_pos
+
+from uuid import uuid4
 
 logger = logging.getLogger(f"custom_components.{DOMAIN}.core")
-serviceLogger = logging.getLogger(f"custom_components.{DOMAIN}.services")
 
-EventOrService = Event | ServiceCall
 
 async def async_setup(hass: HomeAssistant, config: ConfigEntry):
     """Set up HASL integration"""
@@ -28,194 +54,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
     if DOMAIN not in hass.data:
         hass.data.setdefault(DOMAIN, {})
-
-    try:
-        if "worker" not in hass.data[DOMAIN]:
-            logger.debug("[setup] No worker present")
-            hass.data[DOMAIN] = {"worker": HaslWorker(hass)}
-            logger.debug("[setup] Worker created")
-    except:
-        logger.error("[setup] Could not get worker")
-        return False
-
-    # SERVICE FUNCTIONS
-    async def sl_find_location(service: EventOrService):
-        serviceLogger.debug("[sl_find_location] Entered")
-        search_string = service.data.get("search_string")
-        api_key = service.data.get("api_key")
-
-        serviceLogger.debug(
-            f"[sl_find_location] Looking for '{search_string}' with key {api_key}"
-        )
-
-        try:
-            pu1api = slapi_pu1(api_key)
-            requestResult = await pu1api.request(search_string)
-            serviceLogger.debug("[sl_find_location] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_location",
-                    "state": "success",
-                    "result": requestResult,
-                },
-            )
-
-        except Exception as e:
-            serviceLogger.debug("[sl_find_location] Lookup failed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_location",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-
-    async def rr_find_location(service: EventOrService):
-        serviceLogger.debug("[rr_find_location] Entered")
-        search_string = service.data.get("search_string")
-        api_key = service.data.get("api_key")
-
-        serviceLogger.debug(
-            f"[rr_find_location] Looking for '{search_string}' with key {api_key}"
-        )
-
-        try:
-            rrapi = rrapi_sl(api_key)
-            requestResult = await rrapi.request(search_string)
-            serviceLogger.debug("[rr_find_location] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "rr_find_location",
-                    "state": "success",
-                    "result": requestResult,
-                },
-            )
-
-        except Exception as e:
-            serviceLogger.debug("[rr_find_location] Lookup failed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "rr_find_location",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-
-
-    async def sl_find_trip_id(service: EventOrService):
-        serviceLogger.debug("[sl_find_trip_id] Entered")
-        origin = service.data.get("org")
-        destination = service.data.get("dest")
-        api_key = service.data.get("api_key")
-
-        # serviceLogger.debug(f"[sl_Availablefind_trip_id] Finding from '{origin}' to '{destination}' with key {api_key}")
-
-        try:
-            rp3api = slapi_rp3(api_key)
-            requestResult = await rp3api.request(origin, destination, "", "", "", "")
-            serviceLogger.debug("[sl_find_trip_id] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_trip_id",
-                    "state": "success",
-                    "result": requestResult,
-                },
-            )
-
-        except Exception as e:
-            serviceLogger.debug("[sl_find_trip_id] Lookup failed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_trip_id",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-
-
-    async def sl_find_trip_pos(service: EventOrService):
-        serviceLogger.debug("[sl_find_trip_pos] Entered")
-        olat = service.data.get("orig_lat")
-        olon = service.data.get("orig_long")
-        dlat = service.data.get("dest_lat")
-        dlon = service.data.get("dest_long")
-        api_key = service.data.get("api_key")
-
-        serviceLogger.debug(
-            f"[sl_find_trip_pos] Finding from '{olat} {olon}' to '{dlat} {dlon}' with key {api_key}"
-        )
-
-        try:
-            rp3api = slapi_rp3(api_key)
-            requestResult = await rp3api.request("", "", olat, olon, dlat, dlon)
-            serviceLogger.debug("[sl_find_trip_pos] Completed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_trip_pos",
-                    "state": "success",
-                    "result": requestResult,
-                },
-            )
-
-        except Exception as e:
-            serviceLogger.debug("[sl_find_trip_pos] Lookup failed")
-            hass.bus.fire(
-                DOMAIN,
-                {
-                    "source": "sl_find_trip_pos",
-                    "state": "error",
-                    "result": f"Exception occured during execution: {str(e)}",
-                },
-            )
-
-
-    async def eventListener(service: Event):
-        serviceLogger.debug("[eventListener] Entered")
-
-        command = service.data.get("cmd")
-
-        if command == "sl_find_location":
-            hass.async_add_job(sl_find_location(service))
-            serviceLogger.debug("[eventListener] Dispatched to sl_find_location")
-
-        if command == "rr_find_location":
-            hass.async_add_job(rr_find_location(service))
-            serviceLogger.debug("[eventListener] Dispatched to rr_find_location")
-
-        if command == "sl_find_trip_pos":
-            hass.async_add_job(sl_find_trip_pos(service))
-            serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_pos")
-
-        if command == "sl_find_trip_id":
-            hass.async_add_job(sl_find_trip_id(service))
-            serviceLogger.debug("[eventListener] Dispatched to sl_find_trip_id")
-
+        
+    await async_migrate_integration(hass)
 
     logger.debug("[setup] Registering services")
-    try:
-        hass.services.async_register(DOMAIN, "sl_find_location", sl_find_location)
-        hass.services.async_register(DOMAIN, "rr_find_location", rr_find_location)
-        hass.services.async_register(DOMAIN, "sl_find_trip_pos", sl_find_trip_pos)
-        hass.services.async_register(DOMAIN, "sl_find_trip_id", sl_find_trip_id)
-        logger.debug("[setup] Service registration completed")
-    except:
-        logger.error("[setup] Service registration failed")
+    register_sl_find_location(hass)
+    register_sl_find_trip_id(hass)
+    register_sl_find_trip_pos(hass)
+    register_rr_find_location(hass)
+    logger.debug("[setup] Service registration completed")
 
-    logger.debug("[setup] Registering event listeners")
-    try:
-        hass.bus.async_listen(DOMAIN, eventListener)
-        logger.debug("[setup] Registering event listeners completed")
-    except:
-        logger.error("[setup] Registering event listeners failed")
-
-    hass.data[DOMAIN]["worker"].status.startup_in_progress = False
     logger.debug("[setup] Completed")
     return True
 
@@ -257,12 +105,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         #     logger.debug(
         #         f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}"
         #     )
-        if data[CONF_INTEGRATION_TYPE] == "Vehicle Locations":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_VEHICLE_LOCATION
-            logger.debug(
-                f"[migrate_entry] migrate from Vehicle Locations to {SENSOR_VEHICLE_LOCATION}"
-            )
-
         # TODO: write migration
         # if data[CONF_INTEGRATION_TYPE] == "Deviations":
         #     data[CONF_INTEGRATION_TYPE] = "SL Deviations"
@@ -294,8 +136,25 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     return True
 
 
+async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Update listener."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up HASL entry."""
+
+    type_ = entry.data[CONF_INTEGRATION_TYPE]
+    if coro := {
+        # "new-style" delegated setup functions
+        SENSOR_DEPARTURE: setup_departure_coordinator,
+        SENSOR_STATUS: setup_status_coordinator,
+        SENSOR_ROUTE: setup_route_coordinator,
+    }.get(type_):
+        entry.runtime_data = await coro(hass, entry)
+
+    # subscribe to updates
+    entry.async_on_unload(entry.add_update_listener(update_listener))
 
     await hass.config_entries.async_forward_entry_setups(entry, [SENSOR_DOMAIN])
     return True
@@ -307,6 +166,112 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     unload_ok = await hass.config_entries.async_unload_platforms(entry, [SENSOR_DOMAIN])
 
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return unload_ok
+
+
+# custom migration to convert resrobot entries to main entry with subentries
+async def async_migrate_integration(hass: HomeAssistant) -> None:
+    """Migrate integration entry structure."""
+    NEW_VERSION = 5
+
+    entries = hass.config_entries.async_entries(DOMAIN)
+
+    # We migrate only resrobot entries
+    old_versions = list(range(NEW_VERSION))
+    old_versions = set([*old_versions, *[str(n) for n in old_versions]])
+    if not any(entry.version in old_versions for entry in entries):
+        return
+
+    entries = [
+        entry
+        for entry in entries
+        if entry.data.get(CONF_INTEGRATION_TYPE)
+        in (SENSOR_RRARR, SENSOR_RRDEP, SENSOR_RRROUTE)
+    ]
+    if not entries:
+        return
+
+    api_keys_entries: dict[str, ConfigEntry] = {}
+    entity_registry = er.async_get(hass)
+    device_registry = dr.async_get(hass)
+
+    for entry in entries:
+        use_existing = False
+        
+        subentry_type=map_RR_entry_to_subentry(entry.data[CONF_INTEGRATION_TYPE])
+        subentry_data: dict[str, Any] = {
+            CONF_INTEGRATION_TYPE: subentry_type,
+            CONF_SCAN_INTERVAL: entry.data[CONF_SCAN_INTERVAL],
+            CONF_SENSOR: entry.data[CONF_SENSOR]
+        }
+        
+        if subentry_type == SENSOR_RESROBOT_DEPARTURE:
+            subentry_data[CONF_SOURCE] = entry.data[CONF_SITE_ID]
+        elif subentry_type == SENSOR_RESROBOT_ARRIVAL:
+            subentry_data[CONF_DESTINATION] = entry.data[CONF_SITE_ID]
+        elif subentry_type == SENSOR_RESROBOT_ROUTE:
+            subentry_data[CONF_SOURCE] = entry.data[CONF_SOURCE_ID]
+            subentry_data[CONF_DESTINATION] = entry.data[CONF_DESTINATION_ID]
+            
+        subentry = ConfigSubentry(
+            data=subentry_data,
+            subentry_type=subentry_type,
+            title=entry.title,
+            unique_id=str(uuid4()),
+        )
+        if entry.data[CONF_RR_KEY] not in api_keys_entries:
+            use_existing = True
+            # we save the whole original entry here, we will update it in the end
+            api_keys_entries[entry.data[CONF_RR_KEY]] = entry
+
+        parent_entry = api_keys_entries[entry.data[CONF_RR_KEY]]
+
+        hass.config_entries.async_add_subentry(parent_entry, subentry)
+        sensor_entity_id = entity_registry.async_get_entity_id(
+            SENSOR_DOMAIN,
+            DOMAIN,
+            entry.entry_id,
+        )
+        
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, DEVICE_GUID)}
+        )
+        if device is not None:
+            device_registry.async_remove_device(
+                device_id=device.id
+            )
+        
+        if sensor_entity_id is not None:
+            entity_registry.async_update_entity(
+                entity_id=sensor_entity_id,
+                config_entry_id=parent_entry.entry_id,
+                config_subentry_id=subentry.subentry_id,
+                new_unique_id=subentry.subentry_id,
+            )
+
+        if not use_existing:
+            await hass.config_entries.async_remove(entry.entry_id)
+        else:
+            entry_data=dict()
+            entry_data[CONF_API_KEY] = entry.data[CONF_RR_KEY]
+            entry_data[CONF_INTEGRATION_TYPE] = SERVICE_RESROBOT_KEY
+            hass.config_entries.async_update_entry(
+                entry,
+                title=SERVICE_RESROBOT_KEY,
+                data=entry_data,
+                options={},
+                version=NEW_VERSION,
+            )
+            
+def map_RR_entry_to_subentry(entry_name: str) -> str:
+    if entry_name == SENSOR_RRDEP:
+        return SENSOR_RESROBOT_DEPARTURE
+    elif entry_name == SENSOR_RRARR:
+        return SENSOR_RESROBOT_ARRIVAL
+    elif entry_name == SENSOR_RRROUTE:
+        return SENSOR_RESROBOT_ROUTE
+    else:
+        # raise exception?
+        return ""

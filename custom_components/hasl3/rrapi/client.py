@@ -206,15 +206,15 @@ class ResRobotClient:
                 {
                     "destination": departure["direction"],
                     "direction": "",
-                    "direction_code": 0,
+                    "direction_code": departure.get("directionFlag", 0),
                     "state": "EXPECTED",
                     "display": departure["name"],
                     "stop_point": {"name": departure["stop"], "designation": ""},
                     "line": {
-                        "id": departure["ProductAtStop"].get("operatorCode", 0),
-                        "designation": departure["transportNumber"],
+                        "id": departure["ProductAtStop"].get("lineId", 0),
+                        "designation": departure["ProductAtStop"].get("displayNumber"),
                         "transport_mode": self.transportMap.get(
-                            departure["transportCategory"].value
+                            departure["ProductAtStop"].get("catOut", TransportCategory.ULT).value
                         ),
                         "group_of_lines": "",
                     },
@@ -246,15 +246,15 @@ class ResRobotClient:
                 {
                     "destination": arrival["direction"],
                     "direction": "",
-                    "direction_code": 0,
+                    "direction_code": arrival.get("directionFlag", 0),
                     "state": "EXPECTED",
                     "display": arrival["name"],
                     "stop_point": {"name": arrival["stop"], "designation": ""},
                     "line": {
-                        "id": arrival["ProductAtStop"].get("operatorCode", 0),
-                        "designation": arrival["transportNumber"],
+                        "id": arrival["ProductAtStop"].get("lineId", 0),
+                        "designation": arrival["ProductAtStop"].get("displayNumber"),
                         "transport_mode": self.transportMap.get(
-                            arrival["transportCategory"].value
+                            arrival["ProductAtStop"].get("catOut", TransportCategory.ULT).value
                         ),
                         "group_of_lines": "",
                     },

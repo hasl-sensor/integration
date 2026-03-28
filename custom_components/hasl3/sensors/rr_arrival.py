@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigSubentry,
 )
-from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
+from homeassistant.const import CONF_NAME, STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
@@ -52,6 +52,7 @@ CONFIG_SCHEMA = vol.Schema(
 
 class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     config_entry: ConfigEntry
+    friendly_name: str
 
     def __init__(
         self,
@@ -63,6 +64,7 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.destination: str = subentry.data[const.CONF_DESTINATION]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
+        self.friendly_name = subentry.data[CONF_NAME]
 
         super().__init__(
             hass,
@@ -96,7 +98,10 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                 )
                 raise ConfigEntryError(error) from error
 
-        return arrivals
+        return {
+            "friendly_name": self.friendly_name,
+            "departures": arrivals
+        }
 
 
 async def async_setup_entry(

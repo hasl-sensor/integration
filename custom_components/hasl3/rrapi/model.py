@@ -112,15 +112,6 @@ class Product(TypedDict):
     catOutL: NotRequired[str]
     operatorCode: NotRequired[str]
     operator: NotRequired[str]
-    transportNumber: NotRequired[str]
-    transportCategory: NotRequired[TransportCategory]
-    type: NotRequired[str]
-    reachable: NotRequired[str]
-    direction: NotRequired[str]
-    dist: NotRequired[int]
-    duration: NotRequired[str]
-    JourneyStatus: NotRequired[JourneyStatus]
-    JourneyDetailRef: NotRequired[JourneyDetailRef]
 
 
 class DepartureStops(TypedDict):

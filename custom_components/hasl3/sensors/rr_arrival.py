@@ -1,7 +1,8 @@
 import logging
 from asyncio import timeout
-from datetime import timedelta
+from datetime import timedelta, datetime
 from functools import cached_property
+from zoneinfo import ZoneInfo
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
@@ -64,7 +65,7 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.destination: str = subentry.data[const.CONF_DESTINATION]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
-        self.friendly_name = subentry.data[CONF_NAME]
+        self.friendly_name = subentry.title
 
         super().__init__(
             hass,
@@ -98,10 +99,7 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                 )
                 raise ConfigEntryError(error) from error
 
-        return {
-            "friendly_name": self.friendly_name,
-            "departures": arrivals
-        }
+        return arrivals
 
 
 async def async_setup_entry(
@@ -153,10 +151,11 @@ class ResRobotBaseArrivalSensor(
         if not self.coordinator.data:
             return None
 
-        adjustedDateTime = now()
-        return next(
-            (x for x in self.coordinator.data if x["expected"] > adjustedDateTime), None
+        arrivals = sorted(
+            self.coordinator.data,
+            key=lambda x: x.get("expected", None) or x.get("scheduled", None),
         )
+        return next(iter(arrivals), None)
 
     @cached_property
     def device_info(self) -> DeviceInfo:
@@ -200,7 +199,7 @@ class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
 
     @property
     def extra_state_attributes(self):
-        return {"arrivals": self.coordinator.data or []}
+        return {"departures": self.coordinator.data or []}
 
 
 class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
@@ -224,7 +223,13 @@ class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
     @property
     def native_value(self):
         if next_arrival := self.nextArrival():
-            return next_arrival["time"]
+            now = datetime.now(ZoneInfo("Europe/Stockholm"))
+            arrival = datetime.fromisoformat(
+                next_arrival.get("expected", None)
+                or next_arrival.get("scheduled", None)
+            )
+            diff = arrival - now
+            return round(diff.total_seconds() / 60)
 
 
 class ResRobotArrivalTimeSensor(ResRobotBaseArrivalSensor):
@@ -248,25 +253,3 @@ class ResRobotArrivalTimeSensor(ResRobotBaseArrivalSensor):
     def native_value(self):
         if next_arrival := self.nextArrival():
             return next_arrival["expected"]
-
-
-class ResRobotArrivalOriginSensor(ResRobotBaseArrivalSensor):
-    @property
-    def unique_id(self):
-        return f"{super().unique_id}_origin"
-
-    @cached_property
-    def entity_description(self):
-        data = super().entity_description()
-        return SensorEntityDescription(
-            **{
-                **data,
-                "icon": "mdi:map-marker",
-                "name": f"{data['name']} next arrival origin",
-            },
-        )
-
-    @property
-    def native_value(self):
-        if next_arrival := self.nextArrival():
-            return next_arrival["origin"]

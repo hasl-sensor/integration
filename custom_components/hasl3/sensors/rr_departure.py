@@ -1,7 +1,8 @@
 import logging
 from asyncio import timeout
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import cached_property
+from zoneinfo import ZoneInfo
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
@@ -63,7 +64,7 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.api_key: str = config_entry.data[const.CONF_API_KEY]
         self.origin: str = subentry.data[const.CONF_SOURCE]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
-        self.friendly_name = subentry.data[CONF_NAME]
+        self.friendly_name = subentry.title
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
 
         super().__init__(
@@ -97,10 +98,7 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                 )
                 raise ConfigEntryError(error) from error
 
-        return {
-            "friendly_name": self.friendly_name,
-            "departures": departures
-        }
+        return departures
 
 
 async def async_setup_entry(
@@ -151,10 +149,11 @@ class ResRobotBaseDepartureSensor(
         if not self.coordinator.data:
             return None
 
-        adjustedDateTime = now()
-        return next(
-            (x for x in self.coordinator.data if x["expected"] > adjustedDateTime), None
+        departures = sorted(
+            self.coordinator.data,
+            key=lambda x: x.get("expected", None) or x.get("scheduled", None),
         )
+        return next(iter(departures), None)
 
     @cached_property
     def device_info(self) -> DeviceInfo:
@@ -222,7 +221,13 @@ class ResRobotDepartureMinSensor(ResRobotBaseDepartureSensor):
     @property
     def native_value(self):
         if next_departure := self.nextDeparture():
-            return next_departure["time"]
+            now = datetime.now(ZoneInfo("Europe/Stockholm"))
+            arrival = datetime.fromisoformat(
+                next_departure.get("expected", None)
+                or next_departure.get("scheduled", None)
+            )
+            diff = arrival - now
+            return round(diff.total_seconds() / 60)
 
 
 class ResRobotDepartureTimeSensor(ResRobotBaseDepartureSensor):
@@ -245,4 +250,4 @@ class ResRobotDepartureTimeSensor(ResRobotBaseDepartureSensor):
     @property
     def native_value(self):
         if next_departure := self.nextDeparture():
-            return next_departure["expected"]
+            return datetime.fromisoformat(next_departure["expected"])

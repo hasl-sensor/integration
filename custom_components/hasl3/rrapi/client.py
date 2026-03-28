@@ -199,8 +199,10 @@ class ResRobotClient:
         # transform data
         departures = []
         for departure in data["Departure"]:
-            time = departure["time"]
-            adjustedTime = departure.get("rtTime", time)
+            (date, time) = departure["date"], departure["time"]
+            scheduledTime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=self._timezone)
+            (adjustedDate, adjustedTime) =  departure.get("rtDate", date), departure.get("rtTime", time)
+            expectedTime = datetime.strptime(f"{adjustedDate} {adjustedTime}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=self._timezone)
 
             departures.append(
                 {
@@ -214,12 +216,12 @@ class ResRobotClient:
                         "id": departure["ProductAtStop"].get("lineId", 0),
                         "designation": departure["ProductAtStop"].get("displayNumber"),
                         "transport_mode": self.transportMap.get(
-                            departure["ProductAtStop"].get("catOut", TransportCategory.ULT).value
+                            departure["ProductAtStop"].get("catOut", TransportCategory.BLT)
                         ),
                         "group_of_lines": "",
                     },
-                    "scheduled": time,
-                    "expected": adjustedTime,
+                    "scheduled": scheduledTime.isoformat(),
+                    "expected": expectedTime.isoformat(),
                 }
             )
 
@@ -239,8 +241,10 @@ class ResRobotClient:
         # transform data
         arrivals = []
         for arrival in data["Arrival"]:
-            time = arrival["time"]
-            adjustedTime = arrival.get("rtTime", time)
+            (date, time) = arrival["date"], arrival["time"]
+            scheduledTime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M").replace(tzinfo=self._timezone)
+            (adjustedDate, adjustedTime) = arrival.get("rtDate", time), arrival.get("rtTime", time)
+            expectedTime = datetime.strptime(f"{adjustedDate} {adjustedTime}", "%Y-%m-%d %H:%M").replace(tzinfo=self._timezone)
 
             arrivals.append(
                 {
@@ -254,12 +258,12 @@ class ResRobotClient:
                         "id": arrival["ProductAtStop"].get("lineId", 0),
                         "designation": arrival["ProductAtStop"].get("displayNumber"),
                         "transport_mode": self.transportMap.get(
-                            arrival["ProductAtStop"].get("catOut", TransportCategory.ULT).value
+                            arrival["ProductAtStop"].get("catOut", TransportCategory.ULT)
                         ),
                         "group_of_lines": "",
                     },
-                    "scheduled": time,
-                    "expected": adjustedTime,
+                    "scheduled": scheduledTime.isoformat(),
+                    "expected": expectedTime.isoformat(),
                 }
             )
 

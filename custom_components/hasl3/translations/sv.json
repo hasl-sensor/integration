@@ -10,8 +10,9 @@
                     "Resrobot Departures": "Resrobot Departures",
                     "Resrobot Arrivals": "Resrobot Arrivals",
                     "Resrobot Route Sensor": "Resrobot Route Sensor",
-                    "SL Vehicle Locations": "SL Vehicle Locations",
-                    "route_v2": "SL Route Sensor"
+                    "SL Vehicle Locations": "SL Fordonspositioner",
+                    "route_v2": "SL Rutt Sensor",
+                    "resrobot_key": "Resrobot"
                 }
             },
             "departure_v2": {
@@ -38,24 +39,20 @@
             "config": {
                 "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
                 "data": {
-					"scan_interval": "Hur många sekunder mellan uppdateringar?",
-					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
-
+                    "scan_interval": "Hur många sekunder mellan uppdateringar?",
+                    "sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
                     "siteid": "Plats ID",
-					"direction": "Riktning",
-					"property": "Primäregenskap för sensorn",
-					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
-
-					"lines": "Linjer (kommaseparerad lista)",
-					"stops": "Plats IDn (kommaseparerad lista)",
-
+                    "siteids": "Plats IDn (kommaseparerad lista)",
+                    "line": "Linje",
+                    "lines": "Linjer (kommaseparerad lista)",
+                    "direction": "Riktning",
+                    "property": "Primäregenskap för sensorn",
+                    "timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
-					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
-
+                    "to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
                     "rrkey": "Resrobot 2.1 API-nyckel",
                     "fromid": "Från med plats id",
-					"toid": "Till med plats id",
-
+                    "toid": "Till med plats id",
                     "fppt": "Pendeltåg",
                     "fprb": "Roslagsbanan",
                     "fptvb": "Tvärbanan",
@@ -65,14 +62,15 @@
                     "fptb1": "Gröna Linjen",
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
-
+                    "transport": "Transportfilter",
+                    "transports": "Transportfilter (flera)",
                     "metro": "Tunnelbana",
                     "train": "Pendeltåg",
                     "local": "Lokaltåg",
                     "tram": "Spårvagn",
                     "bus": "Bussar",
                     "ferry": "Färjor"
-				}
+                }
             }
         },
         "error": {
@@ -87,24 +85,20 @@
             "user": {
                 "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
                 "data": {
-					"scan_interval": "Hur många sekunder mellan uppdateringar?",
-					"sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
-
+                    "scan_interval": "Hur många sekunder mellan uppdateringar?",
+                    "sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
                     "siteid": "Plats ID",
-					"direction": "Riktning",
-					"property": "Primäregenskap för sensorn",
-					"timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
-
-					"lines": "Linjer (kommaseparerad lista)",
-					"stops": "Plats IDn (kommaseparerad lista)",
-
+                    "siteids": "Plats IDn (kommaseparerad lista)",
+                    "line": "Linje",
+                    "lines": "Linjer (kommaseparerad lista)",
+                    "direction": "Riktning",
+                    "property": "Primäregenskap för sensorn",
+                    "timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
                     "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
-					"to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
-
+                    "to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
                     "rrkey": "Resrobot 2.1 API-nyckel",
                     "fromid": "Från med plats id",
-					"toid": "Till med plats id",
-
+                    "toid": "Till med plats id",
                     "fppt": "Pendeltåg",
                     "fprb": "Roslagsbanan",
                     "fptvb": "Tvärbanan",
@@ -114,14 +108,15 @@
                     "fptb1": "Gröna Linjen",
                     "fptb2": "Röda linjen",
                     "fptb3": "Blåa linjen",
-
+                    "transport": "Transportfilter",
+                    "transports": "Transportfilter (flera)",
                     "metro": "Tunnelbana",
                     "train": "Pendeltåg",
                     "local": "Lokaltåg",
                     "tram": "Spårvagn",
                     "bus": "Bussar",
                     "ferry": "Färjor"
-				}
+                }
             }
         }
     },
@@ -143,6 +138,84 @@
                 "1": "Vänster",
                 "2": "Höger"
             }
+        }
+    },
+    "config_subentries": {
+        "resrobot_key": {
+            "initiate_flow": {
+                "user": "Lägg till Resrobot-sensor",
+                "reconfigure": "Omkonfigurera Resrobot-sensor"
+            },
+            "entry_type": "Resrobot-sensor",
+            "step": {
+                "user": {
+                    "description": "Välj integrationstyp",
+                    "menu_options": {
+                        "resrobot_route": "Resrobot Rutt",
+                        "resrobot_departure": "Resrobot Avgång",
+                        "resrobot_arrival": "Resrobot Ankomst"
+                    }
+                },
+                "name": {
+                    "description": "Ange sensorns namn",
+                    "data": {
+                        "name": "Sensorns namn"
+                    }
+                },
+                "resrobot_arrival": {
+                    "description": "Hur vill du fortsätta?",
+                    "menu_options": {
+                        "find_destination": "Hitta hållplats via namn",
+                        "name": "Konfigurera hållplats-id manuellt"
+                    }
+                },
+                "resrobot_departure": {
+                    "description": "Hur vill du fortsätta?",
+                    "menu_options": {
+                        "find_stop": "Hitta hållplats via namn",
+                        "name": "Konfigurera hållplats-id manuellt"
+                    }
+                },
+                "resrobot_route": {
+                    "description": "Hur vill du fortsätta?",
+                    "menu_options": {
+                        "find_source": "Hitta start och destination via namn",
+                        "name": "Konfigurera hållplats-id:n manuellt"
+                    }
+                },
+                "find_stop": {
+                    "description": "Hitta hållplats med Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Sökfråga",
+                        "from": "Välj hållplats"
+                    }
+                },
+                "find_source": {
+                    "description": "Hitta startplats med Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Sökfråga",
+                        "from": "Välj startplats"
+                    }
+                },
+                "find_destination": {
+                    "description": "Hitta destination med Resrobot Stop lookup API",
+                    "data": {
+                        "lookup_search_key": "Sökfråga",
+                        "to": "Välj destination"
+                    }
+                },
+                "config": {
+                    "description": "Uppdatera integrationsparametrar",
+                    "data": {
+                        "scan_interval": "Ange uppdateringsintervall i sekunder",
+                        "sensor": "Uppdatera bara om denna sensor är True (tom=uppdaterar alltid)",
+                        "from": "Start/hållplats som Resrobot Location extId",
+                        "to": "Destination som Resrobot Location extId"
+                    }
+                }
+            }
+        }
+    }
         }
     }
 }

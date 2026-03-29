@@ -2,7 +2,6 @@
 
 import logging
 import uuid
-from functools import partial
 from typing import Any, Awaitable, Callable, cast
 
 import voluptuous as vol
@@ -19,6 +18,7 @@ from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.schema_config_entry_flow import (
     SchemaCommonFlowHandler,
+    SchemaFlowError,
     SchemaFlowFormStep,
     SchemaOptionsFlowHandler,
 )
@@ -31,7 +31,6 @@ from .const import (
     CONF_API_KEY,
     CONF_DESTINATION,
     CONF_INTEGRATION_ID,
-    CONF_INTEGRATION_LIST,
     CONF_INTEGRATION_TYPE,
     CONF_SITE_ID,
     CONF_SOURCE,
@@ -160,10 +159,6 @@ class ConfigFlowHandler(ConfigFlow, LocationLookupMixin, domain=DOMAIN):
     def __init__(self):
         self._options = {}
 
-        # plug in the handlers for the legacy integration types
-        for step in (x for x in CONF_INTEGRATION_LIST if x not in self.new_sensors):
-            setattr(self, f"async_step_{step}", partial(self.async_step_legacy, step))
-
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> SchemaOptionsFlowHandler:
@@ -243,10 +238,10 @@ class ConfigFlowHandler(ConfigFlow, LocationLookupMixin, domain=DOMAIN):
 
         # TODO: evaluate, if we need to check for existing status sensors
         # check if there any other configured status sensors
-        # entries = self.hass.config_entries.async_entries(DOMAIN)
-        # for entry in entries:
-        #     if entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
-        #         raise SchemaFlowError("only_one_status_sensor")
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        for entry in entries:
+            if entry.data[CONF_INTEGRATION_TYPE] == SENSOR_STATUS:
+                raise SchemaFlowError("only_one_status_sensor")
 
         return await self.async_step_name()
 
@@ -279,12 +274,6 @@ class ConfigFlowHandler(ConfigFlow, LocationLookupMixin, domain=DOMAIN):
             ),
             user_input=user_input,
         )
-
-    async def async_step_legacy(
-        self, type_: str, user_input: dict[str, Any] | None = None
-    ):
-        self._options[CONF_INTEGRATION_TYPE] = type_
-        return await self.async_step_name()
 
     async def async_step_name(self, user_input: dict[str, Any] | None = None):
         if not user_input:

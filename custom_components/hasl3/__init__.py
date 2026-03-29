@@ -54,7 +54,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
     if DOMAIN not in hass.data:
         hass.data.setdefault(DOMAIN, {})
-        
+
     await async_migrate_integration(hass)
 
     logger.debug("[setup] Registering services")
@@ -69,70 +69,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-    logger.debug("[migrate_entry] Entered")
-
-    logger.debug(
-        "[migrate_entry] Migrating configuration from schema version %s to version %s",
-        config_entry.version,
-        SCHEMA_VERSION,
-    )
-
-    data = {**config_entry.data}
-    options = {**config_entry.options}
-
-    if (
-        config_entry.version != "1"
-        and config_entry.version != "2"
-        and config_entry.version != "3"
-    ):
-        for option in config_entry.options:
-            logger.debug(
-                f"[migrate_entry] set {option} = {config_entry.options[option]}"
-            )
-            data[option] = config_entry.options[option]
-
-    if config_entry.version == "2" and SCHEMA_VERSION == "3":
-        # TODO: write migration
-        # if data[CONF_INTEGRATION_TYPE] == "Departures":
-        #     data[CONF_INTEGRATION_TYPE] = SENSOR_STANDARD
-        #     logger.debug(
-        #         f"[migrate_entry] migrate from Departures to {SENSOR_STANDARD}"
-        #     )
-
-        # TODO: write migration
-        # if data[CONF_INTEGRATION_TYPE] == "Traffic Status":
-        #     data[CONF_INTEGRATION_TYPE] = SENSOR_STATUS
-        #     logger.debug(
-        #         f"[migrate_entry] migrate from Traffic Status to {SENSOR_STATUS}"
-        #     )
-        # TODO: write migration
-        # if data[CONF_INTEGRATION_TYPE] == "Deviations":
-        #     data[CONF_INTEGRATION_TYPE] = "SL Deviations"
-        #     logger.debug(
-        #         f"[migrate_entry] migrate from Deviations to SL Deviations"
-        #     )
-        if data[CONF_INTEGRATION_TYPE] == "Route":
-            data[CONF_INTEGRATION_TYPE] = SENSOR_ROUTE
-            logger.debug(f"[migrate_entry] migrate from Route to {SENSOR_ROUTE}")
-
-    if config_entry.version == 3 and SCHEMA_VERSION == "4":
-        # split data into static and configurable part
-        new_data = {
-            k: v
-            for k, v in data.items()
-            if k in (CONF_INTEGRATION_ID, CONF_INTEGRATION_TYPE)
-        }
-        options = {k: v for k, v in data.items() if k not in new_data}
-        data = new_data
-        config_entry.version = 4
-
-    try:
-        hass.config_entries.async_update_entry(config_entry, data=data, options=options)
-        logger.debug("[migrate_entry] Completed")
-    except Exception as e:
-        logger.error(f"[migrate_entry] Failed: {str(e)}")
-        return False
-
     return True
 
 
@@ -199,14 +135,14 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
 
     for entry in entries:
         use_existing = False
-        
+
         subentry_type=map_RR_entry_to_subentry(entry.data[CONF_INTEGRATION_TYPE])
         subentry_data: dict[str, Any] = {
             CONF_INTEGRATION_TYPE: subentry_type,
             CONF_SCAN_INTERVAL: entry.data[CONF_SCAN_INTERVAL],
             CONF_SENSOR: entry.data[CONF_SENSOR]
         }
-        
+
         if subentry_type == SENSOR_RESROBOT_DEPARTURE:
             subentry_data[CONF_SOURCE] = entry.data[CONF_SITE_ID]
         elif subentry_type == SENSOR_RESROBOT_ARRIVAL:
@@ -214,7 +150,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
         elif subentry_type == SENSOR_RESROBOT_ROUTE:
             subentry_data[CONF_SOURCE] = entry.data[CONF_SOURCE_ID]
             subentry_data[CONF_DESTINATION] = entry.data[CONF_DESTINATION_ID]
-            
+
         subentry = ConfigSubentry(
             data=subentry_data,
             subentry_type=subentry_type,
@@ -234,7 +170,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
             DOMAIN,
             entry.entry_id,
         )
-        
+
         device = device_registry.async_get_device(
             identifiers={(DOMAIN, DEVICE_GUID)}
         )
@@ -242,7 +178,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
             device_registry.async_remove_device(
                 device_id=device.id
             )
-        
+
         if sensor_entity_id is not None:
             entity_registry.async_update_entity(
                 entity_id=sensor_entity_id,
@@ -264,7 +200,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
                 options={},
                 version=NEW_VERSION,
             )
-            
+
 def map_RR_entry_to_subentry(entry_name: str) -> str:
     if entry_name == SENSOR_RRDEP:
         return SENSOR_RESROBOT_DEPARTURE

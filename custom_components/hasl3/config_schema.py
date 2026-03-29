@@ -1,11 +1,11 @@
 """HASL Configuration Database."""
 
 import voluptuous as vol
+from homeassistant.const import CONF_NAME
 from homeassistant.helpers import selector
 
 from .const import (
     CONF_API_KEY,
-    CONF_NAME,
     SENSOR_DEPARTURE,
     SENSOR_RESROBOT_ARRIVAL,
     SENSOR_RESROBOT_DEPARTURE,

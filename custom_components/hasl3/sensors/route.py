@@ -12,18 +12,17 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigEntryError,
-)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
+    UpdateFailed,
 )
 from tsl.clients.journey import Journey, JourneyPlannerClient, SearchLeg
 from tsl.tools.journey import SimpleJourneyInterpreter, leg_display_str
@@ -154,7 +153,7 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[Data]):
             try:
                 data = await client.search_trip(request)
             except Exception as error:
-                raise ConfigEntryError(error) from error
+                raise UpdateFailed(f"Failed to fetch trip from '{origin}' to '{destination}'") from error
 
         rides = []
         simple_trips = []

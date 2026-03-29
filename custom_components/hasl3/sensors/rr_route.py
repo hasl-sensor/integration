@@ -14,14 +14,15 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceInfo, async_get as get_dr
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import async_get as get_dr
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
+    UpdateFailed,
 )
 from homeassistant.util.dt import async_get_time_zone
 
@@ -94,7 +95,7 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
             try:
                 data = await client.find_trip(self.origin, self.destination)
             except Exception as error:
-                raise ConfigEntryError(error) from error
+                raise UpdateFailed(f"Failed to fetch trip from '{self.origin}' to '{self.destination}'") from error
 
         return data
 

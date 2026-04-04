@@ -24,7 +24,6 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.util.dt import async_get_time_zone
 
 from .. import const
 from ..rrapi.client import ResRobotClient
@@ -89,8 +88,7 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
             return self.data
 
-        tz = await async_get_time_zone("Europe/Stockholm")
-        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key, tz=tz)
+        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key)
         async with timeout(10):
             try:
                 data = await client.find_trip(self.origin, self.destination)

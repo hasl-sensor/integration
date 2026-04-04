@@ -1,7 +1,9 @@
 import logging
-from datetime import datetime, tzinfo, UTC
 from typing import Any, cast
-from .model import StopLookupResponse, LocationSearchType
+from .model import (
+    StopLookupResponse,
+    LocationSearchType,
+)
 
 import aiohttp
 import isodate
@@ -11,11 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class ResRobotClient:
-    def __init__(self, session: aiohttp.ClientSession, api_key: str, tz: tzinfo = UTC):
+    def __init__(self, session: aiohttp.ClientSession, api_key: str):
         self._session = session
         self._api_key = api_key
         self._base_url = "https://api.resrobot.se/v2.1"
-        self._timezone = tz
 
     async def _get_json(self, url: str, params: dict[str, Any] = {}) -> Any:
         encoded_params = dict(
@@ -157,88 +158,27 @@ class ResRobotClient:
 
         return result
 
-    async def get_departures(
-        self, location_id: str, now: datetime
-    ) -> list[dict[str, Any]]:
+    async def get_departures(self, location_id: str) -> list[dict[str, Any]]:
         """Get departures from a specific location."""
-        url = f"{self._base_url}/departureBoard?format=json&id={location_id}&accessId={self._api_key}"
-        data = await self._get_json(url)
+        data = await self._get_json(
+            url=f"{self._base_url}/departureBoard",
+            params={
+                "format": "json",
+                "id": location_id,
+                "accessId": self._api_key,
+            },
+        )
 
-        # transform data
-        departures = []
-        for departure in data["Departure"]:
-            date, time = departure["date"], departure["time"]
+        return data
 
-            if "rtDate" in departure and "rtTime" in departure:
-                diff_date, diff_time = departure["rtDate"], departure["rtTime"]
-            else:
-                diff_date, diff_time = date, time
+    async def get_arrivals(self, location_id: str) -> list[dict[str, Any]]:
+        data = await self._get_json(
+            url=f"{self._base_url}/arrivalBoard",
+            params={
+                "format": "json",
+                "id": location_id,
+                "accessId": self._api_key,
+            },
+        )
 
-            adjustedDateTime = now.replace(tzinfo=None)
-            diff = (
-                datetime.strptime(f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S")
-                - adjustedDateTime
-            )
-            diff = round(diff.total_seconds() / 60)
-
-            expected = datetime.strptime(
-                f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S"
-            ).replace(tzinfo=self._timezone)
-
-            departures.append(
-                {
-                    "line": departure["ProductAtStop"]["displayNumber"],
-                    "direction": departure["directionFlag"],
-                    "departure": datetime.strptime(
-                        f"{date} {time}", "%Y-%m-%d %H:%M:%S"
-                    ),
-                    "destination": departure["direction"],
-                    "time": diff,
-                    "operator": departure["ProductAtStop"]["operator"],
-                    "expected": expected,
-                    "type": departure["ProductAtStop"]["catOut"],
-                }
-            )
-
-        return departures
-
-    async def get_arrivals(self, location_id: str, now: datetime):
-        url = f"{self._base_url}/arrivalBoard?format=json&id={location_id}&accessId={self._api_key}"
-        data = await self._get_json(url)
-
-        # transform data
-        arrivals = []
-        for arrival in data["Arrival"]:
-            date, time = arrival["date"], arrival["time"]
-
-            if "rtDate" in arrival and "rtTime" in arrival:
-                diff_date, diff_time = arrival["rtDate"], arrival["rtTime"]
-            else:
-                diff_date, diff_time = date, time
-
-            adjustedDateTime = now.replace(tzinfo=None)
-            diff = (
-                datetime.strptime(f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S")
-                - adjustedDateTime
-            )
-            diff = round(diff.total_seconds() / 60)
-
-            expected = datetime.strptime(
-                f"{diff_date} {diff_time}", "%Y-%m-%d %H:%M:%S"
-            ).replace(tzinfo=self._timezone)
-
-            arrivals.append(
-                {
-                    "line": arrival["ProductAtStop"]["displayNumber"],
-                    "arrival": datetime.strptime(
-                        f"{date} {time}", "%Y-%m-%d %H:%M:%S"
-                    ),
-                    "origin": arrival["origin"],
-                    "time": diff,
-                    "operator": arrival["ProductAtStop"]["operator"],
-                    "expected": expected,
-                    "type": arrival["ProductAtStop"]["catOut"],
-                }
-            )
-
-        return arrivals
+        return data

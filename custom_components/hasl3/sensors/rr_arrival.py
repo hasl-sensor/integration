@@ -1,7 +1,9 @@
 import logging
 from asyncio import timeout
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import cached_property
+from typing import cast
+from zoneinfo import ZoneInfo
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
@@ -17,17 +19,23 @@ from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceInfo, async_get as get_dr
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import async_get as get_dr
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
-    UpdateFailed,
     CoordinatorEntity,
     DataUpdateCoordinator,
+    UpdateFailed,
 )
 from homeassistant.util.dt import async_get_time_zone, now
 
 from .. import const
 from ..rrapi.client import ResRobotClient
+from ..rrapi.model import ListOfArrivals
+from ..rrapi.utils import (
+    map_rr_arrivals_to_legacy_arrivals,
+    map_rr_arrivals_to_v4_departures,
+)
 from .device import SL_TRAFFIK_DEVICE_INFO
 
 logger = logging.getLogger(__name__)
@@ -52,6 +60,8 @@ CONFIG_SCHEMA = vol.Schema(
 
 class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     config_entry: ConfigEntry
+    friendly_name: str
+    timezone: ZoneInfo
 
     def __init__(
         self,
@@ -63,8 +73,11 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.destination: str = subentry.data[const.CONF_DESTINATION]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         self.subentry = subentry
-        self.get_device = lambda: get_dr(hass).async_get_device({(const.DOMAIN, subentry.subentry_id)})
+        self.get_device = lambda: get_dr(hass).async_get_device(
+            {(const.DOMAIN, subentry.subentry_id)}
+        )
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
+        self.friendly_name = subentry.title
 
         super().__init__(
             hass,
@@ -74,24 +87,11 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
             update_interval=interval,
         )
 
-    iconswitcher = {
-        "BLT": "mdi:bus",
-        "BXB": "mdi:bus",
-        "ULT": "mdi:subway-variant",
-        "JAX": "mdi:train",
-        "JLT": "mdi:train",
-        "JRE": "mdi:train",
-        "JIC": "mdi:train",
-        "JPT": "mdi:train",
-        "JEX": "mdi:train",
-        "SLT": "mdi:tram",
-        "FLT": "mdi:ferry",
-        "FUT": "mdi:ferry",
-    }
-
     async def _async_update_data(self):
         if (device := self.get_device()) and device.disabled:
-            self.logger.debug('Not updating %s. Device is off', self.subentry.subentry_id)
+            self.logger.debug(
+                "Not updating %s. Device is off", self.subentry.subentry_id
+            )
             return self.data
 
         if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
@@ -103,28 +103,34 @@ class ArrivalDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
             return self.data
 
-        tz = await async_get_time_zone("Europe/Stockholm")
-        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key, tz=tz)
+        self.timezone = cast(ZoneInfo, await async_get_time_zone("Europe/Stockholm"))
+        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key)
         async with timeout(10):
             try:
-                departures = await client.get_arrivals(self.destination, now())
+                arrivals = await client.get_arrivals(self.destination)
             except Exception as error:
                 logger.error(
-                    "Failed to fetch departures for %s: %s",
+                    "Failed to fetch arrivals for %s: %s",
                     self.destination,
                     error,
                 )
-                raise UpdateFailed(f"Failed to fetch departures for {self.destination}") from error
+                raise UpdateFailed(
+                    f"Failed to fetch arrivals for {self.destination}"
+                ) from error
 
-        data = [
-            {
-                **departure,
-                "icon": self.iconswitcher.get(departure["type"], "mdi:train"),
-            }
-            for departure in departures
-        ]
+        return arrivals
 
-        return data
+    def get_legacy_data(self):
+        if data := self.data:
+            return map_rr_arrivals_to_legacy_arrivals(
+                cast(ListOfArrivals, data), now(), self.timezone
+            )
+
+    def get_modern_data(self):
+        if data := self.data:
+            return map_rr_arrivals_to_v4_departures(
+                cast(ListOfArrivals, data), self.timezone
+            )
 
 
 async def async_setup_entry(
@@ -144,9 +150,9 @@ async def async_setup_entry(
     }
     return [
         ResRobotArrivalDebugSensor(coordinator, context),
+        ResRobotArrivalV4Sensor(coordinator, context),
         ResRobotArrivalMinSensor(coordinator, context),
         ResRobotArrivalTimeSensor(coordinator, context),
-        ResRobotArrivalOriginSensor(coordinator, context),
     ]
 
 
@@ -173,13 +179,12 @@ class ResRobotBaseArrivalSensor(
         return f"{self.coordinator.config_entry.entry_id}_{_type}_{sid}"
 
     def nextArrival(self):
-        if not self.coordinator.data:
-            return None
-
-        adjustedDateTime = now()
-        return next(
-            (x for x in self.coordinator.data if x["expected"] > adjustedDateTime), None
-        )
+        if data := self.coordinator.get_modern_data():
+            arrivals = sorted(
+                data,
+                key=lambda x: x.get("expected", None) or x.get("scheduled", None),
+            )
+            return next(iter(arrivals), None)
 
     @cached_property
     def device_info(self) -> DeviceInfo:
@@ -188,6 +193,39 @@ class ResRobotBaseArrivalSensor(
             "identifiers": {(const.DOMAIN, self.coordinator_context["id"])},
             "name": "Arrival Sensor",
         }
+
+
+class ResRobotArrivalV4Sensor(ResRobotBaseArrivalSensor):
+    """
+     Contains arrivals mapped for compatibility with Departure Card V4.
+    """
+
+    _unrecorded_attributes = frozenset({"arrivals"})
+
+    @property
+    def unique_id(self):
+        return f"{super().unique_id}_debug"
+
+    @cached_property
+    def entity_description(self):
+        data = super().entity_description()
+        return SensorEntityDescription(
+            key="arrivals",
+            icon="mdi:swap-horizontal",
+            has_entity_name=True,
+            name=f"{data['name']} arrivals",
+        )
+
+    @property
+    def native_value(self):
+        if data := self.coordinator.get_modern_data():
+            return len(data)
+
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        return {"departures": self.coordinator.get_modern_data() or []}
 
 
 class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
@@ -223,7 +261,7 @@ class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
 
     @property
     def extra_state_attributes(self):
-        return {"arrivals": self.coordinator.data or []}
+        return {"arrivals": self.coordinator.get_legacy_data() or []}
 
 
 class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
@@ -247,7 +285,13 @@ class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
     @property
     def native_value(self):
         if next_arrival := self.nextArrival():
-            return next_arrival["time"]
+            now = datetime.now(ZoneInfo("Europe/Stockholm"))
+            arrival = datetime.fromisoformat(
+                next_arrival.get("expected", None)
+                or next_arrival.get("scheduled", None)
+            )
+            diff = arrival - now
+            return round(diff.total_seconds() / 60)
 
 
 class ResRobotArrivalTimeSensor(ResRobotBaseArrivalSensor):
@@ -271,25 +315,3 @@ class ResRobotArrivalTimeSensor(ResRobotBaseArrivalSensor):
     def native_value(self):
         if next_arrival := self.nextArrival():
             return next_arrival["expected"]
-
-
-class ResRobotArrivalOriginSensor(ResRobotBaseArrivalSensor):
-    @property
-    def unique_id(self):
-        return f"{super().unique_id}_origin"
-
-    @cached_property
-    def entity_description(self):
-        data = super().entity_description()
-        return SensorEntityDescription(
-            **{
-                **data,
-                "icon": "mdi:map-marker",
-                "name": f"{data['name']} next arrival origin",
-            },
-        )
-
-    @property
-    def native_value(self):
-        if next_arrival := self.nextArrival():
-            return next_arrival["origin"]

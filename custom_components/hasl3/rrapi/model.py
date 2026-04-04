@@ -1,5 +1,5 @@
 from typing import TypedDict, NotRequired
-from enum import Enum, StrEnum
+from enum import StrEnum
 
 
 class LocationSearchType(StrEnum):
@@ -127,10 +127,10 @@ class DepartureBoardEntry(TypedDict):
     stop: str
     stopid: str
     stopExtId: str
-    time: str # Scheduled departure/arrival time, formatted as HH:MM:SS
-    date: str # Scheduled departure/arrival date, formatted as YYYY-MM-DD
-    rtTime: NotRequired[str] # Realtime departure/arrival time, formatted as HH:MM:SS
-    rtDate: NotRequired[str] # Realtime departure/arrival date, formatted as YYYY-MM-DD
+    time: str  # Scheduled departure/arrival time, formatted as HH:MM:SS
+    date: str  # Scheduled departure/arrival date, formatted as YYYY-MM-DD
+    rtTime: NotRequired[str]  # Realtime departure/arrival time, formatted as HH:MM:SS
+    rtDate: NotRequired[str]  # Realtime departure/arrival date, formatted as YYYY-MM-DD
     direction: str
     transportNumber: str
     transportCategory: TransportCategory
@@ -153,6 +153,7 @@ class ArrivalBoardEntry(TypedDict):
     direction: str
     transportNumber: str
     transportCategory: TransportCategory
+    origin: str
     JourneyStatus: NotRequired[JourneyStatus]
     JourneyDetailRef: NotRequired[JourneyDetailRef]
 

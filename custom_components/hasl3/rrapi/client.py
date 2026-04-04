@@ -1,12 +1,8 @@
 import logging
-from datetime import datetime, tzinfo, UTC
 from typing import Any, cast
 from .model import (
-    ListOfArrivals,
-    ListOfDepartures,
     StopLookupResponse,
     LocationSearchType,
-    TransportCategory,
 )
 
 import aiohttp
@@ -17,11 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class ResRobotClient:
-    def __init__(self, session: aiohttp.ClientSession, api_key: str, tz: tzinfo = UTC):
+    def __init__(self, session: aiohttp.ClientSession, api_key: str):
         self._session = session
         self._api_key = api_key
         self._base_url = "https://api.resrobot.se/v2.1"
-        self._timezone = tz
 
     async def _get_json(self, url: str, params: dict[str, Any] = {}) -> Any:
         encoded_params = dict(
@@ -163,28 +158,7 @@ class ResRobotClient:
 
         return result
 
-    transportMap = {
-        "BLT": "BUS",
-        "BXB": "BUS",
-        "BAX": "BUS",
-        "BRE": "BUS",
-        "BBL": "BUS",
-        "ULT": "METRO",
-        "JAX": "TRAIN",
-        "JEX": "TRAIN",
-        "JIC": "TRAIN",
-        "JLT": "TRAIN",
-        "JPT": "TRAIN",
-        "JST": "TRAIN",
-        "JRE": "TRAIN",
-        "SLT": "TRAM",
-        "FLT": "FERRY",
-        "FUT": "FERRY",
-    }
-
-    async def get_departures(
-        self, location_id: str, now: datetime
-    ) -> list[dict[str, Any]]:
+    async def get_departures(self, location_id: str) -> list[dict[str, Any]]:
         """Get departures from a specific location."""
         data = await self._get_json(
             url=f"{self._base_url}/departureBoard",
@@ -195,39 +169,9 @@ class ResRobotClient:
             },
         )
 
-        data = cast(ListOfDepartures, data)
-        # transform data
-        departures = []
-        for departure in data["Departure"]:
-            (date, time) = departure["date"], departure["time"]
-            scheduledTime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=self._timezone)
-            (adjustedDate, adjustedTime) =  departure.get("rtDate", date), departure.get("rtTime", time)
-            expectedTime = datetime.strptime(f"{adjustedDate} {adjustedTime}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=self._timezone)
+        return data
 
-            departures.append(
-                {
-                    "destination": departure["direction"],
-                    "direction": "",
-                    "direction_code": departure.get("directionFlag", 0),
-                    "state": "EXPECTED",
-                    "display": departure["name"],
-                    "stop_point": {"name": departure["stop"], "designation": ""},
-                    "line": {
-                        "id": departure["ProductAtStop"].get("lineId", 0),
-                        "designation": departure["ProductAtStop"].get("displayNumber"),
-                        "transport_mode": self.transportMap.get(
-                            departure["ProductAtStop"].get("catOut", TransportCategory.BLT)
-                        ),
-                        "group_of_lines": "",
-                    },
-                    "scheduled": scheduledTime.isoformat(),
-                    "expected": expectedTime.isoformat(),
-                }
-            )
-
-        return departures
-
-    async def get_arrivals(self, location_id: str, now: datetime):
+    async def get_arrivals(self, location_id: str) -> list[dict[str, Any]]:
         data = await self._get_json(
             url=f"{self._base_url}/arrivalBoard",
             params={
@@ -237,34 +181,4 @@ class ResRobotClient:
             },
         )
 
-        data = cast(ListOfArrivals, data)
-        # transform data
-        arrivals = []
-        for arrival in data["Arrival"]:
-            (date, time) = arrival["date"], arrival["time"]
-            scheduledTime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M").replace(tzinfo=self._timezone)
-            (adjustedDate, adjustedTime) = arrival.get("rtDate", time), arrival.get("rtTime", time)
-            expectedTime = datetime.strptime(f"{adjustedDate} {adjustedTime}", "%Y-%m-%d %H:%M").replace(tzinfo=self._timezone)
-
-            arrivals.append(
-                {
-                    "destination": arrival["direction"],
-                    "direction": "",
-                    "direction_code": arrival.get("directionFlag", 0),
-                    "state": "EXPECTED",
-                    "display": arrival["name"],
-                    "stop_point": {"name": arrival["stop"], "designation": ""},
-                    "line": {
-                        "id": arrival["ProductAtStop"].get("lineId", 0),
-                        "designation": arrival["ProductAtStop"].get("displayNumber"),
-                        "transport_mode": self.transportMap.get(
-                            arrival["ProductAtStop"].get("catOut", TransportCategory.ULT)
-                        ),
-                        "group_of_lines": "",
-                    },
-                    "scheduled": scheduledTime.isoformat(),
-                    "expected": expectedTime.isoformat(),
-                }
-            )
-
-        return arrivals
+        return data

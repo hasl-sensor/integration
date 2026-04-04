@@ -11,10 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigSubentry,
-)
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
@@ -41,6 +38,7 @@ from .device import SL_TRAFFIK_DEVICE_INFO
 logger = logging.getLogger(__name__)
 
 
+ATTRIBUTION = "Samtrafiken Resrobot"
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(const.CONF_SOURCE): sel.TextSelector(),
@@ -160,8 +158,6 @@ class ResRobotBaseDepartureSensor(
     CoordinatorEntity[DepartureDataUpdateCoordinator],
     SensorEntity,
 ):
-    _attr_attribution = "Samtrafiken Resrobot"
-
     def entity_description(self):
         sid = self.coordinator_context["id"]
         _type = self.coordinator_context["type"]
@@ -200,6 +196,7 @@ class ResRobotDepartureV4Sensor(ResRobotBaseDepartureSensor):
     Contains departures mapped for compatibility with Departure Card V4.
     """
 
+    _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"departures"})
 
     @property
@@ -233,6 +230,7 @@ class ResRobotDepartureDebugSensor(ResRobotBaseDepartureSensor):
     Contains raw departures in `departures` attribute.
     """
 
+    _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"departures"})
 
     @property
@@ -265,6 +263,8 @@ class ResRobotDepartureDebugSensor(ResRobotBaseDepartureSensor):
 
 
 class ResRobotDepartureMinSensor(ResRobotBaseDepartureSensor):
+    _attr_attribution = ATTRIBUTION
+
     @property
     def unique_id(self):
         return f"{super().unique_id}_min"
@@ -295,6 +295,8 @@ class ResRobotDepartureMinSensor(ResRobotBaseDepartureSensor):
 
 
 class ResRobotDepartureTimeSensor(ResRobotBaseDepartureSensor):
+    _attr_attribution = ATTRIBUTION
+
     @property
     def unique_id(self):
         return f"{super().unique_id}_time"

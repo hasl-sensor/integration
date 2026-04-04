@@ -11,10 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigSubentry,
-)
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
@@ -40,7 +37,7 @@ from .device import SL_TRAFFIK_DEVICE_INFO
 
 logger = logging.getLogger(__name__)
 
-
+ATTRIBUTION = "Samtrafiken Resrobot"
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(const.CONF_DESTINATION): sel.TextSelector(),
@@ -160,7 +157,7 @@ class ResRobotBaseArrivalSensor(
     CoordinatorEntity[ArrivalDataUpdateCoordinator],
     SensorEntity,
 ):
-    _attr_attribution = "Samtrafiken Resrobot"
+    _attr_attribution = ATTRIBUTION
 
     def entity_description(self):
         sid = self.coordinator_context["id"]
@@ -197,9 +194,10 @@ class ResRobotBaseArrivalSensor(
 
 class ResRobotArrivalV4Sensor(ResRobotBaseArrivalSensor):
     """
-     Contains arrivals mapped for compatibility with Departure Card V4.
+    Contains arrivals mapped for compatibility with Departure Card V4.
     """
 
+    _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"arrivals"})
 
     @property
@@ -233,6 +231,7 @@ class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
     Contains raw arrivals in `arrivals` attribute.
     """
 
+    _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"arrivals"})
 
     @property
@@ -265,6 +264,8 @@ class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
 
 
 class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
+    _attr_attribution = ATTRIBUTION
+
     @property
     def unique_id(self):
         return f"{super().unique_id}_min"
@@ -295,6 +296,8 @@ class ResRobotArrivalMinSensor(ResRobotBaseArrivalSensor):
 
 
 class ResRobotArrivalTimeSensor(ResRobotBaseArrivalSensor):
+    _attr_attribution = ATTRIBUTION
+
     @property
     def unique_id(self):
         return f"{super().unique_id}_time"

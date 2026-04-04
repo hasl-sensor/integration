@@ -6,13 +6,10 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import voluptuous as vol
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription,
-)
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import STATE_ON, EntityCategory
+from homeassistant.const import STATE_ON, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -54,7 +51,9 @@ CONFIG_SCHEMA = vol.Schema(
             sel.NumberSelectorConfig(
                 min=5,
                 max=60,
-                unit_of_measurement="minutes",
+                # NOTE: This is intentional, to reuse the same translation string as the scan interval
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.MINUTES,
                 mode=sel.NumberSelectorMode.SLIDER,
             )
         ),
@@ -64,7 +63,8 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(const.CONF_SCAN_INTERVAL, default=60): sel.NumberSelector(
             sel.NumberSelectorConfig(
                 min=0,
-                unit_of_measurement="seconds",
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.SECONDS,
                 mode=sel.NumberSelectorMode.BOX,
             )
         ),
@@ -189,7 +189,8 @@ class BaseDepartureSensor(
             return None
 
         departures = sorted(
-            self.coordinator.data["departures"], key=lambda x: x.get("expected", None) or x.get("scheduled", None)
+            self.coordinator.data["departures"],
+            key=lambda x: x.get("expected", None) or x.get("scheduled", None),
         )
         return next(iter(departures), None)
 

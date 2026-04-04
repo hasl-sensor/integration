@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import voluptuous as vol
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import STATE_ON
+from homeassistant.const import STATE_ON, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -43,7 +43,8 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(const.CONF_SCAN_INTERVAL, default=61): sel.NumberSelector(
             sel.NumberSelectorConfig(
                 min=61,
-                unit_of_measurement="seconds",
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.SECONDS,
                 mode=sel.NumberSelectorMode.BOX,
             )
         ),

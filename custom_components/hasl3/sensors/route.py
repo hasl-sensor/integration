@@ -43,7 +43,8 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(const.CONF_SCAN_INTERVAL, default=300): sel.NumberSelector(
             sel.NumberSelectorConfig(
                 min=0,
-                unit_of_measurement="seconds",
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.SECONDS,
                 mode=sel.NumberSelectorMode.BOX,
             )
         ),
@@ -153,7 +154,9 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[Data]):
             try:
                 data = await client.search_trip(request)
             except Exception as error:
-                raise UpdateFailed(f"Failed to fetch trip from '{origin}' to '{destination}'") from error
+                raise UpdateFailed(
+                    f"Failed to fetch trip from '{origin}' to '{destination}'"
+                ) from error
 
         rides = []
         simple_trips = []

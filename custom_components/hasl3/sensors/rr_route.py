@@ -4,15 +4,9 @@ from datetime import timedelta
 from functools import cached_property
 
 import voluptuous as vol
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription,
-)
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigSubentry,
-)
-from homeassistant.const import STATE_ON
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.const import STATE_ON, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector as sel
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -24,7 +18,6 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.util.dt import async_get_time_zone
 
 from .. import const
 from ..rrapi.client import ResRobotClient
@@ -32,6 +25,7 @@ from .device import SL_TRAFFIK_DEVICE_INFO
 
 logger = logging.getLogger(__name__)
 
+ATTRIBUTION = "Samtrafiken Resrobot"
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(const.CONF_SOURCE): sel.TextSelector(),
@@ -42,7 +36,8 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(const.CONF_SCAN_INTERVAL, default=300): sel.NumberSelector(
             sel.NumberSelectorConfig(
                 min=0,
-                unit_of_measurement="seconds",
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.SECONDS,
                 mode=sel.NumberSelectorMode.BOX,
             )
         ),
@@ -64,7 +59,9 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         self.destination: str = subentry.data[const.CONF_DESTINATION]
         self._sensor_id: str | None = subentry.data.get(const.CONF_SENSOR)
         self.subentry = subentry
-        self.get_device = lambda: get_dr(hass).async_get_device({(const.DOMAIN, subentry.subentry_id)})
+        self.get_device = lambda: get_dr(hass).async_get_device(
+            {(const.DOMAIN, subentry.subentry_id)}
+        )
         interval = timedelta(seconds=subentry.data[const.CONF_SCAN_INTERVAL])
 
         super().__init__(
@@ -77,7 +74,9 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
     async def _async_update_data(self):
         if (device := self.get_device()) and device.disabled:
-            self.logger.debug('Not updating %s. Device is off', self.subentry.subentry_id)
+            self.logger.debug(
+                "Not updating %s. Device is off", self.subentry.subentry_id
+            )
             return self.data
 
         if self._sensor_id and not self.hass.states.is_state(self._sensor_id, STATE_ON):
@@ -89,13 +88,14 @@ class RouteDataUpdateCoordinator(DataUpdateCoordinator[dict]):
 
             return self.data
 
-        tz = await async_get_time_zone("Europe/Stockholm")
-        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key, tz=tz)
+        client = ResRobotClient(async_get_clientsession(self.hass), self.api_key)
         async with timeout(10):
             try:
                 data = await client.find_trip(self.origin, self.destination)
             except Exception as error:
-                raise UpdateFailed(f"Failed to fetch trip from '{self.origin}' to '{self.destination}'") from error
+                raise UpdateFailed(
+                    f"Failed to fetch trip from '{self.origin}' to '{self.destination}'"
+                ) from error
 
         return data
 
@@ -125,7 +125,7 @@ class ResRobotRouteSensor(
     CoordinatorEntity[RouteDataUpdateCoordinator],
     SensorEntity,
 ):
-    _attr_attribution = "Samtrafiken Resrobot"
+    _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"trips", "origin", "destination", "from", "to"})
 
     @cached_property

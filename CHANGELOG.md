@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] (2026-04-04)
+
+### BREAKING CHANGES
+- Entity storage format has changed. Existing installations may require migration. Back up your configuration and data before upgrading.
+
+### ADDED
+- Keyless Trafiklab SL API support. Departures, route, and traffic state sensors can now be used without configuring an API key.
+- Location search UI for sensor configuration. Locations can now be searched directly in the interface.
+- Departure card support. Trafiklab SL and Resrobot sensors can now be displayed using the new Departure card.
+
+### CHANGED
+- Resrobot integration refreshed. Now uses subentries, enabling cleaner configuration when multiple integrations share the same API key.
+
 ## [3.1.3] (2024-03-06)
 
 ### Fixes
@@ -310,7 +323,7 @@ Forked from 2.2.3 but changes from later versions are implemented as needed.
 ### Added
 - Config 'property' in comb sensor to set which property that is reported as default state
 - Config 'always_show_time' in hasl-comb-card.js to force also showing time when less than 60 minutes to departure when 'timeleft' is set
-- Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone] 
+- Added __init.py__ and manifest.json to support 0.92+ version of home assistant, thanks to [@dimmanramone]
 - Added property deviation_count to comb sensor to show number of deviations in total
 - New sensor type TL2 for displaying traffic status messages for the Trafikläget2 API
 - Service for force clearing of cache (adds services.json, mostly for troubleshooting)

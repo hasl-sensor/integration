@@ -7,9 +7,6 @@
                 "menu_options": {
                     "departure_v2": "SL Trafik Departures",
                     "status_v2": "SL Traffic Status",
-                    "Resrobot Departures": "Resrobot Departures",
-                    "Resrobot Arrivals": "Resrobot Arrivals",
-                    "Resrobot Route Sensor": "Resrobot Route Sensor",
                     "route_v2": "SL Route Sensor",
                     "resrobot_key": "Resrobot"
                 }
@@ -30,7 +27,6 @@
             "lookup_location": {
                 "description": "Find stop using SL Stop lookup API",
                 "data": {
-                    "lookup_api_key": "\"Trafikverket öppet API\" key",
                     "lookup_search_key": "Search query",
                     "siteid": "Location"
                 }
@@ -58,23 +54,8 @@
                     "rrkey": "Resrobot 2.1 API Key",
                     "fromid": "From Location ID",
                     "toid": "Destination Location ID",
-                    "fppt": "Commuter Trains",
-                    "fprb": "Roslagsbanan",
-                    "fptvb": "Tvärbanan",
-                    "fplb": "Lidingöbanen",
-                    "fpsb": "Saltsjöbanan",
-                    "fpspvc": "Spårväg City",
-                    "fptb1": "Gröna Linjen",
-                    "fptb2": "Röda linjen",
-                    "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
-                    "transports": "Transport filter (Multiple)",
-                    "metro": "Subway",
-                    "train": "Commuter trains",
-                    "local": "Local trains",
-                    "tram": "Trams",
-                    "bus": "Buses",
-                    "ferry": "Ferries"
+                    "transports": "Transport filter (Multiple)"
                 }
             }
         },
@@ -181,23 +162,8 @@
                     "rrkey": "Resrobot 2.1 API Key",
                     "fromid": "From Location ID",
                     "toid": "Destination Location ID",
-                    "fppt": "Commuter Trains",
-                    "fprb": "Roslagsbanan",
-                    "fptvb": "Tvärbanan",
-                    "fplb": "Lidingöbanen",
-                    "fpsb": "Saltsjöbanan",
-                    "fpspvc": "Spårväg City",
-                    "fptb1": "Gröna Linjen",
-                    "fptb2": "Röda linjen",
-                    "fptb3": "Blåa linjen",
                     "transport": "Transport filter",
-                    "transports": "Transport filter (Multiple)",
-                    "metro": "Subway",
-                    "train": "Commuter trains",
-                    "local": "Local trains",
-                    "tram": "Trams",
-                    "bus": "Buses",
-                    "ferry": "Ferries"
+                    "transports": "Transport filter (Multiple)"
                 }
             }
         }

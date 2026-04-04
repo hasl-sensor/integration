@@ -69,6 +69,9 @@
     },
     "config_subentries": {
         "resrobot_key": {
+            "abort": {
+                "reconfigure_successful": "Reconfiguration was successful"
+            },
             "initiate_flow": {
                 "user": "Add Resrobot Sensor",
                 "reconfigure": "Reconfigure Resrobot Sensor"

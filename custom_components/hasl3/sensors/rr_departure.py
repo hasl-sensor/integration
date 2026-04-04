@@ -147,7 +147,7 @@ async def async_setup_entry(
         "name": subentry.title,
     }
     return [
-        ResRobotDepartureDebugSensor(coordinator, context),
+        ResRobotDepartureLegacySensor(coordinator, context),
         ResRobotDepartureV4Sensor(coordinator, context),
         ResRobotDepartureMinSensor(coordinator, context),
         ResRobotDepartureTimeSensor(coordinator, context),
@@ -199,10 +199,6 @@ class ResRobotDepartureV4Sensor(ResRobotBaseDepartureSensor):
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"departures"})
 
-    @property
-    def unique_id(self):
-        return f"{super().unique_id}_debug"
-
     @cached_property
     def entity_description(self):
         data = super().entity_description()
@@ -225,7 +221,7 @@ class ResRobotDepartureV4Sensor(ResRobotBaseDepartureSensor):
         return {"departures": self.coordinator.get_modern_data() or []}
 
 
-class ResRobotDepartureDebugSensor(ResRobotBaseDepartureSensor):
+class ResRobotDepartureLegacySensor(ResRobotBaseDepartureSensor):
     """
     Contains raw departures in `departures` attribute.
     """
@@ -235,7 +231,7 @@ class ResRobotDepartureDebugSensor(ResRobotBaseDepartureSensor):
 
     @property
     def unique_id(self):
-        return f"{super().unique_id}_debug"
+        return f"{super().unique_id}_legacy"
 
     @cached_property
     def entity_description(self):

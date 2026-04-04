@@ -146,7 +146,7 @@ async def async_setup_entry(
         "name": subentry.title,
     }
     return [
-        ResRobotArrivalDebugSensor(coordinator, context),
+        ResRobotArrivalLegacySensor(coordinator, context),
         ResRobotArrivalV4Sensor(coordinator, context),
         ResRobotArrivalMinSensor(coordinator, context),
         ResRobotArrivalTimeSensor(coordinator, context),
@@ -200,10 +200,6 @@ class ResRobotArrivalV4Sensor(ResRobotBaseArrivalSensor):
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"arrivals"})
 
-    @property
-    def unique_id(self):
-        return f"{super().unique_id}_debug"
-
     @cached_property
     def entity_description(self):
         data = super().entity_description()
@@ -223,10 +219,11 @@ class ResRobotArrivalV4Sensor(ResRobotBaseArrivalSensor):
 
     @property
     def extra_state_attributes(self):
+        # NOTE: "departures" is intentional here, to match the expected format of the Departure Card
         return {"departures": self.coordinator.get_modern_data() or []}
 
 
-class ResRobotArrivalDebugSensor(ResRobotBaseArrivalSensor):
+class ResRobotArrivalLegacySensor(ResRobotBaseArrivalSensor):
     """
     Contains raw arrivals in `arrivals` attribute.
     """

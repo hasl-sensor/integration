@@ -7,12 +7,14 @@
                 "menu_options": {
                     "departure_v2": "SL Trafik Departures",
                     "status_v2": "SL Traffic Status",
-                    "Resrobot Departures": "Resrobot Departures",
-                    "Resrobot Arrivals": "Resrobot Arrivals",
-                    "Resrobot Route Sensor": "Resrobot Route Sensor",
-                    "SL Vehicle Locations": "SL Fordonspositioner",
                     "route_v2": "SL Rutt Sensor",
                     "resrobot_key": "Resrobot"
+                }
+            },
+            "resrobot_key": {
+                "description": "Ange din Resrobot API-nyckel",
+                "data": {
+                    "api_key": "API-nyckel"
                 }
             },
             "departure_v2": {
@@ -25,7 +27,6 @@
             "lookup_location": {
                 "description": "Hitta hållplats med SL Stop lookup API",
                 "data": {
-                    "lookup_api_key": "\"Trafikverket öppet API\" nyckel",
                     "lookup_search_key": "Sökfråga",
                     "siteid": "Plats"
                 }
@@ -53,23 +54,8 @@
                     "rrkey": "Resrobot 2.1 API-nyckel",
                     "fromid": "Från med plats id",
                     "toid": "Till med plats id",
-                    "fppt": "Pendeltåg",
-                    "fprb": "Roslagsbanan",
-                    "fptvb": "Tvärbanan",
-                    "fplb": "Lidingöbanen",
-                    "fpsb": "Saltsjöbanan",
-                    "fpspvc": "Spårväg City",
-                    "fptb1": "Gröna Linjen",
-                    "fptb2": "Röda linjen",
-                    "fptb3": "Blåa linjen",
                     "transport": "Transportfilter",
-                    "transports": "Transportfilter (flera)",
-                    "metro": "Tunnelbana",
-                    "train": "Pendeltåg",
-                    "local": "Lokaltåg",
-                    "tram": "Spårvagn",
-                    "bus": "Bussar",
-                    "ferry": "Färjor"
+                    "transports": "Transportfilter (flera)"
                 }
             }
         },
@@ -77,67 +63,8 @@
             "lookup_failed": "Misslyckades att hitta plats med angiven nyckel. Kontrollera nyckeln och försök igen.",
             "only_one_status_sensor": "Det kan bara finnas en statussensor per plats. Välj en annan plats eller ta bort den befintliga statussensorn.",
             "invalid_siteid_or_coords": "Ogiltigt plats id eller koordinater",
-            "inconsistent_source_and_destination": "Inkonsistent källa och destination. Använd antingen plats id eller koordinater för båda"
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
-                "data": {
-                    "scan_interval": "Hur många sekunder mellan uppdateringar?",
-                    "sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
-                    "siteid": "Plats ID",
-                    "siteids": "Plats IDn (kommaseparerad lista)",
-                    "line": "Linje",
-                    "lines": "Linjer (kommaseparerad lista)",
-                    "direction": "Riktning",
-                    "property": "Primäregenskap för sensorn",
-                    "timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
-                    "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
-                    "to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
-                    "rrkey": "Resrobot 2.1 API-nyckel",
-                    "fromid": "Från med plats id",
-                    "toid": "Till med plats id",
-                    "fppt": "Pendeltåg",
-                    "fprb": "Roslagsbanan",
-                    "fptvb": "Tvärbanan",
-                    "fplb": "Lidingöbanen",
-                    "fpsb": "Saltsjöbanan",
-                    "fpspvc": "Spårväg City",
-                    "fptb1": "Gröna Linjen",
-                    "fptb2": "Röda linjen",
-                    "fptb3": "Blåa linjen",
-                    "transport": "Transportfilter",
-                    "transports": "Transportfilter (flera)",
-                    "metro": "Tunnelbana",
-                    "train": "Pendeltåg",
-                    "local": "Lokaltåg",
-                    "tram": "Spårvagn",
-                    "bus": "Bussar",
-                    "ferry": "Färjor"
-                }
-            }
-        }
-    },
-    "selector": {
-        "transport": {
-            "options": {
-                "BUS": "Buss",
-                "METRO": "Tunnelbana",
-                "TRAM": "Spårvagn",
-                "TRAIN": "Tåg",
-                "SHIP": "Båt",
-                "FETTRY": "Färja",
-                "TAXI": "Taxi"
-            }
-        },
-        "direction": {
-            "options": {
-                "0": "Båda",
-                "1": "Vänster",
-                "2": "Höger"
-            }
+            "inconsistent_source_and_destination": "Inkonsistent källa och destination. Använd antingen plats id eller koordinater för båda",
+            "invalid_api_key": "Validering av API-nyckel misslyckades"
         }
     },
     "config_subentries": {
@@ -215,7 +142,50 @@
                 }
             }
         }
-    }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "description": "Anpassa parametrar för din integratin. Mer info på https://hasl.sorlov.com",
+                "data": {
+                    "scan_interval": "Hur många sekunder mellan uppdateringar?",
+                    "sensor": "Uppdatera bara om denna sensor är True (tom=updaterar alltid)",
+                    "siteid": "Plats ID",
+                    "siteids": "Plats IDn (kommaseparerad lista)",
+                    "line": "Linje",
+                    "lines": "Linjer (kommaseparerad lista)",
+                    "direction": "Riktning",
+                    "property": "Primäregenskap för sensorn",
+                    "timewindow": "För hur lång tid skall vi hämta data (5-60 min)",
+                    "from": "Från med plats id eller som longlat-par (59.33258,18.0649)",
+                    "to": "Till med plats id eller som longlat-par (59.33258,18.0649)",
+                    "rrkey": "Resrobot 2.1 API-nyckel",
+                    "fromid": "Från med plats id",
+                    "toid": "Till med plats id",
+                    "transport": "Transportfilter",
+                    "transports": "Transportfilter (flera)"
+                }
+            }
+        }
+    },
+    "selector": {
+        "transport": {
+            "options": {
+                "BUS": "Buss",
+                "METRO": "Tunnelbana",
+                "TRAM": "Spårvagn",
+                "TRAIN": "Tåg",
+                "SHIP": "Båt",
+                "FETTRY": "Färja",
+                "TAXI": "Taxi"
+            }
+        },
+        "direction": {
+            "options": {
+                "0": "Båda",
+                "1": "Vänster",
+                "2": "Höger"
+            }
         }
     }
 }

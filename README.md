@@ -10,7 +10,7 @@
 
 This is an Home Assistant integration providing sensors for [Stockholms Lokaltrafik (SL)](https://sl.se/) primarily, though it does support [Resrobot](https://resrobot.se/) and journeys in the whole country. This integration provides intelligent sensors for departures, traffic status and route monitoring using the SL official APIs and departures, arrivals and route monitoring using Resrobot. It also provides services for Location ID lookup and Trip Planing.
 
-You will still need to get your own API keys from SL / Trafiklab (see docs for [HASL](https://hasl.sorlov.com)) for *some* of the API endpoints.
+> To use Resrobot integration, you will need to get your own API key from Trafiklab (see docs for [HASL](https://hasl.sorlov.com)).
 
 Full and detailed documentation [is available](http://hasl.sorlov.com).
 

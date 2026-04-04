@@ -1,8 +1,8 @@
 from typing import TypedDict, NotRequired
-from enum import Enum, IntEnum
+from enum import Enum, StrEnum
 
 
-class LocationSearchType(Enum):
+class LocationSearchType(StrEnum):
     ALL = "ALL"  # Search in all existing location pools
     STOP = "S"  # Search for station/stops only
     ADDRESS = "A"  # Search for addresses only
@@ -12,7 +12,7 @@ class LocationSearchType(Enum):
     ADDRESS_OR_POI = "AP"  # Search for addresses and POIs
 
 
-class BoardLanguage(Enum):
+class BoardLanguage(StrEnum):
     SV = "sv"  # Swedish
     EN = "en"  # English
     DA = "da"  # Danish
@@ -27,7 +27,7 @@ class BoardLanguage(Enum):
     HU = "hu"  # Hungarian
 
 
-class LocationType(Enum):
+class LocationType(StrEnum):
     ST = "ST"  # Stop or station
     ADR = "ADR"  # Address
     POI = "POI"  # Point of interest
@@ -36,7 +36,7 @@ class LocationType(Enum):
     HL = "HL"  # Hailing point
 
 
-class TransportCategory(Enum):
+class TransportCategory(StrEnum):
     BLT = "BLT"  # Regional bus (lanstrafik), e.g. SL, UL, Skanetrafiken
     BXB = "BXB"  # Express bus
     BAX = "BAX"  # Airport express bus
@@ -55,7 +55,7 @@ class TransportCategory(Enum):
     FUT = "FUT"  # International ferry
 
 
-class JourneyStatus(Enum):
+class JourneyStatus(StrEnum):
     PLANNED = "P"  # Planned
     REPLACEMENT = "R"  # Replacement
     ADDITIONAL = "A"  # Additional

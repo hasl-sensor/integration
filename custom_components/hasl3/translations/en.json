@@ -176,7 +176,7 @@
                 "TRAM": "Tram",
                 "TRAIN": "Train",
                 "SHIP": "Ship",
-                "FETTRY": "Ferry",
+                "FERRY": "Ferry",
                 "TAXI": "Taxi"
             }
         },
@@ -185,6 +185,12 @@
                 "0": "Any",
                 "1": "Left",
                 "2": "Right"
+            }
+        },
+        "scan_interval": {
+            "unit_of_measurement": {
+                "s": "seconds",
+                "min": "minutes"
             }
         }
     }

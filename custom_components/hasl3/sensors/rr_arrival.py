@@ -47,7 +47,8 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(const.CONF_SCAN_INTERVAL, default=300): sel.NumberSelector(
             sel.NumberSelectorConfig(
                 min=0,
-                unit_of_measurement="seconds",
+                translation_key=const.CONF_SCAN_INTERVAL,
+                unit_of_measurement=UnitOfTime.SECONDS,
                 mode=sel.NumberSelectorMode.BOX,
             )
         ),

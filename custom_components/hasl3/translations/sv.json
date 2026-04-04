@@ -176,7 +176,7 @@
                 "TRAM": "Spårvagn",
                 "TRAIN": "Tåg",
                 "SHIP": "Båt",
-                "FETTRY": "Färja",
+                "FERRY": "Färja",
                 "TAXI": "Taxi"
             }
         },
@@ -185,6 +185,12 @@
                 "0": "Båda",
                 "1": "Vänster",
                 "2": "Höger"
+            }
+        },
+        "scan_interval": {
+            "unit_of_measurement": {
+                "s": "sekunder",
+                "min": "minuter"
             }
         }
     }

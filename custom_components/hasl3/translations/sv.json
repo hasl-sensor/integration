@@ -5,9 +5,9 @@
             "user": {
                 "description": "Välj integrations typ",
                 "menu_options": {
-                    "departure_v2": "SL Trafik Departures",
-                    "status_v2": "SL Traffic Status",
-                    "route_v2": "SL Rutt Sensor",
+                    "departure_v2": "SL Avgångar",
+                    "status_v2": "SL Status",
+                    "route_v2": "SL Rutt",
                     "resrobot_key": "Resrobot"
                 }
             },

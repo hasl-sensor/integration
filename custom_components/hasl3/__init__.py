@@ -17,6 +17,7 @@ from .const import (
     CONF_SITE_ID,
     DEVICE_GUID,
     DOMAIN,
+    SCHEMA_MINOR_VERSION,
     SCHEMA_VERSION,
     SENSOR_DEPARTURE,
     SENSOR_ROUTE,
@@ -69,6 +70,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigEntry):
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate HASL config entries."""
+    hass.config_entries.async_update_entry(
+        config_entry,
+        version=SCHEMA_VERSION,
+        minor_version=SCHEMA_MINOR_VERSION,
+    )
     return True
 
 

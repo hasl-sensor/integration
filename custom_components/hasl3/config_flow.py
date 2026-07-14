@@ -35,6 +35,7 @@ from .const import (
     CONF_SITE_ID,
     CONF_SOURCE,
     DOMAIN,
+    SCHEMA_MINOR_VERSION,
     SCHEMA_VERSION,
     SENSOR_DEPARTURE,
     SENSOR_RESROBOT_ARRIVAL,
@@ -49,6 +50,24 @@ from .rrapi.model import LocationSearchType
 from .utils import DestinationInvalid, SourceInvalid, siteid_or_coords
 
 logger = logging.getLogger(__name__)
+
+
+class ConfigEntryVersion(int):
+    """Config entry version that can compare against legacy string versions."""
+
+    @staticmethod
+    def _version_as_int(value: object) -> int:
+        if isinstance(value, int):
+            return value
+        return int(value)  # type: ignore[arg-type]
+
+    def __eq__(self, other: object) -> bool:
+        return int(self) == self._version_as_int(other)
+
+    def __lt__(self, other: object) -> bool:
+        return int(self) < self._version_as_int(other)
+
+    __hash__ = int.__hash__
 
 
 async def get_schema_by_handler(handler: SchemaCommonFlowHandler):
@@ -146,7 +165,8 @@ class LocationLookupMixin:
 class ConfigFlowHandler(ConfigFlow, LocationLookupMixin, domain=DOMAIN):
     """Handle a config flow for HASL."""
 
-    VERSION = SCHEMA_VERSION
+    VERSION = ConfigEntryVersion(SCHEMA_VERSION)
+    MINOR_VERSION = SCHEMA_MINOR_VERSION
     CONNECTION_CLASS = CONN_CLASS_CLOUD_POLL
 
     new_sensors = [

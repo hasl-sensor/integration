@@ -4,6 +4,7 @@ from enum import IntEnum
 
 HASL_VERSION = "4.0.0"
 SCHEMA_VERSION = 5
+SCHEMA_MINOR_VERSION = 2
 DOMAIN = "hasl3"
 NAME = "Swedish Public Transport Sensor (HASL)"
 

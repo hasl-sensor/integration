@@ -1,3 +1,4 @@
+import copy
 import logging
 from asyncio import timeout
 from datetime import timedelta
@@ -73,7 +74,7 @@ class StatusDataUpdateCoordinator(DataUpdateCoordinator[list[Deviation]]):
         if TYPE_CHECKING:
             assert entry.unique_id
 
-        device_info = SL_TRAFFIK_DEVICE_INFO.copy()
+        device_info = copy.copy(SL_TRAFFIK_DEVICE_INFO)
         device_info["identifiers"] = {(const.DOMAIN, entry.entry_id)}
         device_info["name"] = entry.title
         self.device_info = device_info

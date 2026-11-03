@@ -235,6 +235,11 @@ class DeviationsSensor(BaseDepartureSensor):
 
     @property
     def native_value(self):
+        """Return the state."""
+
+        if not self.coordinator.data:
+            return None
+
         return len(self.coordinator.data["stop_deviations"])
 
     @property

@@ -2,6 +2,7 @@
 
 import logging
 from asyncio import timeout
+from dataclasses import replace
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -132,10 +133,11 @@ class DepartureDataUpdateCoordinator(DataUpdateCoordinator[SiteDepartureResponse
         if TYPE_CHECKING:
             assert config_entry.unique_id
 
-        device_info = SL_TRAFFIK_DEVICE_INFO.copy()
-        device_info["identifiers"] = {(const.DOMAIN, config_entry.entry_id)}
-        device_info["name"] = config_entry.title
-        self.device_info = device_info
+        self.device_info = replace(
+            SL_TRAFFIK_DEVICE_INFO,
+            identifiers={(const.DOMAIN, config_entry.entry_id)},
+            name=config_entry.title,
+        )
 
         super().__init__(
             hass,
